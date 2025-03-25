@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+pdfplumber
+pandas
+sqlalchemy
+openai
+firebase-admin

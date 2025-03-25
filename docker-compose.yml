@@ -1,0 +1,42 @@
+version: '3.11'
+
+services:
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/credentials:/credentials
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /credentials/serviceAccountKey.json
+    depends_on:
+      - db
+
+
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - ./frontend:/app
+  #   stdin_open: true
+  #   tty: true
+  #   depends_on:
+  #     - backend
+
+  db:
+    image: postgres:15
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stocksense
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
