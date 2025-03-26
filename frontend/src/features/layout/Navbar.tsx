@@ -3,7 +3,7 @@ import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 export const Navbar: React.FC = () => {
-  const { isAuthenticated, name, email } = useAppSelector(selectAuth);
+  const { isAuthenticated, name, email, loading } = useAppSelector(selectAuth);
 
   const getInitials = () => {
     if (name) {
@@ -19,6 +19,33 @@ export const Navbar: React.FC = () => {
     return '?';
   };
 
+  const renderAvatar = () => {
+    if (loading) {
+      return <div className="h-9 w-9 animate-pulse rounded-full bg-blue-300 opacity-60" />;
+    }
+
+    if (isAuthenticated) {
+      return (
+        <Link
+          to="/account"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-blue-700 shadow transition hover:opacity-90"
+          title={email ?? undefined}
+        >
+          {getInitials()}
+        </Link>
+      );
+    }
+
+    return (
+      <Link
+        to="/signin"
+        className="rounded-md bg-white px-4 py-1.5 text-sm font-medium text-blue-700 shadow-sm transition hover:bg-blue-100"
+      >
+        Sign In
+      </Link>
+    );
+  };
+
   return (
     <nav className="bg-blue-600 text-white shadow-md">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
@@ -26,24 +53,7 @@ export const Navbar: React.FC = () => {
           StockSense
         </Link>
 
-        <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <Link
-              to="/account"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-blue-700 shadow transition hover:opacity-90"
-              title={email ?? undefined}
-            >
-              {getInitials()}
-            </Link>
-          ) : (
-            <Link
-              to="/signin"
-              className="rounded-md bg-white px-4 py-1.5 text-sm font-medium text-blue-700 shadow-sm transition hover:bg-blue-100"
-            >
-              Sign In
-            </Link>
-          )}
-        </div>
+        <div className="flex items-center gap-4">{renderAvatar()}</div>
       </div>
     </nav>
   );
