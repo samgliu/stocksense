@@ -3,15 +3,10 @@ import { auth, provider } from '@/features/auth/firebase';
 import { clearAuth, setAuth } from '@/features/auth/store/slices';
 import { signInWithPopup, signOut } from 'firebase/auth';
 
+import { BackendUser } from '../store/types';
 import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-
-interface BackendUser {
-  uid: string;
-  fullname: string;
-  email: string;
-}
 
 export const SignIn: React.FC = () => {
   const [status, setStatus] = useState<string>('');
@@ -20,7 +15,7 @@ export const SignIn: React.FC = () => {
 
   const fetchBackendUser = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:8000/api/protected', {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/auth`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -31,8 +26,9 @@ export const SignIn: React.FC = () => {
       dispatch(
         setAuth({
           isAuthenticated: true,
-          name: data.fullname,
+          name: data.name,
           email: data.email,
+          loading: false,
           token,
         }),
       );
@@ -50,7 +46,6 @@ export const SignIn: React.FC = () => {
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
       localStorage.setItem('token', token);
-      console.log('Token stored. Verifying...');
       await fetchBackendUser(token);
     } catch (err) {
       console.error('Sign-in failed:', err);

@@ -1,5 +1,5 @@
 export interface BackendUser {
-  name?: string;
+  name: string;
   email: string;
   uid: string;
 }

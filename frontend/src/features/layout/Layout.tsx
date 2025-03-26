@@ -14,7 +14,7 @@ export const Layout = () => {
       if (!token) return;
 
       try {
-        const res = await fetch('http://localhost:8000/api/protected', {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/auth`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error();

@@ -5,7 +5,7 @@ import { BackendUser } from '../store/types';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8000/api',
+    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/auth`,
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -16,7 +16,7 @@ export const authApi = createApi({
   }),
   endpoints: (builder) => ({
     verifyToken: builder.query<BackendUser, void>({
-      query: () => '/protected',
+      query: () => '/auth',
     }),
   }),
 });
