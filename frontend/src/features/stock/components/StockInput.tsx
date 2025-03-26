@@ -1,29 +1,46 @@
-import { setInputText } from '../store/slices';
+import { setError, setLoading, setResult } from '../store/slices';
+
+import { useAnalyzeStockMutation } from '@/features/stock/api';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useState } from 'react';
 
 export const StockInput = () => {
   const [text, setText] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [triggerAnalyze] = useAnalyzeStockMutation();
   const dispatch = useAppDispatch();
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    let inputText = text.trim();
+
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         const fileContent = reader.result as string;
-        const combinedInput = text ? `${text}\n\n${fileContent}` : fileContent;
-        dispatch(setInputText(combinedInput));
+        const combined = inputText ? `${inputText}\n\n${fileContent}` : fileContent;
+        await analyze(combined);
       };
       reader.readAsText(file);
-    } else if (text.trim()) {
-      dispatch(setInputText(text));
+    } else if (inputText) {
+      await analyze(inputText);
+    }
+  };
+
+  const analyze = async (content: string) => {
+    dispatch(setLoading(true));
+    try {
+      const response = await triggerAnalyze(content).unwrap();
+      dispatch(setResult(response.summary));
+    } catch (err: any) {
+      dispatch(setError('Failed to analyze stock input.'));
+      console.error('Analyze failed:', err);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0] ?? null;
-    setFile(selected);
+    setFile(e.target.files?.[0] ?? null);
   };
 
   return (
