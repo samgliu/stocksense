@@ -9,6 +9,7 @@ services:
     volumes:
       - ./backend/app:/app/app
       - ./backend/credentials:/credentials
+      - ./backend/.env:/app/.env
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /credentials/serviceAccountKey.json
     depends_on:

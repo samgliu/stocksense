@@ -7,3 +7,4 @@ pandas
 sqlalchemy
 openai
 firebase-admin
+google-generativeai

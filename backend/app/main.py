@@ -1,4 +1,3 @@
-# app/main.py
 from app.api.v1.routers import stock, auth
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
