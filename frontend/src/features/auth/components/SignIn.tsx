@@ -88,7 +88,7 @@ export const SignIn: React.FC = () => {
             <p className="mt-1 text-sm text-gray-600">
               Usage today:{' '}
               <span className="font-medium">
-                {usage} / {role === 'user' ? 1 : '∞'}
+                {usage} / {role === 'user' ? 3 : '∞'}
               </span>
             </p>
           )}

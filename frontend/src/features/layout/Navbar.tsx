@@ -1,25 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 
+import { getInitials } from './helpers';
 import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 export const Navbar: React.FC = () => {
   const { isAuthenticated, name, email, loading } = useAppSelector(selectAuth);
   const location = useLocation();
-
-  const getInitials = () => {
-    if (name) {
-      return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase();
-    }
-    if (email) {
-      return email[0]?.toUpperCase() ?? '?';
-    }
-    return '?';
-  };
 
   const NavItem = ({ to, label }: { to: string; label: string }) => {
     const isActive = location.pathname === to;
@@ -61,7 +48,7 @@ export const Navbar: React.FC = () => {
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-blue-700 shadow transition hover:opacity-90"
                 title={email ?? undefined}
               >
-                {getInitials()}
+                {getInitials(name, email)}
               </Link>
             ) : (
               <Link

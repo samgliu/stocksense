@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from app.core.config import USER_DAILY_LIMIT
 from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -32,7 +33,7 @@ async def analyze_stock_endpoint(
             .filter(UsageLog.user_id == user.id, UsageLog.created_at >= start_of_day)
             .count()
         )
-        if usage_count_today >= 1:
+        if usage_count_today >= USER_DAILY_LIMIT:
             raise HTTPException(status_code=429, detail="Daily usage limit reached")
 
     result = analyze_stock(body.text)

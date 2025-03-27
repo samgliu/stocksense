@@ -1,3 +1,4 @@
+import { ErrorElement } from '@/features/shared/ErrorElement';
 import HomeRoute from '@/routes/HomeRoute';
 import { Layout } from '@/features/layout/Layout';
 import { NotFound } from '@/routes/NotFound';
@@ -11,6 +12,7 @@ export const routers = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
+    errorElement: <ErrorElement />,
     children: [
       { index: true, element: <HomeRoute /> },
       { path: 'signin', element: <SignInRoute /> },
