@@ -21,27 +21,36 @@ export const Navbar: React.FC = () => {
     return '?';
   };
 
-  const NavLink = ({ to, label }: { to: string; label: string }) => (
-    <Link
-      to={to}
-      className={`text-sm font-medium transition hover:underline ${
-        location.pathname === to ? 'text-white underline' : 'text-white/80'
-      }`}
-    >
-      {label}
-    </Link>
-  );
+  const NavItem = ({ to, label }: { to: string; label: string }) => {
+    const isActive = location.pathname === to;
+    return (
+      <Link
+        to={to}
+        aria-current={isActive ? 'page' : undefined}
+        className={`text-sm font-medium transition hover:underline ${
+          isActive ? 'text-white underline' : 'text-white/80'
+        }`}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   return (
     <nav className="bg-blue-600 text-white shadow-md">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-        <Link to="/" className="text-lg font-semibold hover:underline">
+        <Link to="/" className="text-lg font-semibold tracking-tight hover:underline">
           StockSense
         </Link>
 
         <div className="flex items-center gap-6">
-          <NavLink to="/" label="Home" />
-          {isAuthenticated && <NavLink to="/analyze" label="Analyze" />}
+          <NavItem to="/" label="Home" />
+          {isAuthenticated && (
+            <>
+              <NavItem to="/analyze" label="Analyze" />
+              <NavItem to="/history" label="History" />
+            </>
+          )}
 
           <div className="flex items-center gap-4">
             {loading ? (

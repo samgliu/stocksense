@@ -52,3 +52,30 @@ async def analyze_stock_endpoint(
     db.commit()
 
     return {"summary": result}
+
+
+@router.get("/history")
+@verify_token
+async def get_history(request: Request, db: Session = Depends(get_db)):
+    user_data = request.state.user
+    user = db.query(User).filter_by(email=user_data["email"]).first()
+
+    entries = (
+        db.query(StockEntry)
+        .filter_by(user_id=user.id)
+        .order_by(StockEntry.created_at.desc())
+        .limit(20)
+        .all()
+    )
+
+    return [
+        {
+            "id": str(entry.id),
+            "summary": entry.summary,
+            "created_at": entry.created_at.isoformat(),
+            "source_type": entry.source_type,
+            "model_used": entry.model_used,
+            "text_input": entry.text_input[:100] + "..." if entry.text_input else None,
+        }
+        for entry in entries
+    ]
