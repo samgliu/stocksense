@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { auth, provider } from '@/features/auth/firebase';
-import { clearAuth, setAuth } from '@/features/auth/store/slices';
+import { clearAuth, setAuth } from '@/features/auth/store/slice';
 import { signInWithPopup, signOut } from 'firebase/auth';
 
 import { BackendUser } from '../store/types';
@@ -9,7 +9,11 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 export const SignIn: React.FC = () => {
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<'admin' | 'user' | ''>('');
+  const [usage, setUsage] = useState<number | null>(null);
+
   const dispatch = useAppDispatch();
   const { isAuthenticated, name, email } = useAppSelector(selectAuth);
 
@@ -33,6 +37,8 @@ export const SignIn: React.FC = () => {
         }),
       );
 
+      setRole(data.role);
+      setUsage(data.usage_count_today ?? null);
       setStatus(`✅ Verified as ${data.email}`);
     } catch (err) {
       console.error('Backend verification failed:', err);
@@ -43,6 +49,7 @@ export const SignIn: React.FC = () => {
 
   const handleSignIn = async () => {
     try {
+      setLoading(true);
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
       localStorage.setItem('token', token);
@@ -50,6 +57,8 @@ export const SignIn: React.FC = () => {
     } catch (err) {
       console.error('Sign-in failed:', err);
       setStatus('❌ Sign-in failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,6 +66,8 @@ export const SignIn: React.FC = () => {
     await signOut(auth);
     localStorage.removeItem('token');
     dispatch(clearAuth());
+    setRole('');
+    setUsage(null);
     setStatus('');
   };
 
@@ -66,13 +77,25 @@ export const SignIn: React.FC = () => {
   }, []);
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-4">
+    <div className="mt-10 flex flex-col items-center gap-6">
       {isAuthenticated ? (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm">
-          <p className="text-lg font-medium text-gray-800">Hello, {name || email}</p>
+        <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+          <p className="mb-2 text-lg font-semibold text-gray-800">👋 Hello, {name || email}</p>
+          <p className="text-sm text-gray-600">
+            Role: <span className="font-medium text-blue-700">{role}</span>
+          </p>
+          {usage !== null && (
+            <p className="mt-1 text-sm text-gray-600">
+              Usage today:{' '}
+              <span className="font-medium">
+                {usage} / {role === 'user' ? 1 : '∞'}
+              </span>
+            </p>
+          )}
+
           <button
             onClick={handleSignOut}
-            className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-200"
+            className="mt-4 w-full cursor-pointer rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-200"
           >
             Sign Out
           </button>
@@ -80,9 +103,10 @@ export const SignIn: React.FC = () => {
       ) : (
         <button
           onClick={handleSignIn}
-          className="rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          disabled={loading}
+          className="cursor-pointer rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Sign in with Google
+          {loading ? 'Signing in...' : 'Sign in with Google'}
         </button>
       )}
       {status && <p className="text-sm text-gray-500">{status}</p>}

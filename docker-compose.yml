@@ -1,5 +1,3 @@
-version: '3.11'
-
 services:
 
   backend:
@@ -7,10 +5,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/app:/app/app
+      - ./backend:/app
       - ./backend/credentials:/credentials
       - ./backend/.env:/app/.env
     environment:
+      DATABASE_URL: ${DATABASE_URL}
       GOOGLE_APPLICATION_CREDENTIALS: /credentials/serviceAccountKey.json
     depends_on:
       - db

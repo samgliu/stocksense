@@ -1,4 +1,4 @@
-from app.models.gemini_model import generate_analysis
+from app.ai.gemini_model import generate_analysis
 
 
 def analyze_stock(text: str) -> str:

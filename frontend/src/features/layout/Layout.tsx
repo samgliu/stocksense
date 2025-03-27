@@ -1,4 +1,4 @@
-import { clearAuth, setAuth } from '@/features/auth/store/slices';
+import { clearAuth, setAuth } from '@/features/auth/store/slice';
 
 import { Navbar } from '@/features/layout/Navbar';
 import { Outlet } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import { setError, setLoading, setResult } from '../store/slices';
+import { setError, setLoading, setResult } from '../store/slice';
 
 import { useAnalyzeStockMutation } from '@/features/stock/api';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -7,7 +7,7 @@ import { useState } from 'react';
 export const StockInput = () => {
   const [text, setText] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [triggerAnalyze] = useAnalyzeStockMutation();
+  const [analyzeStock, { isLoading, reset }] = useAnalyzeStockMutation();
   const dispatch = useAppDispatch();
 
   const handleAnalyze = async () => {
@@ -29,7 +29,8 @@ export const StockInput = () => {
   const analyze = async (content: string) => {
     dispatch(setLoading(true));
     try {
-      const response = await triggerAnalyze(content).unwrap();
+      reset();
+      const response = await analyzeStock(content).unwrap();
       dispatch(setResult(response.summary));
     } catch (err: any) {
       dispatch(setError('Failed to analyze stock input.'));
@@ -70,6 +71,7 @@ export const StockInput = () => {
       </div>
 
       <button
+        disabled={!text && !file && isLoading}
         onClick={handleAnalyze}
         className="mt-2 inline-block cursor-pointer rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-blue-700"
       >

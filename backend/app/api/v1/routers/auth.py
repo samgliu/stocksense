@@ -1,15 +1,58 @@
-from fastapi import APIRouter, Request
-from app.core.decorators import verify_token  # make sure this exists
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta, timezone
+from app.core.decorators import verify_token
+from app.database import get_db
+from app.models.user import User, UserRole
+from app.models.usage_log import UsageLog
 
 router = APIRouter()
 
 
 @router.get("/auth")
 @verify_token
-async def protected_route(request: Request):
-    user = request.state.user
+async def auth_verify(request: Request, db: Session = Depends(get_db)):
+    user_data = request.state.user
+
+    email = user_data.get("email")
+    name = user_data.get("name")
+
+    user = db.query(User).filter_by(email=email).first()
+
+    if not user:
+        user = User(
+            email=email,
+            name=name,
+            role=UserRole.ADMIN if email == "samgliu19@gmail.com" else UserRole.USER,
+            verified=True,
+            last_login=datetime.now(timezone.utc),
+        )
+        db.add(user)
+    else:
+        user.last_login = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(user)
+
+    start_of_day = datetime.now(timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    end_of_day = start_of_day + timedelta(days=1)
+    usage_count_today = (
+        db.query(UsageLog)
+        .filter(
+            UsageLog.user_id == user.id,
+            UsageLog.created_at >= start_of_day,
+            UsageLog.created_at < end_of_day,
+        )
+        .count()
+    )
+
     return {
-        "email": user.get("email"),
-        "uid": user.get("uid"),
-        "name": user.get("name"),
+        "id": str(user.id),
+        "email": user.email,
+        "fullname": user.name,
+        "role": user.role.value,
+        "verified": user.verified,
+        "usage_count_today": usage_count_today,
     }
