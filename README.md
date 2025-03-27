@@ -7,7 +7,7 @@ AI-powered stock and document analysis app using FastAPI, PostgreSQL, React, and
 - **Frontend**: React + Tailwind + Vite
 - **Backend**: FastAPI + Python
 - **Database**: PostgreSQL
-- **AI Integration**: OpenAI
+- **AI Integration**: Gemini/OpenAI
 - **Dockerized**: Fully containerized with docker-compose
 
 ## Getting Started
