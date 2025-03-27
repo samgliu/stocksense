@@ -11,6 +11,7 @@ pdfplumber
 pandas
 
 # Database
+asyncpg
 sqlalchemy
 psycopg2-binary  # PostgreSQL driver
 alembic          # Database migrations

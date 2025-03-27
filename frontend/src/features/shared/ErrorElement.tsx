@@ -1,6 +1,15 @@
+import { Navigate, isRouteErrorResponse, useRouteError } from 'react-router-dom';
+
 import React from 'react';
 
 export const ErrorElement = () => {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 401) return <Navigate to="/signin" replace />;
+    if (error.status === 404) return <Navigate to="/not-found" replace />;
+  }
+
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
       <div className="text-center">

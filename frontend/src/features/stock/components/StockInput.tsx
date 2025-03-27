@@ -28,8 +28,9 @@ export const StockInput = () => {
 
   const analyze = async (content: string) => {
     dispatch(setLoading(true));
+    dispatch(setError(''));
+    dispatch(setResult(''));
     try {
-      reset();
       const response = await analyzeStock(content).unwrap();
       dispatch(setResult(response.summary));
     } catch (err: any) {

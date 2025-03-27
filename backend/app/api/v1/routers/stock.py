@@ -1,15 +1,17 @@
 from datetime import datetime, timezone
-from app.core.config import USER_DAILY_LIMIT
 from fastapi import APIRouter, Request, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy import func
 
-from app.database import get_db
+from app.core.config import USER_DAILY_LIMIT
+from app.core.decorators import verify_token
+from app.database import get_async_db
 from app.models.user import User, UserRole
 from app.models.usage_log import UsageLog
 from app.models.stock_entry import StockEntry
 from app.schemas.stock import StockRequest, StockResponse
 from app.services.stock_analysis import analyze_stock
-from app.core.decorators import verify_token
 
 router = APIRouter()
 
@@ -19,20 +21,22 @@ router = APIRouter()
 async def analyze_stock_endpoint(
     request: Request,
     body: StockRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     user_data = request.state.user
-    user = db.query(User).filter(User.email == user_data["email"]).first()
+    user_result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user = user_result.scalar_one()
 
     if user.role == UserRole.USER:
         start_of_day = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
-        usage_count_today = (
-            db.query(UsageLog)
-            .filter(UsageLog.user_id == user.id, UsageLog.created_at >= start_of_day)
-            .count()
+        usage_result = await db.execute(
+            select(func.count())
+            .select_from(UsageLog)
+            .where(UsageLog.user_id == user.id, UsageLog.created_at >= start_of_day)
         )
+        usage_count_today = usage_result.scalar()
         if usage_count_today >= USER_DAILY_LIMIT:
             raise HTTPException(status_code=429, detail="Daily usage limit reached")
 
@@ -50,24 +54,25 @@ async def analyze_stock_endpoint(
     usage_log = UsageLog(user_id=user.id, action="analyze")
     db.add(usage_log)
 
-    db.commit()
+    await db.commit()
 
     return {"summary": result}
 
 
 @router.get("/history")
 @verify_token
-async def get_history(request: Request, db: Session = Depends(get_db)):
+async def get_history(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user
-    user = db.query(User).filter_by(email=user_data["email"]).first()
+    user_result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user = user_result.scalar_one()
 
-    entries = (
-        db.query(StockEntry)
-        .filter_by(user_id=user.id)
+    entries_result = await db.execute(
+        select(StockEntry)
+        .where(StockEntry.user_id == user.id)
         .order_by(StockEntry.created_at.desc())
         .limit(20)
-        .all()
     )
+    entries = entries_result.scalars().all()
 
     return [
         {
