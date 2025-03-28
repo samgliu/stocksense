@@ -1,4 +1,4 @@
-import { HistoryItem } from './StockHistory';
+import { HistoryItem } from '../api/types';
 import { useState } from 'react';
 
 export const StockAccordion = ({ item }: { item: HistoryItem }) => {

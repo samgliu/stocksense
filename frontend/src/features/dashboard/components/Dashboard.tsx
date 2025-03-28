@@ -1,8 +1,8 @@
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -35,15 +35,22 @@ export const Dashboard = () => {
       {/* Daily Analysis Chart */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
         <h3 className="mb-4 text-xl font-semibold text-gray-800">Daily Analysis</h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={dailyData}>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={dailyData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="count" fill="#3b82f6" />
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
         </ResponsiveContainer>
       </div>
 

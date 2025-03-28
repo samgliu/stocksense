@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { auth, provider } from '@/features/auth/firebase';
 import { clearAuth, setAuth } from '@/features/auth/store/slice';
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 
 import { BackendUser } from '../store/types';
 import { selectAuth } from '@/features/auth/store/selectors';
@@ -24,7 +24,6 @@ export const SignIn: React.FC = () => {
       });
 
       if (!res.ok) throw new Error(`Status: ${res.status}`);
-
       const data: BackendUser = await res.json();
 
       dispatch(
@@ -43,6 +42,8 @@ export const SignIn: React.FC = () => {
     } catch (err) {
       console.error('Backend verification failed:', err);
       dispatch(clearAuth());
+      setRole('');
+      setUsage(null);
       setStatus('❌ Invalid or unverified');
     }
   };
@@ -51,8 +52,7 @@ export const SignIn: React.FC = () => {
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
-      localStorage.setItem('token', token);
+      const token = await result.user.getIdToken(true); // force refresh token
       await fetchBackendUser(token);
     } catch (err) {
       console.error('Sign-in failed:', err);
@@ -64,7 +64,6 @@ export const SignIn: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut(auth);
-    localStorage.removeItem('token');
     dispatch(clearAuth());
     setRole('');
     setUsage(null);
@@ -72,8 +71,17 @@ export const SignIn: React.FC = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) fetchBackendUser(token);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        await fetchBackendUser(token);
+      } else {
+        dispatch(clearAuth());
+        setRole('');
+        setUsage(null);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   return (
