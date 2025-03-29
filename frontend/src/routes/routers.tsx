@@ -5,6 +5,7 @@ import HomeRoute from '@/routes/HomeRoute';
 import { Layout } from '@/features/layout/Layout';
 import { NotFound } from '@/routes/NotFound';
 import { ProtectedRoute } from './ProtectedRoute';
+import { SemanticSearch } from '@/features/search/components/SemanticSearch';
 import SignInRoute from '@/routes/SignInRoute';
 import StockAnalyzePage from '../features/stock/pages/StockAnalyzePage';
 import { StockHistory } from '@/features/stock/components/StockHistory';
@@ -23,6 +24,7 @@ export const routers = createBrowserRouter([
         errorElement: <ErrorElement />,
         children: [
           { path: 'home', element: <HomeRoute /> },
+          { path: 'semantic-search', element: <SemanticSearch /> },
           { path: 'analyze', element: <StockAnalyzePage /> },
           { path: 'history', element: <StockHistory /> },
           { path: 'account', element: <SignInRoute /> },

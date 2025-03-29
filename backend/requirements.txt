@@ -5,6 +5,7 @@ uvicorn[standard]
 # Data models & validation
 pydantic
 pydantic[email]
+sentence_transformers
 
 # File upload & parsing
 python-multipart

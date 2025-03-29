@@ -35,6 +35,7 @@ export const Navbar: React.FC = () => {
             <NavItem to="/" label="Home" />
             {isAuthenticated && (
               <>
+                <NavItem to="/semantic-search" label="Search" />
                 <NavItem to="/analyze" label="Analyze" />
                 <NavItem to="/history" label="History" />
               </>
