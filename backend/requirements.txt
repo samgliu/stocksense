@@ -1,9 +1,29 @@
+# Core server
 fastapi
 uvicorn[standard]
+
+# Data models & validation
 pydantic
+pydantic[email]
+sentence_transformers
+
+# File upload & parsing
 python-multipart
 pdfplumber
 pandas
+
+# Database
+asyncpg
 sqlalchemy
-openai
+psycopg2-binary  # PostgreSQL driver
+alembic          # Database migrations
+
+# Auth & Firebase
 firebase-admin
+
+# AI APIs
+openai
+google-generativeai
+
+# Optional: load .env files
+python-dotenv
