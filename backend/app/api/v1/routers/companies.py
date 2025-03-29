@@ -1,10 +1,11 @@
 from app.services.yf_data import fetch_historical_prices
+from app.services.company_analysis import analyze_company_payload
 from fastapi import APIRouter, HTTPException, Depends
 from app.services.fmp import fetch_company_profile_async
 from pydantic import BaseModel
 from app.models import Company
 from app.database import get_async_db
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,3 +62,60 @@ async def get_historical_prices(exchange: str, ticker: str):
     except Exception as e:
         print(f"Error fetching historical data: {e}")
         raise HTTPException(status_code=500, detail="Error fetching data")
+
+
+class HistoryPoint(BaseModel):
+    date: str
+    close: float
+
+
+class CompanyPayload(BaseModel):
+    id: str
+    ticker: str
+    name: str
+    shortname: Optional[str] = None
+    exchange: Optional[str] = None
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    country: Optional[str] = None
+    website: Optional[str] = None
+    summary: Optional[str] = None
+    ceo: Optional[str] = None
+    ipo_date: Optional[str] = None
+    image: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip: Optional[str] = None
+    current_price: Optional[float] = None
+    market_cap: Optional[float] = None
+    ebitda: Optional[float] = None
+    revenue_growth: Optional[float] = None
+    vol_avg: Optional[int] = None
+    beta: Optional[float] = None
+    last_dividend: Optional[float] = None
+    range_52w: Optional[str] = None
+    dcf: Optional[float] = None
+    dcf_diff: Optional[float] = None
+    currency: Optional[str] = None
+    is_etf: Optional[bool] = None
+    is_adr: Optional[bool] = None
+    is_fund: Optional[bool] = None
+    is_actively_trading: Optional[bool] = None
+    fulltime_employees: Optional[int] = None
+
+
+class AnalyzeRequest(BaseModel):
+    company: CompanyPayload
+    history: List[HistoryPoint]
+
+
+@router.post("/analyze")
+async def analyze_company(request: AnalyzeRequest):
+    try:
+        result = await analyze_company_payload(request.dict())
+        return {"analysis": result}
+    except Exception as e:
+        print(f"❌ Error during analysis: {e}")
+        return {"error": "Failed to analyze company"}
