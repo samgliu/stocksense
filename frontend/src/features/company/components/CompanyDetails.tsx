@@ -1,6 +1,17 @@
-import { CompanyData } from '../api';
+import { CompanyData, useAnalyzeCompanyMutation } from '../api';
+
+import { Markdown } from '@/features/shared/Markdown';
 
 export const CompanyDetails = ({ company }: { company: CompanyData }) => {
+  const [analyzeCompany, { data: analysis, isLoading }] = useAnalyzeCompanyMutation();
+
+  const handleAnalyze = async () => {
+    try {
+      await analyzeCompany(company);
+    } catch (err) {
+      console.error('Failed to analyze company', err);
+    }
+  };
   return (
     <div className="max-w-3xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       {/* Header */}
@@ -63,7 +74,20 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
 
       {/* Summary (clamped to 3 lines) */}
       {company.summary && (
-        <p className="line-clamp-9 overflow-auto text-gray-700">{company.summary}</p>
+        <p className="line-clamp-5 overflow-auto text-gray-700">{company.summary}</p>
+      )}
+      <button
+        onClick={handleAnalyze}
+        className="mt-6 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      >
+        {isLoading ? 'Analyzing...' : '🔍 Analyze Company'}
+      </button>
+
+      {analysis && (
+        <div className="mt-6 rounded bg-gray-50 p-4 text-sm text-gray-800 shadow-inner">
+          <h3 className="mb-2 text-lg font-semibold">AI Analysis Result</h3>
+          <Markdown result={analysis.analysis} />
+        </div>
       )}
     </div>
   );

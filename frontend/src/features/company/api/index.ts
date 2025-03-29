@@ -26,6 +26,10 @@ export interface CompanyData {
   fulltime_employees?: number;
 }
 
+export interface CompanyAnalysisResult {
+  analysis: string;
+}
+
 export const companyApi = createApi({
   reducerPath: 'companyApi',
   baseQuery: fetchBaseQuery({
@@ -43,7 +47,15 @@ export const companyApi = createApi({
     getCompanyById: builder.query<CompanyData, { id: string; ticker: string }>({
       query: ({ id, ticker }) => `/companies/${id}/${ticker}`,
     }),
+
+    analyzeCompany: builder.mutation<CompanyAnalysisResult, CompanyData>({
+      query: (company) => ({
+        url: `/companies/analyze`,
+        method: 'POST',
+        body: company,
+      }),
+    }),
   }),
 });
 
-export const { useGetCompanyByIdQuery } = companyApi;
+export const { useGetCompanyByIdQuery, useAnalyzeCompanyMutation } = companyApi;

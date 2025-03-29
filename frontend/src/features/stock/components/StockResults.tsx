@@ -1,5 +1,6 @@
 import { selectStockError, selectStockLoading, selectStockResult } from '../store/selectors';
 
+import { Markdown } from '@/features/shared/Markdown';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 export const StockResult = () => {
@@ -28,7 +29,7 @@ export const StockResult = () => {
   return (
     <div className="mt-4 rounded-md border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-2 text-lg font-semibold text-gray-800">AI Analysis</h2>
-      <p className="text-sm whitespace-pre-line text-gray-700">{result}</p>
+      <Markdown result={result} />
     </div>
   );
 };
