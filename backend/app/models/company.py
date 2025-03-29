@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Numeric, Integer, DateTime, text
+from sqlalchemy import Column, String, Float, Numeric, DateTime, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.database import Base
@@ -36,7 +36,7 @@ class Company(Base):
     revenue_growth = Column(Float, nullable=True)
 
     # Team
-    fulltime_employees = Column(Integer, nullable=True)
+    fulltime_employees = Column(Numeric, nullable=True)
 
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())

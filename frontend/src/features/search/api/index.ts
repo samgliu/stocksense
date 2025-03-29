@@ -6,7 +6,10 @@ export interface SemanticResult {
   id: string;
   name: string;
   ticker: string;
-  summary: string | null;
+  summary?: string;
+  sector?: string;
+  industry?: string;
+  domain?: string;
   score: number;
 }
 

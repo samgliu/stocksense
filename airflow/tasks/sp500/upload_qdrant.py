@@ -43,33 +43,39 @@ def upload_to_qdrant():
             }
         )
 
-    # Create the collection if it doesn't exist
-    vector_size = len(points[0]["vector"])  # dynamic vector size
-    collection_config = {
-        "vectors": {
-            "size": vector_size,
-            "distance": "Cosine",
-        }
-    }
-
-    print(f"🛠 Creating collection `{collection_name}` in Qdrant...")
-    response = requests.put(
+    # Check if collection exists
+    print(f"🔎 Checking if collection `{collection_name}` exists...")
+    exists_response = requests.get(
         f"{qdrant_url}/collections/{collection_name}",
-        json=collection_config,
         headers=headers,
     )
-    if not response.ok:
-        print(f"❌ Failed to create collection: {response.text}")
-        return
 
-    print(f"🚀 Uploading {len(points)} points to Qdrant...")
-    response = requests.put(
+    if exists_response.status_code == 200:
+        print(f"✅ Collection `{collection_name}` already exists, skipping creation.")
+    else:
+        print(f"🛠 Creating collection `{collection_name}` in Qdrant...")
+        vector_size = len(points[0]["vector"])
+        collection_config = {
+            "vectors": {"size": vector_size, "distance": "Cosine"},
+        }
+        create_response = requests.put(
+            f"{qdrant_url}/collections/{collection_name}",
+            json=collection_config,
+            headers=headers,
+        )
+        if not create_response.ok:
+            print(f"❌ Failed to create collection: {create_response.text}")
+            return
+
+    # Upsert points (update or insert)
+    print(f"🚀 Uploading {len(points)} points to Qdrant via UPSERT...")
+    upsert_response = requests.put(
         f"{qdrant_url}/collections/{collection_name}/points?wait=true",
         json={"points": points},
         headers=headers,
     )
-    if not response.ok:
-        print(f"❌ Failed to upload points: {response.text}")
+    if not upsert_response.ok:
+        print(f"❌ Failed to upload points: {upsert_response.text}")
         return
 
     print(

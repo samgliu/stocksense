@@ -1,8 +1,8 @@
-"""add usage_logs and stock_entries
+"""initial schema
 
-Revision ID: 1db23ddbd7a1
-Revises: a2811ca83f6b
-Create Date: 2025-03-27 02:08:22.683153
+Revision ID: 766ddaa7fff5
+Revises: 
+Create Date: 2025-03-29 20:41:01.616687
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1db23ddbd7a1'
-down_revision: Union[str, None] = 'a2811ca83f6b'
+revision: str = '766ddaa7fff5'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

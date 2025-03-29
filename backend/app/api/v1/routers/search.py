@@ -18,6 +18,9 @@ class SemanticResult(BaseModel):
     name: str
     ticker: str
     summary: Optional[str] = None
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    domain: Optional[str] = None
     score: float
 
 
@@ -43,6 +46,9 @@ def semantic_search(query: str = Query(..., min_length=3), top_k: int = 10):
             name=r["payload"].get("name"),
             ticker=r["payload"].get("ticker"),
             summary=r["payload"].get("summary"),
+            sector=r["payload"].get("sector"),
+            industry=r["payload"].get("industry"),
+            domain=r["payload"].get("domain"),
             score=r["score"],
         )
         for r in results
