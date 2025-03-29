@@ -1,32 +1,64 @@
-# Logs and system files
+# --------------------------
+# System / IDE
+# --------------------------
+.DS_Store
 *.log
 *.sqlite3
-.DS_Store
+*.tsbuildinfo
+.vscode/
+.idea/
 
+# --------------------------
 # Python
+# --------------------------
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 .env
+.env.*   # Optional: for multiple envs like .env.production
 
-# Node
+# --------------------------
+# Airflow
+# --------------------------
+airflow/airflow.db
+airflow/unittests.cfg
+airflow/__pycache__/
+airflow/logs/
+airflow_pgdata/
+airflow/data/
+
+# --------------------------
+# Docker volumes
+# --------------------------
+pgdata/
+*.pid
+
+# --------------------------
+# Frontend (Node/React)
+# --------------------------
 node_modules/
 dist/
 frontend/.next/
 frontend/.turbo/
+frontend/node_modules/
+frontend/.env.local
 
-# Build artifacts
+# --------------------------
+# Build Artifacts
+# --------------------------
 build/
 coverage/
-*.tsbuildinfo
 
-# Docker volumes
-pgdata/
+# --------------------------
+# Secrets & Sensitive
+# --------------------------
+credentials/
+*.key
+*.pem
+*.crt
 
-# IDEs
-.vscode/
-.idea/
-
-credentials
+# --------------------------
+# Misc
+# --------------------------
 ROADMAP.md

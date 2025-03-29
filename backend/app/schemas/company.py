@@ -5,12 +5,21 @@ from datetime import datetime
 
 
 class CompanyBase(BaseModel):
+    ticker: str
     name: str
-    ticker: Optional[str] = None
+    exchange: Optional[str] = None
+    shortname: Optional[str] = None
     industry: Optional[str] = None
     sector: Optional[str] = None
-    country: Optional[str] = None
+    country: Optional[str] = "USA"
+    website: Optional[str] = None
     summary: Optional[str] = None
+
+    current_price: Optional[float] = None
+    market_cap: Optional[float] = None
+    ebitda: Optional[float] = None
+    revenue_growth: Optional[float] = None
+    fulltime_employees: Optional[int] = None
 
 
 class CompanyCreate(CompanyBase):

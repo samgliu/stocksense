@@ -1,19 +1,18 @@
 services:
-
   backend:
     build: ./backend
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./backend:/app
       - ./backend/credentials:/credentials
       - ./backend/.env:/app/.env
+    env_file:
+      - ./backend/.env
     environment:
-      DATABASE_URL: ${DATABASE_URL}
       GOOGLE_APPLICATION_CREDENTIALS: /credentials/serviceAccountKey.json
     depends_on:
       - db
-
 
   # frontend:
   #   build: ./frontend
@@ -28,7 +27,6 @@ services:
 
   db:
     image: postgres:15
-    restart: always
     ports:
       - '5432:5432'
     environment:
@@ -38,5 +36,71 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  airflow-db:
+    image: postgres:15
+    ports:
+      - '5433:5433'
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_pgdata:/var/lib/postgresql/data
+    env_file:
+      - ./airflow/.env
+    
+
+  airflow-init:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    image: apache/airflow:latest-python3.11
+    depends_on:
+      - airflow-db
+    volumes:
+      - ./airflow:/opt/airflow
+    env_file:
+      - ./airflow/.env
+    environment:
+      PYTHONPATH: /opt/airflow
+    entrypoint: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --password admin --firstname Sam --lastname Liu --role Admin --email samgliu19@gmail.com
+      "
+
+  airflow-webserver:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    image: apache/airflow:latest-python3.11
+    depends_on:
+      - airflow-init
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./airflow:/opt/airflow
+    env_file:
+      - ./airflow/.env
+    environment:
+      PYTHONPATH: /opt/airflow
+    command: webserver
+
+  airflow-scheduler:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    image: apache/airflow:latest-python3.11
+    depends_on:
+      - airflow-webserver
+    volumes:
+      - ./airflow:/opt/airflow
+    env_file:
+      - ./airflow/.env
+    environment:
+      PYTHONPATH: /opt/airflow
+    command: scheduler
+
 volumes:
   pgdata:
+  airflow_pgdata:
