@@ -7,15 +7,10 @@ interface StockMiniChartProps {
 }
 
 export const StockMiniChart = ({ data }: StockMiniChartProps) => {
-  const transformed = data.map((item) => ({
-    date: item.date,
-    close: Object.values(item.close)[0], // Extract value from { AMZN: 208.74 }
-  }));
-
   return (
     <div className="h-24 w-64">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={transformed}>
+        <LineChart data={data}>
           <XAxis dataKey="date" hide />
           <YAxis domain={['dataMin', 'dataMax']} hide />
           <Tooltip formatter={(v) => `$${v}`} />

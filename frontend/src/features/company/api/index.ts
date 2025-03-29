@@ -30,7 +30,7 @@ export interface CompanyAnalysisResult {
   analysis: string;
 }
 
-export type CompanyHistoricalPrice = { date: string; close: Record<string, number> }[];
+export type CompanyHistoricalPrice = { date: string; close: number }[];
 
 export const companyApi = createApi({
   reducerPath: 'companyApi',
