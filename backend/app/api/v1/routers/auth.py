@@ -8,10 +8,13 @@ from app.database import get_async_db
 from app.models.user import User, UserRole
 from app.models.usage_log import UsageLog
 
+from app.schemas.user import UserOut
+
+
 router = APIRouter()
 
 
-@router.get("/auth")
+@router.get("/auth", response_model=UserOut)
 @verify_token
 async def auth_verify(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user

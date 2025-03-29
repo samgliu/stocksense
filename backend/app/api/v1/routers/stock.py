@@ -10,7 +10,7 @@ from app.database import get_async_db
 from app.models.user import User, UserRole
 from app.models.usage_log import UsageLog
 from app.models.stock_entry import StockEntry
-from app.schemas.stock import StockRequest, StockResponse
+from app.schemas.stock_entry import StockRequest, StockResponse, StockHistoryItem
 from app.services.stock_analysis import analyze_stock
 
 router = APIRouter()
@@ -40,7 +40,7 @@ async def analyze_stock_endpoint(
         if usage_count_today >= USER_DAILY_LIMIT:
             raise HTTPException(status_code=429, detail="Daily usage limit reached")
 
-    result = analyze_stock(body.text)
+    result = await analyze_stock(body.text)
 
     entry = StockEntry(
         user_id=user.id,
@@ -56,10 +56,10 @@ async def analyze_stock_endpoint(
 
     await db.commit()
 
-    return {"summary": result}
+    return StockResponse(summary=result)
 
 
-@router.get("/history")
+@router.get("/history", response_model=list[StockHistoryItem])
 @verify_token
 async def get_history(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user
@@ -74,14 +74,4 @@ async def get_history(request: Request, db: AsyncSession = Depends(get_async_db)
     )
     entries = entries_result.scalars().all()
 
-    return [
-        {
-            "id": str(entry.id),
-            "summary": entry.summary,
-            "created_at": entry.created_at.isoformat(),
-            "source_type": entry.source_type,
-            "model_used": entry.model_used,
-            "text_input": entry.text_input[:100] + "..." if entry.text_input else None,
-        }
-        for entry in entries
-    ]
+    return entries
