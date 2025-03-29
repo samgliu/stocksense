@@ -1,5 +1,6 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 
+import { CompanyProfile } from '@/features/company/components/CompanyProfile';
 import { ErrorElement } from '@/features/shared/ErrorElement';
 import HomeRoute from '@/routes/HomeRoute';
 import { Layout } from '@/features/layout/Layout';
@@ -25,6 +26,7 @@ export const routers = createBrowserRouter([
         children: [
           { path: 'home', element: <HomeRoute /> },
           { path: 'semantic-search', element: <SemanticSearch /> },
+          { path: 'company/:id/:ticker', element: <CompanyProfile /> },
           { path: 'analyze', element: <StockAnalyzePage /> },
           { path: 'history', element: <StockHistory /> },
           { path: 'account', element: <SignInRoute /> },

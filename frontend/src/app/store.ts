@@ -1,5 +1,6 @@
 import { authApi } from '@/features/auth/api';
 import { authReducer } from '@/features/auth/store/slice';
+import { companyApi } from '@/features/company/api';
 import { configureStore } from '@reduxjs/toolkit';
 import { dashboardApi } from '@/features/dashboard/api';
 import { searchApi } from '@/features/search/api';
@@ -14,6 +15,7 @@ export const store = configureStore({
     [stockApi.reducerPath]: stockApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     [searchApi.reducerPath]: searchApi.reducer,
+    [companyApi.reducerPath]: companyApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -21,6 +23,7 @@ export const store = configureStore({
       stockApi.middleware,
       dashboardApi.middleware,
       searchApi.middleware,
+      companyApi.middleware,
     ),
 });
 
