@@ -1,3 +1,4 @@
+from app.services.yf_data import fetch_historical_prices
 from fastapi import APIRouter, HTTPException, Depends
 from app.services.fmp import fetch_company_profile_async
 from pydantic import BaseModel
@@ -47,3 +48,16 @@ async def get_company_profile(
         print(f"❌ DB fallback failed for {ticker}: {e}")
 
     raise HTTPException(status_code=404, detail="Company not found")
+
+
+@router.get("/historical/{exchange}/{ticker}")
+async def get_historical_prices(exchange: str, ticker: str):
+    try:
+        full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
+        prices = await fetch_historical_prices(full_ticker)
+        if not prices:
+            raise HTTPException(status_code=404, detail="No historical data found")
+        return prices
+    except Exception as e:
+        print(f"Error fetching historical data: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching data")

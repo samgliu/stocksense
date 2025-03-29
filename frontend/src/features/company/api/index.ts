@@ -30,6 +30,8 @@ export interface CompanyAnalysisResult {
   analysis: string;
 }
 
+export type CompanyHistoricalPrice = { date: string; close: Record<string, number> }[];
+
 export const companyApi = createApi({
   reducerPath: 'companyApi',
   baseQuery: fetchBaseQuery({
@@ -47,15 +49,27 @@ export const companyApi = createApi({
     getCompanyById: builder.query<CompanyData, { id: string; ticker: string }>({
       query: ({ id, ticker }) => `/companies/${id}/${ticker}`,
     }),
-
-    analyzeCompany: builder.mutation<CompanyAnalysisResult, CompanyData>({
-      query: (company) => ({
+    getCompanyHistoricalPrice: builder.query<
+      CompanyHistoricalPrice,
+      { exchange: string; ticker: string }
+    >({
+      query: ({ ticker, exchange }) => `/companies/historical/${exchange}/${ticker}`,
+    }),
+    analyzeCompany: builder.mutation<
+      CompanyAnalysisResult,
+      { company: CompanyData; history?: CompanyHistoricalPrice }
+    >({
+      query: ({ company, history }) => ({
         url: `/companies/analyze`,
         method: 'POST',
-        body: company,
+        body: { company, history },
       }),
     }),
   }),
 });
 
-export const { useGetCompanyByIdQuery, useAnalyzeCompanyMutation } = companyApi;
+export const {
+  useGetCompanyByIdQuery,
+  useAnalyzeCompanyMutation,
+  useGetCompanyHistoricalPriceQuery,
+} = companyApi;

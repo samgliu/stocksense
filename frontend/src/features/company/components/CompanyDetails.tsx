@@ -1,13 +1,19 @@
-import { CompanyData, useAnalyzeCompanyMutation } from '../api';
+import { CompanyData, useAnalyzeCompanyMutation, useGetCompanyHistoricalPriceQuery } from '../api';
 
 import { Markdown } from '@/features/shared/Markdown';
+import { StockMiniChart } from './StockMiniChart';
 
 export const CompanyDetails = ({ company }: { company: CompanyData }) => {
   const [analyzeCompany, { data: analysis, isLoading }] = useAnalyzeCompanyMutation();
+  // Get historical data
+  const { data: history } = useGetCompanyHistoricalPriceQuery({
+    exchange: company.exchange!,
+    ticker: company.ticker,
+  });
 
   const handleAnalyze = async () => {
     try {
-      await analyzeCompany(company);
+      await analyzeCompany({ company, history });
     } catch (err) {
       console.error('Failed to analyze company', err);
     }
@@ -15,23 +21,26 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
   return (
     <div className="max-w-3xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        {company.image && (
-          <img
-            src={company.image}
-            alt={`${company.name} logo`}
-            className="h-16 w-16 rounded border border-gray-200 bg-gray-800 p-2 shadow-sm"
-          />
-        )}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {company.name} <span className="text-sm text-gray-500">({company.ticker})</span>
-          </h1>
-          {company.ceo && <p className="text-sm text-gray-500">👤 CEO: {company.ceo}</p>}
-          {company.exchange && <p className="text-xs text-gray-400">{company.exchange}</p>}
+      <div className="flex items-center justify-between space-x-4">
+        <div className="flex items-center space-x-4">
+          {company.image && (
+            <img
+              src={company.image}
+              alt={`${company.name} logo`}
+              className="h-16 w-16 rounded border border-gray-200 bg-gray-800 p-2 shadow-sm"
+            />
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {company.name} <span className="text-sm text-gray-500">({company.ticker})</span>
+            </h1>
+            {company.ceo && <p className="text-sm text-gray-500">👤 CEO: {company.ceo}</p>}
+            {company.exchange && <p className="text-xs text-gray-400">{company.exchange}</p>}
+          </div>
         </div>
-      </div>
 
+        {history && <StockMiniChart data={history} />}
+      </div>
       {/* Company Info */}
       <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 sm:grid-cols-2">
         <div>
