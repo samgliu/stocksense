@@ -1,7 +1,9 @@
 import { CompanyData, useAnalyzeCompanyMutation, useGetCompanyHistoricalPriceQuery } from '../api';
 
+import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
+import { useMemo } from 'react';
 
 export const CompanyDetails = ({ company }: { company: CompanyData }) => {
   const [analyzeCompany, { data: analysis, isLoading }] = useAnalyzeCompanyMutation();
@@ -18,6 +20,18 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
       console.error('Failed to analyze company', err);
     }
   };
+
+  const insights = useMemo(() => {
+    if (!analysis?.analysis) return null;
+    const parsedAnalysis = JSON.parse(analysis.analysis as unknown as string);
+    return parsedAnalysis.insights;
+  }, [analysis]);
+  const prediction = useMemo(() => {
+    if (!analysis?.analysis) return null;
+    const parsedAnalysis = JSON.parse(analysis.analysis as unknown as string);
+    return parsedAnalysis.prediction;
+  }, [analysis]);
+  console.log("prediction", prediction);
   return (
     <div className="max-w-3xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       {/* Header */}
@@ -91,11 +105,11 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
       >
         {isLoading ? 'Analyzing...' : '🔍 Analyze Company'}
       </button>
-
+      {prediction && <ForecastChart prediction={prediction} />}
       {analysis && (
         <div className="mt-6 rounded bg-gray-50 p-4 text-sm text-gray-800 shadow-inner">
           <h3 className="mb-2 text-lg font-semibold">AI Analysis Result</h3>
-          <Markdown result={analysis.analysis} />
+          <Markdown result={insights} />
         </div>
       )}
     </div>

@@ -23,7 +23,7 @@ firebase-admin
 
 # AI APIs
 openai
-google-generativeai
+google-genai
 yfinance
 
 # Optional: load .env files
