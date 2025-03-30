@@ -1,0 +1,6 @@
+confluent-kafka
+sqlalchemy
+asyncpg
+langgraph
+google-genai
+pydantic

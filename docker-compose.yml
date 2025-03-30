@@ -13,6 +13,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /credentials/serviceAccountKey.json
     depends_on:
       - db
+      - kafka
 
   # frontend:
   #   build: ./frontend
@@ -36,6 +37,43 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  ## kafka
+  kafka:
+    image: bitnami/kafka:3.5.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    env_file:
+      - ./kafka/.env
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_KRAFT_CLUSTER_ID=${KAFKA_CLUSTER_ID}
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    volumes:
+      - ./kafka:/opt/kafka
+      - kafka_data:/bitnami/kafka
+
+  langgraph-consumer:
+    build:
+      context: ./worker-langgraph
+    working_dir: /app
+    volumes:
+      - ./worker-langgraph:/app
+    env_file:
+      - ./worker-langgraph/.env
+    depends_on:
+      - kafka
+      - db
+    restart: on-failure
+
+  # airflow
   airflow-db:
     image: postgres:15
     ports:
@@ -48,7 +86,6 @@ services:
       - airflow_pgdata:/var/lib/postgresql/data
     env_file:
       - ./airflow/.env
-    
 
   airflow-init:
     build:
@@ -104,3 +141,4 @@ services:
 volumes:
   pgdata:
   airflow_pgdata:
+  kafka_data:

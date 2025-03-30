@@ -2,8 +2,8 @@ import subprocess
 import time
 import os
 from sqlalchemy import create_engine, inspect
-from app.database import Base  # this must be your declarative_base()
-from app.models import company  # make sure this imports all models
+from app.database import Base
+from app import models
 
 
 def wait_for_db(max_attempts=10, delay=3):
@@ -50,7 +50,9 @@ def main():
         return
 
     print("🚀 Starting FastAPI server...")
-    subprocess.run(["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"])
+    subprocess.run(
+        ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    )
 
 
 if __name__ == "__main__":

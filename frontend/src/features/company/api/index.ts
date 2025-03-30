@@ -27,10 +27,18 @@ export interface CompanyData {
 }
 
 export interface CompanyAnalysisResult {
-  analysis: string;
+  analysis: {
+    insights: string;
+    prediction: {};
+  };
 }
 
 export type CompanyHistoricalPrice = { date: string; close: number }[];
+
+export interface JobResult {
+  status: string;
+  job_id: string;
+}
 
 export const companyApi = createApi({
   reducerPath: 'companyApi',
@@ -56,7 +64,7 @@ export const companyApi = createApi({
       query: ({ ticker, exchange }) => `/companies/historical/${exchange}/${ticker}`,
     }),
     analyzeCompany: builder.mutation<
-      CompanyAnalysisResult,
+      JobResult,
       { company: CompanyData; history?: CompanyHistoricalPrice }
     >({
       query: ({ company, history }) => ({
@@ -65,6 +73,9 @@ export const companyApi = createApi({
         body: { company, history },
       }),
     }),
+    getJobStatus: builder.query<{ job_id?: string; status: string; result?: string }, string>({
+      query: (jobId) => `/worker/job-status/${jobId}`,
+    }),
   }),
 });
 
@@ -72,4 +83,5 @@ export const {
   useGetCompanyByIdQuery,
   useAnalyzeCompanyMutation,
   useGetCompanyHistoricalPriceQuery,
+  useGetJobStatusQuery,
 } = companyApi;

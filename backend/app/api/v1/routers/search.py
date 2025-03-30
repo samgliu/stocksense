@@ -1,4 +1,3 @@
-from app.core.decorators import verify_token
 from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 from typing import Optional, List
@@ -29,7 +28,6 @@ class SemanticResult(BaseModel):
 
 
 @router.get("/semantic-search", response_model=List[SemanticResult])
-@verify_token
 async def semantic_search(
     request: Request, query: str = Query(..., min_length=3), top_k: int = 10
 ):
