@@ -15,16 +15,24 @@ interface ForecastProps {
 export const ForecastChart = ({ prediction }: ForecastProps) => {
   const { min, max, average, confidence } = prediction;
 
-  const ticks = [confidence['90%'].min, confidence['90%'].max];
-  const labelMap = new Map<number, string>([
-    [confidence['90%'].min, `$${confidence['90%'].min}`],
-    [confidence['90%'].max, `$${confidence['90%'].max}`],
-  ]);
-
   const dummyData = [
     { x: min, y: 0 },
     { x: max, y: 0 },
   ];
+
+  const ticks = [
+    confidence['70%'].min,
+    confidence['70%'].max,
+    confidence['90%'].min,
+    confidence['90%'].max,
+  ];
+  
+  const labelMap = new Map<number, string>([
+    [confidence['70%'].min, `$${confidence['70%'].min}`],
+    [confidence['70%'].max, `$${confidence['70%'].max}`],
+    [confidence['90%'].min, `$${confidence['90%'].min}`],
+    [confidence['90%'].max, `$${confidence['90%'].max}`],
+  ]);
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
