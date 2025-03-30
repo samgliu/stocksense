@@ -8,19 +8,23 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 - Company summaries integrated from existing SP500 datasets
 - SP500 company enrichment with sector, industry, and financials
 - Firebase-authenticated API with RTK Query support
+- Frontend state managed with Redux Toolkit
+- Company profile view with LLM-generated analysis and forecast
+- Forecast chart with 30-day price range prediction and confidence intervals
+- Downloadable AI analysis results
 - Fully containerized development and deployment via Docker Compose
 - Internal Semantic Search Lab for testing vector-based queries
 - Airflow DAGs for automated ETL workflows
 
 ## Tech Stack
 
-- **Frontend**: React + Vite + Tailwind CSS
-- **Backend**: FastAPI (Python)
-- **Vector Search**: SentenceTransformers + Qdrant
-- **Authentication**: Firebase
-- **Database**: PostgreSQL
-- **Orchestration**: Apache Airflow
-- **Containerization**: Docker + docker-compose
+- Frontend: React + Vite + Tailwind CSS + Redux Toolkit
+- Backend: FastAPI (Python)
+- Vector Search: SentenceTransformers + Qdrant
+- Authentication: Firebase
+- Database: PostgreSQL
+- Orchestration: Apache Airflow
+- Containerization: Docker + docker-compose
 
 ## Getting Started
 
@@ -48,3 +52,23 @@ Use Airflow DAGs or manual scripts to:
 - Load SP500 CSV data into PostgreSQL
 - Generate embeddings from summaries
 - Upload embeddings and metadata to Qdrant
+
+### Cloud Deployment (Planned)
+
+- Frontend: GitHub Pages or Vercel
+- Backend: Render or Cloud Run
+- Qdrant: Qdrant Cloud
+- PostgreSQL: Supabase or Neon
+- API security: Cloudflare Zero Trust
+
+### Future Improvements
+
+StockSense is an ongoing project with several enhancements planned:
+
+- **CI/CD & Quality**: Add unit/integration tests (Vitest, Pytest), GitHub Actions pipelines, and Sentry monitoring.
+- **Historical Data & ML**: Enable historical CSV upload, price trend prediction, and advanced data visualization.
+- **Semantic Search**: Expand Qdrant-powered search with text embeddings and real-time semantic filtering.
+- **Async Backend**: Introduce Redis and Kafka for scalable background jobs and analysis workflows.
+- **Data Pipelines**: Automate enrichment and ETL with Airflow and DBT.
+- **Cloud Deployment**: Deploy production-ready app using Terraform and Kubernetes on AWS or GCP.
+- **Feature Flags & Analytics**: Add user behavior tracking and controlled feature rollouts.
