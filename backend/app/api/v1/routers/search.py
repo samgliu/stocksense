@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Query
+from app.core.decorators import verify_token
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 from typing import Optional, List
 import os
@@ -28,7 +29,10 @@ class SemanticResult(BaseModel):
 
 
 @router.get("/semantic-search", response_model=List[SemanticResult])
-async def semantic_search(query: str = Query(..., min_length=3), top_k: int = 10):
+@verify_token
+async def semantic_search(
+    request: Request, query: str = Query(..., min_length=3), top_k: int = 10
+):
     # Run embedding in a background thread to avoid blocking the event loop
     loop = asyncio.get_event_loop()
     vector = await loop.run_in_executor(executor, model.encode, query)

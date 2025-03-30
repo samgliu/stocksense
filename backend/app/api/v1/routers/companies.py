@@ -38,8 +38,9 @@ class CompanyProfileOut(BaseModel):
 
 
 @router.get("/{uuid}/{ticker}")
+@verify_token
 async def get_company_profile(
-    uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
+    request: Request, uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
 ):
     profile = await fetch_company_profile_async(ticker)
     if profile:
@@ -58,7 +59,8 @@ async def get_company_profile(
 
 
 @router.get("/historical/{exchange}/{ticker}")
-async def get_historical_prices(exchange: str, ticker: str):
+@verify_token
+async def get_historical_prices(request: Request, exchange: str, ticker: str):
     try:
         full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
         prices = await fetch_historical_prices(full_ticker)
@@ -129,7 +131,9 @@ async def analyze_company(
     user = user_result.scalar_one()
 
     if user.role == UserRole.USER:
-        start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_day = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         usage_result = await db.execute(
             select(func.count())
             .select_from(UsageLog)
