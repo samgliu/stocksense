@@ -31,7 +31,7 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
     const parsedAnalysis = JSON.parse(analysis.analysis as unknown as string);
     return parsedAnalysis.prediction;
   }, [analysis]);
-  console.log("prediction", prediction);
+
   return (
     <div className="max-w-3xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       {/* Header */}

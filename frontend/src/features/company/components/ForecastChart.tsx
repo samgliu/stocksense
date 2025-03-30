@@ -1,4 +1,4 @@
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { AreaChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface ForecastProps {
   prediction: {
@@ -15,60 +15,53 @@ interface ForecastProps {
 export const ForecastChart = ({ prediction }: ForecastProps) => {
   const { min, max, average, confidence } = prediction;
 
-  const ticks = [
-    confidence['70%'].min,
-    confidence['70%'].max,
-    confidence['90%'].min,
-    confidence['90%'].max,
-  ];
-
+  const ticks = [confidence['90%'].min, confidence['90%'].max];
   const labelMap = new Map<number, string>([
-    [confidence['70%'].min, `$${confidence['70%'].min}`],
-    [confidence['70%'].max, `$${confidence['70%'].max}`],
     [confidence['90%'].min, `$${confidence['90%'].min}`],
     [confidence['90%'].max, `$${confidence['90%'].max}`],
   ]);
 
-  // Build separate 90% and 70% bands, each as a rectangle (4 corners)
-  const data90 = [
-    { x: confidence['90%'].min, y: 1 },
-    { x: confidence['90%'].max, y: 1 },
-    { x: confidence['90%'].max, y: 0 },
-    { x: confidence['90%'].min, y: 0 },
-  ];
-
-  const data70 = [
-    { x: confidence['70%'].min, y: 1 },
-    { x: confidence['70%'].max, y: 1 },
-    { x: confidence['70%'].max, y: 0 },
-    { x: confidence['70%'].min, y: 0 },
+  const dummyData = [
+    { x: min, y: 0 },
+    { x: max, y: 0 },
   ];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
       <h3 className="mb-4 text-lg font-semibold text-gray-800">📈 30-Day Price Forecast</h3>
       <ResponsiveContainer width="100%" height={140}>
-        <AreaChart>
+        <AreaChart data={dummyData}>
           <XAxis
             dataKey="x"
             type="number"
             domain={[min, max]}
             ticks={ticks}
-            tickFormatter={(value) => labelMap.get(value) ?? ''}
+            tickFormatter={(v) => labelMap.get(v) ?? ''}
             tick={{ fontSize: 12 }}
             axisLine={false}
           />
           <YAxis hide domain={[0, 1]} />
+          <Tooltip contentStyle={{ display: 'none' }} />
 
-          <Tooltip
-            labelFormatter={(label) => `$${label.toFixed(0)}`}
-            formatter={() => null}
-            contentStyle={{ display: 'none' }}
+          {/* 90% confidence band (lighter) */}
+          <ReferenceArea
+            x1={confidence['90%'].min}
+            x2={confidence['90%'].max}
+            y1={0}
+            y2={1}
+            fill="#bfdbfe"
+            strokeOpacity={0}
           />
 
-          {/* Confidence bands */}
-          <Area data={data90} dataKey="y" type="linear" stroke={"transparent"} fill="#bfdbfe" />
-          <Area data={data70} dataKey="y" type="linear" stroke={"transparent"} fill="#60a5fa" />
+          {/* 70% confidence band (darker, on top) */}
+          <ReferenceArea
+            x1={confidence['70%'].min}
+            x2={confidence['70%'].max}
+            y1={0}
+            y2={1}
+            fill="#60a5fa"
+            strokeOpacity={0}
+          />
         </AreaChart>
       </ResponsiveContainer>
 
