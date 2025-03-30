@@ -5,6 +5,7 @@ from app.middleware.cors import add_cors_middleware
 from app.middleware.security import add_security_headers
 from app.middleware.gzip import add_gzip_middleware
 from app.middleware.firebase import add_firebase_auth_middleware
+from app.middleware.ratelimit import add_rate_limit_middleware
 
 app = FastAPI()
 
@@ -13,6 +14,7 @@ add_firebase_auth_middleware(app)
 add_cors_middleware(app)
 add_security_headers(app)
 add_gzip_middleware(app)
+add_rate_limit_middleware(app)
 
 # Routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
