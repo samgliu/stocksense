@@ -1,6 +1,7 @@
 # Core server
 fastapi
 uvicorn[standard]
+confluent-kafka
 
 # Data models & validation
 pydantic
@@ -22,6 +23,7 @@ alembic          # Database migrations
 firebase-admin
 
 # AI APIs
+langgraph
 openai
 google-genai
 yfinance

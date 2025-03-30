@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional, List
+from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
@@ -11,10 +12,12 @@ from app.models import Company
 from app.models.stock_entry import StockEntry
 from app.models.usage_log import UsageLog
 from app.models.user import User, UserRole
+from app.models import JobStatus
 from app.services.fmp import fetch_company_profile_async
 from app.services.yf_data import fetch_historical_prices
 from app.services.company_analysis import analyze_company_payload
 from app.core.config import USER_DAILY_LIMIT
+from app.kafka.producer import send_analysis_job
 
 router = APIRouter()
 
@@ -113,7 +116,7 @@ class CompanyPayload(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     company: CompanyPayload
-    history: List[HistoryPoint]
+    history: Optional[List[HistoryPoint]] = None
 
 
 @router.post("/analyze")
@@ -139,20 +142,18 @@ async def analyze_company(
         if usage_count_today >= USER_DAILY_LIMIT:
             raise HTTPException(status_code=429, detail="Daily usage limit reached")
 
-    result = await analyze_company_payload(body.dict())
-
-    entry = StockEntry(
-        user_id=user.id,
-        text_input=body.company.ticker,
-        summary=result,
-        source_type="company",
-        model_used="gemini",
+    job_id = str(uuid4())
+    send_analysis_job(
+        {
+            "job_id": job_id,
+            "user_id": str(user.id),
+            "email": user.email,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "body": body.dict(),
+        }
     )
-    db.add(entry)
-
-    usage_log = UsageLog(user_id=user.id, action="analyze")
-    db.add(usage_log)
-
+    db.add(JobStatus(job_id=job_id, user_id=user.id, status="queued"))
+    db.add(UsageLog(user_id=user.id, action="analyze"))
     await db.commit()
 
-    return {"analysis": result}
+    return {"status": "queued", "job_id": job_id}
