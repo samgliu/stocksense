@@ -35,7 +35,15 @@ git clone https://github.com/samgliu/stocksense.git
 cd stocksense
 ```
 
-### 2. Start the application stack
+### 2. Configure Environment Variables
+
+Copy the `.env.sample` file to `.env` and fill in the required values:
+
+```bash
+cp .env.sample .env
+```
+
+### 3. Start the application stack
 
 ```bash
 docker-compose up --build
@@ -45,7 +53,7 @@ docker-compose up --build
 - Backend API: http://localhost:8000
 - Airflow UI: http://localhost:8080
 
-### 3. Load data
+### 4. Load data
 
 Use Airflow DAGs or manual scripts to:
 
