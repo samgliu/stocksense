@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import datetime, timedelta, timezone
 
-from app.core.decorators import verify_token
 from app.database import get_async_db
 from app.models.user import User, UserRole
 from app.models.usage_log import UsageLog
@@ -15,7 +14,6 @@ router = APIRouter()
 
 
 @router.get("/auth", response_model=UserOut)
-@verify_token
 async def auth_verify(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user
 

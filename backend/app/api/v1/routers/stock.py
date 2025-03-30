@@ -5,7 +5,6 @@ from sqlalchemy.future import select
 from sqlalchemy import func
 
 from app.core.config import USER_DAILY_LIMIT
-from app.core.decorators import verify_token
 from app.database import get_async_db
 from app.models.user import User, UserRole
 from app.models.usage_log import UsageLog
@@ -17,7 +16,6 @@ router = APIRouter()
 
 
 @router.post("/analyze", response_model=StockResponse)
-@verify_token
 async def analyze_stock_endpoint(
     request: Request,
     body: StockRequest,
@@ -60,7 +58,6 @@ async def analyze_stock_endpoint(
 
 
 @router.get("/history", response_model=list[StockHistoryItem])
-@verify_token
 async def get_history(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user
     user_result = await db.execute(select(User).where(User.email == user_data["email"]))

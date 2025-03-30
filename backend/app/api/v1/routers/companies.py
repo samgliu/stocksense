@@ -15,7 +15,6 @@ from app.services.fmp import fetch_company_profile_async
 from app.services.yf_data import fetch_historical_prices
 from app.services.company_analysis import analyze_company_payload
 from app.core.config import USER_DAILY_LIMIT
-from app.core.decorators import verify_token
 
 router = APIRouter()
 
@@ -38,7 +37,6 @@ class CompanyProfileOut(BaseModel):
 
 
 @router.get("/{uuid}/{ticker}")
-@verify_token
 async def get_company_profile(
     request: Request, uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
 ):
@@ -59,7 +57,6 @@ async def get_company_profile(
 
 
 @router.get("/historical/{exchange}/{ticker}")
-@verify_token
 async def get_historical_prices(request: Request, exchange: str, ticker: str):
     try:
         full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
@@ -120,7 +117,6 @@ class AnalyzeRequest(BaseModel):
 
 
 @router.post("/analyze")
-@verify_token
 async def analyze_company(
     request: Request,
     body: AnalyzeRequest,

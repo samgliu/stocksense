@@ -26,5 +26,8 @@ openai
 google-genai
 yfinance
 
+# Security
+slowapi
+
 # Optional: load .env files
 python-dotenv
