@@ -57,6 +57,7 @@ export const SignIn: React.FC = () => {
     } catch (err) {
       console.error('Sign-in failed:', err);
       setStatus('❌ Sign-in failed');
+      handleSignOut();
     } finally {
       setLoading(false);
     }

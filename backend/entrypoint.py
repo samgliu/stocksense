@@ -50,7 +50,9 @@ def main():
         return
 
     print("🚀 Starting FastAPI server...")
-    subprocess.run(["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"])
+    subprocess.run(
+        ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    )
 
 
 if __name__ == "__main__":
