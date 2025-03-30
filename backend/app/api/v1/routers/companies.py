@@ -1,13 +1,21 @@
+from datetime import datetime, timezone
+from typing import Optional, List
+
+from fastapi import APIRouter, HTTPException, Depends, Request
+from pydantic import BaseModel
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_async_db
+from app.models import Company
+from app.models.stock_entry import StockEntry
+from app.models.usage_log import UsageLog
+from app.models.user import User, UserRole
+from app.services.fmp import fetch_company_profile_async
 from app.services.yf_data import fetch_historical_prices
 from app.services.company_analysis import analyze_company_payload
-from fastapi import APIRouter, HTTPException, Depends
-from app.services.fmp import fetch_company_profile_async
-from pydantic import BaseModel
-from app.models import Company
-from app.database import get_async_db
-from typing import Optional, List
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.config import USER_DAILY_LIMIT
+from app.core.decorators import verify_token
 
 router = APIRouter()
 
@@ -33,12 +41,10 @@ class CompanyProfileOut(BaseModel):
 async def get_company_profile(
     uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
 ):
-    # 1. Try FMP
     profile = await fetch_company_profile_async(ticker)
     if profile:
         return profile
 
-    # 2. Fallback to DB
     try:
         stmt = select(Company).where(Company.ticker == ticker.upper())
         result = await db.execute(stmt)
@@ -112,10 +118,41 @@ class AnalyzeRequest(BaseModel):
 
 
 @router.post("/analyze")
-async def analyze_company(request: AnalyzeRequest):
-    try:
-        result = await analyze_company_payload(request.dict())
-        return {"analysis": result}
-    except Exception as e:
-        print(f"❌ Error during analysis: {e}")
-        return {"error": "Failed to analyze company"}
+@verify_token
+async def analyze_company(
+    request: Request,
+    body: AnalyzeRequest,
+    db: AsyncSession = Depends(get_async_db),
+):
+    user_data = request.state.user
+    user_result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user = user_result.scalar_one()
+
+    if user.role == UserRole.USER:
+        start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        usage_result = await db.execute(
+            select(func.count())
+            .select_from(UsageLog)
+            .where(UsageLog.user_id == user.id, UsageLog.created_at >= start_of_day)
+        )
+        usage_count_today = usage_result.scalar()
+        if usage_count_today >= USER_DAILY_LIMIT:
+            raise HTTPException(status_code=429, detail="Daily usage limit reached")
+
+    result = await analyze_company_payload(body.dict())
+
+    entry = StockEntry(
+        user_id=user.id,
+        text_input=body.company.ticker,
+        summary=result,
+        source_type="company",
+        model_used="gemini",
+    )
+    db.add(entry)
+
+    usage_log = UsageLog(user_id=user.id, action="analyze")
+    db.add(usage_log)
+
+    await db.commit()
+
+    return {"analysis": result}
