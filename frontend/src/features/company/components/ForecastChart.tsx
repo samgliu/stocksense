@@ -67,8 +67,8 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
           />
 
           {/* Confidence bands */}
-          <Area data={data90} dataKey="y" type="linear" stroke="none" fill="#bfdbfe" />
-          <Area data={data70} dataKey="y" type="linear" stroke="none" fill="#60a5fa" />
+          <Area data={data90} dataKey="y" type="linear" stroke={"transparent"} fill="#bfdbfe" />
+          <Area data={data70} dataKey="y" type="linear" stroke={"transparent"} fill="#60a5fa" />
         </AreaChart>
       </ResponsiveContainer>
 
