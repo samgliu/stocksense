@@ -1,4 +1,3 @@
-import asyncio
 from app.ai.gemini_model import generate_analysis
 
 
@@ -38,4 +37,4 @@ async def analyze_stock(text: str) -> str:
     **💡 Analyst Insight (Optional):**  
     _Add a final comment or recommendation if relevant._
     """
-    return await asyncio.to_thread(generate_analysis, prompt)
+    return await generate_analysis(prompt)
