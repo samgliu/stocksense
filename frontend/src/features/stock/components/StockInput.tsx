@@ -62,7 +62,7 @@ export const StockInput = () => {
       <div className="flex items-center justify-between">
         <input
           type="file"
-          accept=".txt,.csv,.pdf"
+          accept=".txt"
           onChange={handleFileChange}
           className="block text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
         />
