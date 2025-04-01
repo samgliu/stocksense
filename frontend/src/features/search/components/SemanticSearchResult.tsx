@@ -6,7 +6,14 @@ export const SemanticSearchResult = ({ result }: { result: SemanticResult }) => 
     <div className="rounded-lg border border-gray-200 p-4 shadow-sm transition hover:shadow-md">
       {/* Header */}
       <div className="mb-2 flex items-center justify-between">
-        <div className="text-lg font-semibold text-gray-900">{result.name}</div>
+        <h3 className="text-lg font-medium">
+          <Link
+            to={`/company/${result.id}/${result.ticker}`}
+            className="text-blue-600 hover:underline"
+          >
+            {result.name}
+          </Link>
+        </h3>
         <div className="text-sm text-gray-600">{result.ticker}</div>
       </div>
 
@@ -28,7 +35,7 @@ export const SemanticSearchResult = ({ result }: { result: SemanticResult }) => 
           to={`/company/${result.id}/${result.ticker}`}
           className="text-sm font-medium text-blue-600 hover:underline"
         >
-          View Analysis →
+          Start Analysis →
         </Link>
       </div>
     </div>
