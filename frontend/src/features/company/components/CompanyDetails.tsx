@@ -88,7 +88,7 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
       {/* Header */}
       <div className="flex items-center justify-between space-x-4">
         <div className="flex items-center space-x-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded border border-gray-200 bg-gray-600 shadow-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded border border-gray-200 bg-gray-700 shadow-sm">
             <img
               src={company.image}
               alt={`${company.name} logo`}
