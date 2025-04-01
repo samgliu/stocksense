@@ -1,3 +1,4 @@
+from app.models.user import UserRole
 from fastapi import Request, HTTPException
 from functools import wraps
 
@@ -7,7 +8,7 @@ def require_admin(func):
     async def wrapper(*args, **kwargs):
         request: Request = kwargs.get("request") or ...
         user = getattr(request.state, "user", {})
-        if user.get("role") != "Admin":
+        if user.get("role") != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="Admins only")
         return await func(*args, **kwargs)
 
