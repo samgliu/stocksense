@@ -1,124 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { auth, provider } from '@/features/auth/firebase';
-import { clearAuth, setAuth } from '@/features/auth/store/slice';
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 
-import { BackendUser } from '../store/types';
-import { selectAuth } from '@/features/auth/store/selectors';
+import { setAuth } from '@/features/auth/store/slice';
+import { signInWithPopup } from 'firebase/auth';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import { useLazyVerifyTokenQuery } from '@/features/auth/api';
+import { useNavigate } from 'react-router-dom';
 
 export const SignIn: React.FC = () => {
-  const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<'admin' | 'user' | ''>('');
-  const [usage, setUsage] = useState<number | null>(null);
-
+  const [status, setStatus] = useState('');
   const dispatch = useAppDispatch();
-  const { isAuthenticated, name, email } = useAppSelector(selectAuth);
+  const navigate = useNavigate();
 
-  const fetchBackendUser = async (token: string) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/auth`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) throw new Error(`Status: ${res.status}`);
-      const data: BackendUser = await res.json();
-
-      dispatch(
-        setAuth({
-          isAuthenticated: true,
-          name: data.name,
-          email: data.email,
-          loading: false,
-          token,
-        }),
-      );
-
-      setRole(data.role);
-      setUsage(data.usage_count_today ?? null);
-      setStatus(`✅ Verified as ${data.email}`);
-    } catch (err) {
-      console.error('Backend verification failed:', err);
-      dispatch(clearAuth());
-      setRole('');
-      setUsage(null);
-      setStatus('❌ Invalid or unverified');
-    }
-  };
+  const [triggerVerifyToken] = useLazyVerifyTokenQuery();
 
   const handleSignIn = async () => {
     try {
       setLoading(true);
+      setStatus('');
+
       const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken(true); // force refresh token
-      await fetchBackendUser(token);
+      const token = await result.user.getIdToken(true);
+
+      const backendUser = await triggerVerifyToken().unwrap();
+
+      dispatch(
+        setAuth({
+          isAuthenticated: true,
+          name: backendUser.name,
+          email: backendUser.email,
+          token,
+          loading: false,
+          role: backendUser.role,
+          usage: backendUser.usage_count_today ?? null,
+        }),
+      );
+
+      navigate('/account');
     } catch (err) {
-      console.error('Sign-in failed:', err);
-      setStatus('❌ Sign-in failed');
-      handleSignOut();
+      console.error('Sign-in error:', err);
+      setStatus('❌ Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut(auth);
-    dispatch(clearAuth());
-    setRole('');
-    setUsage(null);
-    setStatus('');
-  };
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        await fetchBackendUser(token);
-      } else {
-        dispatch(clearAuth());
-        setRole('');
-        setUsage(null);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
   return (
-    <div className="mt-10 flex flex-col items-center gap-6">
-      {isAuthenticated ? (
-        <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-md">
-          <p className="mb-2 text-lg font-semibold text-gray-800">👋 Hello, {name || email}</p>
-          <p className="text-sm text-gray-600">
-            Role: <span className="font-medium text-blue-700">{role}</span>
-          </p>
-          {usage !== null && (
-            <p className="mt-1 text-sm text-gray-600">
-              Usage today:{' '}
-              <span className="font-medium">
-                {usage} / {role === 'user' ? 3 : '∞'}
-              </span>
-            </p>
-          )}
-
-          <button
-            onClick={handleSignOut}
-            className="mt-4 w-full cursor-pointer rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={handleSignIn}
-          disabled={loading}
-          className="cursor-pointer rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? 'Signing in...' : 'Sign in with Google'}
-        </button>
-      )}
-      {status && <p className="text-sm text-gray-500">{status}</p>}
+    <div className="mt-10 flex flex-col items-center">
+      <button
+        onClick={handleSignIn}
+        disabled={loading}
+        className="cursor-pointer rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {loading ? 'Signing in...' : 'Sign in with Google'}
+      </button>
+      {status && <p className="mt-2 text-sm text-red-500">{status}</p>}
     </div>
   );
 };

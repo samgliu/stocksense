@@ -57,7 +57,7 @@ async def auth_verify(request: Request, db: AsyncSession = Depends(get_async_db)
     return {
         "id": str(user.id),
         "email": user.email,
-        "fullname": user.name,
+        "name": user.name,
         "role": user.role.value,
         "verified": user.verified,
         "usage_count_today": usage_count_today,

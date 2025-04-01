@@ -18,7 +18,7 @@ class UserBase(BaseModel):
 class UserOut(BaseModel):
     id: UUID
     email: str
-    fullname: str
+    name: str
     role: str
     verified: bool
     usage_count_today: int
