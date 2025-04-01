@@ -9,10 +9,12 @@ import { useEffect, useMemo, useRef } from 'react';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
+import { useToast } from '@/hooks/useToast';
 
 export const CompanyDetails = ({ company }: { company: CompanyData }) => {
   const [analyzeCompany, { data: jobData }] = useAnalyzeCompanyMutation();
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const toast = useToast();
 
   // Get historical data
   const { data: history } = useGetCompanyHistoricalPriceQuery({
@@ -40,6 +42,7 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
 
   useEffect(() => {
     if (analysis?.status === 'done') {
+      toast.success('Company analysis completed!');
       resultRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [analysis?.status]);

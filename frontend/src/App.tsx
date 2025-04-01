@@ -1,6 +1,7 @@
 import { clearAuth, setAuth } from './features/auth/store/slice';
 
 import { RouterProvider } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import { auth } from './features/auth/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { routers } from './routes/routers';
@@ -31,5 +32,10 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  return <RouterProvider router={routers} />;
+  return (
+    <>
+      <RouterProvider router={routers} />
+      <ToastContainer position="bottom-right" autoClose={3000} />
+    </>
+  );
 }
