@@ -4,7 +4,7 @@ import {
   useGetCompanyHistoricalPriceQuery,
   useGetJobStatusQuery,
 } from '../api';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
@@ -12,13 +12,15 @@ import { StockMiniChart } from './StockMiniChart';
 
 export const CompanyDetails = ({ company }: { company: CompanyData }) => {
   const [analyzeCompany, { data: jobData }] = useAnalyzeCompanyMutation();
+  const resultRef = useRef<HTMLDivElement | null>(null);
+
   // Get historical data
   const { data: history } = useGetCompanyHistoricalPriceQuery({
     exchange: company.exchange!,
     ticker: company.ticker,
   });
-  const jobId = jobData?.job_id;
 
+  const jobId = jobData?.job_id;
   const {
     data: analysis,
     isLoading,
@@ -27,18 +29,20 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
     skip: !jobId,
     pollingInterval: 0,
   });
-  const hasJob = !!jobId;
-  const isAnalyzing = hasJob && analysis?.status !== 'done';
+
+  const isAnalyzing = !!jobId && analysis?.status !== 'done';
 
   useEffect(() => {
     if (!jobId || analysis?.status === 'done') return;
-
-    const interval = setInterval(() => {
-      refetch();
-    }, 3000);
-
+    const interval = setInterval(() => refetch(), 3000);
     return () => clearInterval(interval);
   }, [jobId, analysis?.status, refetch]);
+
+  useEffect(() => {
+    if (analysis?.status === 'done') {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [analysis?.status]);
 
   const handleAnalyze = async () => {
     try {
@@ -50,15 +54,31 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
 
   const insights = useMemo(() => {
     if (!analysis?.result) return null;
-    const parsedAnalysis = JSON.parse(analysis.result);
-    return parsedAnalysis.insights;
+    try {
+      const parsed = JSON.parse(analysis.result);
+      return parsed.insights;
+    } catch {
+      return analysis.result;
+    }
   }, [analysis?.result]);
 
   const prediction = useMemo(() => {
     if (!analysis?.result) return null;
-    const parsedAnalysis = JSON.parse(analysis.result);
-    return parsedAnalysis.prediction;
+    try {
+      const parsed = JSON.parse(analysis.result);
+      return parsed.prediction;
+    } catch {
+      return null;
+    }
   }, [analysis?.result]);
+
+  // --- Job Status Label
+  const jobStatusText = useMemo(() => {
+    if (!jobId) return '';
+    if (analysis?.status === 'done') return '✅ Analysis complete';
+    if (analysis?.status === 'processing') return '🔄 Processing...';
+    return '🕓 Queued...';
+  }, [jobId, analysis?.status]);
 
   return (
     <div className="max-w-3xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -80,9 +100,9 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
             {company.exchange && <p className="text-xs text-gray-400">{company.exchange}</p>}
           </div>
         </div>
-
         {history && <StockMiniChart data={history} />}
       </div>
+
       {/* Company Info */}
       <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 sm:grid-cols-2">
         <div>
@@ -110,7 +130,7 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
           {company.phone && <p>📞 Phone: {company.phone}</p>}
           {company.address && (
             <p>
-              🏠 Address: {company.address}, {company.city}, {company.state} {company.zip}
+              🏠 {company.address}, {company.city}, {company.state} {company.zip}
             </p>
           )}
         </div>
@@ -123,22 +143,33 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
         <p>👥 Employees: {company.fulltime_employees?.toLocaleString() || 'N/A'}</p>
       </div>
 
-      {/* Summary (clamped to 3 lines) */}
+      {/* Summary */}
       {company.summary && (
         <p className="line-clamp-5 overflow-auto text-gray-700">{company.summary}</p>
       )}
-      <button
-        onClick={handleAnalyze}
-        disabled={isLoading || isAnalyzing}
-        className={`mt-6 rounded px-4 py-2 text-white ${
-          isLoading || isAnalyzing
-            ? 'cursor-not-allowed bg-gray-400'
-            : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
-        }`}
-      >
-        {isLoading || isAnalyzing ? 'Analyzing...' : '🔍 Analyze Company'}
-      </button>
-      {prediction && <ForecastChart prediction={prediction} />}
+
+      {/* Analyze Button + Status */}
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={handleAnalyze}
+          disabled={isLoading || isAnalyzing}
+          className={`rounded px-4 py-2 text-white ${
+            isLoading || isAnalyzing
+              ? 'cursor-not-allowed bg-gray-400'
+              : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {isLoading || isAnalyzing ? 'Analyzing...' : '🔍 Analyze Company'}
+        </button>
+        {jobStatusText && <span className="text-sm text-gray-500">{jobStatusText}</span>}
+      </div>
+
+      {/* Result */}
+      {prediction && (
+        <div ref={resultRef}>
+          <ForecastChart prediction={prediction} />
+        </div>
+      )}
       {insights && (
         <div className="mt-6 rounded bg-gray-50 p-4 text-sm text-gray-800 shadow-inner">
           <h3 className="mb-2 text-lg font-semibold">AI Analysis Result</h3>
