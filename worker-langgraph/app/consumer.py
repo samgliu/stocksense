@@ -55,7 +55,7 @@ async def handle_message(data: dict, msg):
                     text_input=payload.company.ticker,
                     summary=summary,
                     source_type="company",
-                    model_used="langgraph",
+                    model_used="gemini",
                 )
             )
 
