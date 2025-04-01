@@ -9,7 +9,10 @@ class AnalysisState(TypedDict):
 
 
 async def analyze_node(state: AnalysisState) -> dict:
-    result = await analyze_company_payload(state["payload"])
+    result = await analyze_company_payload(
+    state["payload"].get("company"), 
+    state["payload"].get("history")
+)
     return {"result": result}
 
 
