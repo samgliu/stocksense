@@ -14,8 +14,8 @@ export const Navbar: React.FC = () => {
       <Link
         to={to}
         aria-current={isActive ? 'page' : undefined}
-        className={`text-sm font-medium transition-colors duration-300 ${
-          isActive ? 'text-white underline' : 'text-white/80 hover:text-white'
+        className={`rounded px-3 py-2 text-sm font-medium transition-all select-none ${
+          isActive ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
         }`}
       >
         {label}
@@ -24,14 +24,20 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-blue-600 py-4 text-white shadow-md">
-      <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6">
-        <Link to="/" className="text-2xl font-semibold tracking-tight hover:underline">
+    <header className="sticky top-0 z-50 bg-blue-600 shadow-sm select-none">
+      <div className="mx-auto flex max-w-screen-xl items-center justify-between px-4 py-3 sm:px-6">
+        {/* Left: Logo */}
+        <Link
+          to="/"
+          className="text-xl font-bold tracking-tight text-white transition select-none hover:opacity-90"
+        >
           StockSense
         </Link>
 
-        <div className="flex items-center gap-8">
-          <div className="hidden gap-6 md:flex">
+        {/* Right: Navigation + User */}
+        <div className="flex items-center gap-6">
+          {/* Nav */}
+          <nav className="hidden items-center gap-1 md:flex">
             <NavItem to="/" label="Home" />
             {isAuthenticated && (
               <>
@@ -40,31 +46,29 @@ export const Navbar: React.FC = () => {
                 <NavItem to="/history" label="History" />
               </>
             )}
-          </div>
+          </nav>
 
-          {/* User Icon and Sign-In Button */}
-          <div className="flex items-center gap-4">
-            {loading ? (
-              <div className="h-9 w-9 animate-pulse rounded-full bg-blue-300 opacity-60" />
-            ) : isAuthenticated ? (
-              <Link
-                to="/account"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-blue-700 shadow-lg transition-all hover:opacity-80"
-                title={email ?? undefined}
-              >
-                {getInitials(name, email)}
-              </Link>
-            ) : (
-              <Link
-                to="/signin"
-                className="rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-md transition-colors hover:bg-blue-100"
-              >
-                Sign In
-              </Link>
-            )}
-          </div>
+          {/* User Icon or Sign In */}
+          {loading ? (
+            <div className="h-9 w-9 animate-pulse rounded-full bg-blue-300 opacity-60" />
+          ) : isAuthenticated ? (
+            <Link
+              to="/account"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-blue-700 shadow select-none hover:opacity-90"
+              title={email ?? undefined}
+            >
+              {getInitials(name, email)}
+            </Link>
+          ) : (
+            <Link
+              to="/signin"
+              className="rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition select-none hover:bg-blue-100"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 };

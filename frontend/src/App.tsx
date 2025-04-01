@@ -15,13 +15,16 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const token = await user.getIdToken();
+        console.log('setAuth name in app', user.displayName);
         dispatch(
           setAuth({
             isAuthenticated: true,
             name: user.displayName,
             email: user.email,
-            token: null,
+            token: token,
             loading: false,
+            role: null,
+            usage: null,
           }),
         );
       } else {

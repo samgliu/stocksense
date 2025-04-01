@@ -6,7 +6,7 @@ import { auth } from '../firebase';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/auth`,
+    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth`,
     prepareHeaders: async (headers) => {
       const user = auth.currentUser;
       if (user) {
@@ -19,8 +19,9 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     verifyToken: builder.query<BackendUser, void>({
       query: () => '/auth',
+      keepUnusedDataFor: 0,
     }),
   }),
 });
 
-export const { useVerifyTokenQuery } = authApi;
+export const { useVerifyTokenQuery, useLazyVerifyTokenQuery } = authApi;

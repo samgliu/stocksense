@@ -6,6 +6,8 @@ export interface AuthState {
   email: string | null;
   token: string | null;
   loading: boolean;
+  role: 'admin' | 'user' | null;
+  usage: number | null;
 }
 
 const initialState: AuthState = {
@@ -14,6 +16,8 @@ const initialState: AuthState = {
   email: null,
   token: null,
   loading: true,
+  role: null,
+  usage: null,
 };
 
 const authSlice = createSlice({
@@ -21,6 +25,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setAuth: (state, action: PayloadAction<AuthState>) => {
+      console.log('setauth', action.payload);
       Object.assign(state, { ...action.payload, loading: false });
     },
     clearAuth: (state) => {
@@ -30,6 +35,8 @@ const authSlice = createSlice({
         email: null,
         token: null,
         loading: false,
+        role: null,
+        usage: null,
       });
     },
   },
