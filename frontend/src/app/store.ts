@@ -6,11 +6,13 @@ import { dashboardApi } from '@/features/dashboard/api';
 import { searchApi } from '@/features/search/api';
 import { stockApi } from '@/features/stock/api';
 import { stockReducer } from '@/features/stock/store/slice';
+import { toastReducer } from '@/features/toast/store/slice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     stock: stockReducer,
+    toast: toastReducer,
     [authApi.reducerPath]: authApi.reducer,
     [stockApi.reducerPath]: stockApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
