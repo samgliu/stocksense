@@ -50,10 +50,12 @@ export const CompanyPredictionHistoryChart = ({ data }: { data: Report[] }) => {
             axisLine={false}
             tickLine={false}
             domain={['auto', 'auto']}
+            tickFormatter={(value) => `$${value}`}
           />
           <Tooltip
             contentStyle={{ borderRadius: 8, fontSize: 13 }}
             labelStyle={{ color: '#6b7280', fontWeight: 500 }}
+            formatter={(value: number) => [`$${value}`, '']}
           />
           <Line
             type="monotone"
