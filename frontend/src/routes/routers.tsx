@@ -27,7 +27,7 @@ export const routers = createBrowserRouter([
         children: [
           { path: 'home', element: <HomeRoute /> },
           { path: 'semantic-search', element: <SemanticSearch /> },
-          { path: 'company/:id/:ticker', element: <CompanyProfile /> },
+          { path: 'company/profile/:id/:ticker', element: <CompanyProfile /> },
           { path: 'analyze', element: <StockAnalyzePage /> },
           { path: 'history', element: <StockHistory /> },
           { path: 'account', element: <AccountRoute /> },

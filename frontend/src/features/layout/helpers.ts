@@ -1,5 +1,4 @@
 export const getInitials = (name: string | null, email: string | null) => {
-  console.log('name', name, email);
   if (name) {
     const cleanName = name.replace(/\(.*?\)/, '').trim();
 

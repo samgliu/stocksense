@@ -40,6 +40,23 @@ export interface JobResult {
   job_id: string;
 }
 
+export interface AnalysisReport {
+  id: string;
+  company_id: string;
+  ticker: string;
+  exchange: string;
+  model_version: string;
+  current_price: number;
+  min_price: number;
+  max_price: number;
+  avg_price: number;
+  time_horizon: string;
+  prediction_json: Record<string, any>;
+  insights: string;
+  summary: string;
+  created_at: string;
+}
+
 export const companyApi = createApi({
   reducerPath: 'companyApi',
   baseQuery: fetchBaseQuery({
@@ -55,7 +72,7 @@ export const companyApi = createApi({
   }),
   endpoints: (builder) => ({
     getCompanyById: builder.query<CompanyData, { id: string; ticker: string }>({
-      query: ({ id, ticker }) => `/companies/${id}/${ticker}`,
+      query: ({ id, ticker }) => `/companies/profile/{${id}/${ticker}`,
     }),
     getCompanyHistoricalPrice: builder.query<
       CompanyHistoricalPrice,
@@ -65,16 +82,19 @@ export const companyApi = createApi({
     }),
     analyzeCompany: builder.mutation<
       JobResult,
-      { company: CompanyData; history?: CompanyHistoricalPrice }
+      { company_id: string; company: CompanyData; history?: CompanyHistoricalPrice }
     >({
-      query: ({ company, history }) => ({
+      query: ({ company_id, company, history }) => ({
         url: `/companies/analyze`,
         method: 'POST',
-        body: { company, history },
+        body: { company_id, company, history },
       }),
     }),
     getJobStatus: builder.query<{ job_id?: string; status: string; result?: string }, string>({
       query: (jobId) => `/worker/job-status/${jobId}`,
+    }),
+    getCompanyAnalysisReports: builder.query<AnalysisReport[], string>({
+      query: (companyId) => `/companies/analysis-reports/${companyId}`,
     }),
   }),
 });
@@ -84,4 +104,5 @@ export const {
   useAnalyzeCompanyMutation,
   useGetCompanyHistoricalPriceQuery,
   useGetJobStatusQuery,
+  useGetCompanyAnalysisReportsQuery
 } = companyApi;

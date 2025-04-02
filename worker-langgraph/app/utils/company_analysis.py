@@ -45,7 +45,7 @@ def build_analysis_prompt(company: Dict, history: Optional[List[Dict]]) -> str:
             "confidence": {{
                 "70%": {{"min": 0, "max": 0}},
                 "90%": {{"min": 0, "max": 0}}
-            }}
+            }},
         }}
     }}
     ```

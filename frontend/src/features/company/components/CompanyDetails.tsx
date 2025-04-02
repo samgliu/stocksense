@@ -1,17 +1,25 @@
 import {
   CompanyData,
   useAnalyzeCompanyMutation,
+  useGetCompanyAnalysisReportsQuery,
   useGetCompanyHistoricalPriceQuery,
   useGetJobStatusQuery,
 } from '../api';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { CompanyPredictionHistoryChart } from './CompanyPredictionHistoryChart';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
 import { useToast } from '@/hooks/useToast';
 
-export const CompanyDetails = ({ company }: { company: CompanyData }) => {
+export const CompanyDetails = ({
+  company_id,
+  company,
+}: {
+  company_id: string;
+  company: CompanyData;
+}) => {
   const [analyzeCompany, { data: jobData }] = useAnalyzeCompanyMutation();
   const resultRef = useRef<HTMLDivElement | null>(null);
   const toast = useToast();
@@ -21,6 +29,9 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
     exchange: company.exchange!,
     ticker: company.ticker,
   });
+
+  // Historical Reports
+  const { data: reports } = useGetCompanyAnalysisReportsQuery(company_id);
 
   const jobId = jobData?.job_id;
   const {
@@ -49,7 +60,7 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
 
   const handleAnalyze = async () => {
     try {
-      await analyzeCompany({ company, history });
+      await analyzeCompany({ company_id, company, history });
     } catch (err) {
       console.error('Failed to analyze company', err);
     }
@@ -166,6 +177,9 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
         </button>
         {jobStatusText && <span className="text-sm text-gray-500">{jobStatusText}</span>}
       </div>
+
+      {/* Historical Report Chart */}
+      {reports && reports.length > 0 && <CompanyPredictionHistoryChart data={reports} />}
 
       {/* Result */}
       {prediction && (

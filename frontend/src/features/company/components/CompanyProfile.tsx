@@ -17,7 +17,7 @@ export const CompanyProfile = () => {
   );
 
   if (isLoading) return <div className="p-4">Loading...</div>;
-  if (isError || !company) return <div className="p-4 text-red-500">Company not found.</div>;
+  if (!id || isError || !company) return <div className="p-4 text-red-500">Company not found.</div>;
 
-  return <CompanyDetails company={company} />;
+  return <CompanyDetails company_id={id} company={company} />;
 };

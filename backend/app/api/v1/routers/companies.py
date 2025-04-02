@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from typing import Optional, List
-from uuid import uuid4
+from uuid import UUID, uuid4
 
+from app.models.analysis_report import AnalysisReport
+from app.schemas.analysis_report import AnalysisReportResponse
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -39,7 +41,7 @@ class CompanyProfileOut(BaseModel):
     ipoDate: Optional[str]
 
 
-@router.get("/{uuid}/{ticker}")
+@router.get("/profile/{uuid}/{ticker}")
 async def get_company_profile(
     request: Request, uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
 ):
@@ -48,7 +50,7 @@ async def get_company_profile(
         return profile
 
     try:
-        stmt = select(Company).where(Company.ticker == ticker.upper())
+        stmt = select(Company).where(Company.id == uuid)
         result = await db.execute(stmt)
         company = result.scalar_one_or_none()
         if company:
@@ -115,6 +117,7 @@ class CompanyPayload(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
+    company_id: str
     company: CompanyPayload
     history: Optional[List[HistoryPoint]] = None
 
@@ -152,8 +155,33 @@ async def analyze_company(
             "body": body.dict(),
         }
     )
-    db.add(JobStatus(job_id=job_id, user_id=user.id, status="queued"))
+    db.add(
+        JobStatus(
+            job_id=job_id,
+            user_id=user.id,
+            status="queued",
+            input=body.json(),
+        )
+    )
     db.add(UsageLog(user_id=user.id, action="analyze"))
     await db.commit()
 
     return {"status": "queued", "job_id": job_id}
+
+
+@router.get(
+    "/analysis-reports/{company_id}",
+    response_model=List[AnalysisReportResponse],
+)
+async def get_reports_for_company(
+    company_id: UUID, db: AsyncSession = Depends(get_async_db)
+):
+    result = await db.execute(
+        select(AnalysisReport)
+        .where(AnalysisReport.company_id == company_id)
+        .order_by(AnalysisReport.created_at.asc())
+    )
+    reports = result.scalars().all()
+    print(reports)
+    print(type(reports))
+    return reports
