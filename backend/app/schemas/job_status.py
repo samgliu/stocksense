@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union, Dict, Any
 from uuid import UUID
 from datetime import datetime
 
@@ -11,6 +11,7 @@ class JobStatusSchema(BaseModel):
     stock_entry_id: Optional[UUID] = None
     analysis_report_id: Optional[UUID] = None
     status: str
+    input: Optional[Dict[str, Any]] = None
     result: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -22,6 +23,7 @@ class JobStatusSchema(BaseModel):
 class JobStatusResponse(BaseModel):
     job_id: str
     status: str
+    input: Optional[Dict[str, Any]] = None
     result: Optional[str] = None
     stock_entry_id: Optional[UUID] = None
     analysis_report_id: Optional[UUID] = None

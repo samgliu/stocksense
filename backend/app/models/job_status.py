@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, String, Text, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.database import Base
 import uuid
@@ -19,6 +19,7 @@ class JobStatus(Base):
     )
 
     status = Column(String, default="queued")  # queued, processing, done, error
+    input = Column(JSONB, nullable=True)
     result = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
