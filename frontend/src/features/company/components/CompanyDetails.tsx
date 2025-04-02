@@ -1,11 +1,13 @@
 import {
   CompanyData,
   useAnalyzeCompanyMutation,
+  useGetCompanyAnalysisReportsQuery,
   useGetCompanyHistoricalPriceQuery,
   useGetJobStatusQuery,
 } from '../api';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { CompanyPredictionHistoryChart } from './CompanyPredictionHistoryChart';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
@@ -27,6 +29,9 @@ export const CompanyDetails = ({
     exchange: company.exchange!,
     ticker: company.ticker,
   });
+
+  // Historical Reports
+  const { data: reports } = useGetCompanyAnalysisReportsQuery(company_id);
 
   const jobId = jobData?.job_id;
   const {
@@ -172,6 +177,9 @@ export const CompanyDetails = ({
         </button>
         {jobStatusText && <span className="text-sm text-gray-500">{jobStatusText}</span>}
       </div>
+
+      {/* Historical Report Chart */}
+      {reports && reports.length > 0 && <CompanyPredictionHistoryChart data={reports} />}
 
       {/* Result */}
       {prediction && (

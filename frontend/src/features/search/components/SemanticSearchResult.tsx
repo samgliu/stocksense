@@ -8,7 +8,7 @@ export const SemanticSearchResult = ({ result }: { result: SemanticResult }) => 
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-lg font-medium">
           <Link
-            to={`/company/${result.id}/${result.ticker}`}
+            to={`/company/profile/${result.id}/${result.ticker}`}
             className="text-blue-600 hover:underline"
           >
             {result.name}
@@ -32,7 +32,7 @@ export const SemanticSearchResult = ({ result }: { result: SemanticResult }) => 
         </div>
 
         <Link
-          to={`/company/${result.id}/${result.ticker}`}
+          to={`/company/profile/${result.id}/${result.ticker}`}
           className="text-sm font-medium text-blue-600 hover:underline"
         >
           Start Analysis →

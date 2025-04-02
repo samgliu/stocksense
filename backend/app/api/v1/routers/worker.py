@@ -29,9 +29,9 @@ async def persist_analysis_report(job: JobStatus, db: AsyncSession) -> None:
         input_data = json.loads(job.input) if job.input else {}
         company = input_data.get("company")
         company_id = input_data.get("company_id")
-        ticker = input_data.get("ticker") if company else None
-        exchange = input_data.get("exchange") if company else None
-        current_price = input_data.get("current_price") if company else None
+        ticker = company.get("ticker") if company else None
+        exchange = company.get("exchange") if company else None
+        current_price = company.get("current_price") if company else None
 
         report = AnalysisReport(
             company_id=company_id,
@@ -66,4 +66,5 @@ async def get_job_status(job_id: str, db: AsyncSession = Depends(get_async_db)):
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     await persist_analysis_report(job, db)
-    return job
+    await db.refresh(job)
+    return JobStatusResponse.from_orm(job)

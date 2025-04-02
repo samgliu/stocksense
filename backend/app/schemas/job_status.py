@@ -16,7 +16,7 @@ class JobStatusSchema(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class JobStatusResponse(BaseModel):
@@ -27,4 +27,4 @@ class JobStatusResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
