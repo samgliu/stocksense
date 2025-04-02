@@ -32,6 +32,8 @@ def build_analysis_prompt(company: Dict, history: Optional[List[Dict]]) -> str:
     2. 📈 Predict the stock price range for the next 30 days:
     - Provide expected minimum, maximum, and average price
     - Provide confidence intervals (e.g., 70% and 90%) if possible
+    - Use the provided current_price as a reference point, and set the time_horizon to "30d".
+	- Write a brief summary explaining the forecast, highlighting trends or expectations.
 
     Return your response as valid JSON with this exact format:
 
@@ -43,9 +45,12 @@ def build_analysis_prompt(company: Dict, history: Optional[List[Dict]]) -> str:
             "max": 0,
             "average": 0,
             "confidence": {{
-                "70%": {{"min": 0, "max": 0}},
-                "90%": {{"min": 0, "max": 0}}
-            }}
+                "70%": {{ "min": 0, "max": 0 }},
+                "90%": {{ "min": 0, "max": 0 }}
+            }},
+            "current_price": 0,
+            "time_horizon": "30d",
+            "summary": "Example: The stock is expected to perform steadily with moderate upside."
         }}
     }}
     ```
