@@ -115,6 +115,7 @@ class CompanyPayload(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
+    company_id: str
     company: CompanyPayload
     history: Optional[List[HistoryPoint]] = None
 

@@ -65,12 +65,12 @@ export const companyApi = createApi({
     }),
     analyzeCompany: builder.mutation<
       JobResult,
-      { company: CompanyData; history?: CompanyHistoricalPrice }
+      { company_id: string; company: CompanyData; history?: CompanyHistoricalPrice }
     >({
-      query: ({ company, history }) => ({
+      query: ({ company_id, company, history }) => ({
         url: `/companies/analyze`,
         method: 'POST',
-        body: { company, history },
+        body: { company_id, company, history },
       }),
     }),
     getJobStatus: builder.query<{ job_id?: string; status: string; result?: string }, string>({

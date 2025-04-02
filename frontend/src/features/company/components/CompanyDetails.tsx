@@ -11,7 +11,13 @@ import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
 import { useToast } from '@/hooks/useToast';
 
-export const CompanyDetails = ({ company }: { company: CompanyData }) => {
+export const CompanyDetails = ({
+  company_id,
+  company,
+}: {
+  company_id: string;
+  company: CompanyData;
+}) => {
   const [analyzeCompany, { data: jobData }] = useAnalyzeCompanyMutation();
   const resultRef = useRef<HTMLDivElement | null>(null);
   const toast = useToast();
@@ -49,7 +55,7 @@ export const CompanyDetails = ({ company }: { company: CompanyData }) => {
 
   const handleAnalyze = async () => {
     try {
-      await analyzeCompany({ company, history });
+      await analyzeCompany({ company_id, company, history });
     } catch (err) {
       console.error('Failed to analyze company', err);
     }
