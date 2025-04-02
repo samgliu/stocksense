@@ -11,13 +11,9 @@ class JobStatus(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     job_id = Column(String, unique=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    stock_entry_id = Column(
-        UUID(as_uuid=True), ForeignKey("stock_entries.id"), nullable=True
-    )
     analysis_report_id = Column(
         UUID(as_uuid=True), ForeignKey("analysis_reports.id"), nullable=True
     )
-
     status = Column(String, default="queued")  # queued, processing, done, error
     input = Column(JSONB, nullable=True)
     result = Column(Text, nullable=True)
@@ -26,5 +22,4 @@ class JobStatus(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    stock_entry = relationship("StockEntry", backref="jobs")
     analysis_report = relationship("AnalysisReport", backref="job")

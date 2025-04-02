@@ -10,9 +10,10 @@ class AnalysisReport(Base):
     __tablename__ = "analysis_reports"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    stock_entry_id = Column(
-        UUID(as_uuid=True), ForeignKey("stock_entries.id"), nullable=False
-    )
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=True)
+    
+    ticker = Column(String, nullable=True)
+    exchange = Column(String, nullable=True)
     model_version = Column(String, nullable=True)
 
     current_price = Column(Float, nullable=True)
@@ -26,5 +27,5 @@ class AnalysisReport(Base):
     summary = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    stock_entry = relationship("StockEntry", backref="analysis_reports")
+    
+    company = relationship("Company", backref="analysis_reports")

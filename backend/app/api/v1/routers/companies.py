@@ -48,7 +48,7 @@ async def get_company_profile(
         return profile
 
     try:
-        stmt = select(Company).where(Company.ticker == ticker.upper())
+        stmt = select(Company).where(Company.id == uuid)
         result = await db.execute(stmt)
         company = result.scalar_one_or_none()
         if company:
@@ -152,7 +152,14 @@ async def analyze_company(
             "body": body.dict(),
         }
     )
-    db.add(JobStatus(job_id=job_id, user_id=user.id, status="queued"))
+    db.add(
+        JobStatus(
+            job_id=job_id,
+            user_id=user.id,
+            status="queued",
+            input=body.json(),
+        )
+    )
     db.add(UsageLog(user_id=user.id, action="analyze"))
     await db.commit()
 
