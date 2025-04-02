@@ -5,3 +5,4 @@ from .embedding import Embedding
 from .prediction import Prediction
 from .usage_log import UsageLog
 from .job_status import JobStatus
+from .analysis_report import AnalysisReport
