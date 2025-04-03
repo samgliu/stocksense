@@ -1,12 +1,14 @@
 import {
-  CompanyData,
   useAnalyzeCompanyMutation,
   useGetCompanyAnalysisReportsQuery,
   useGetCompanyHistoricalPriceQuery,
+  useGetCompanyNewsQuery,
   useGetJobStatusQuery,
 } from '../api';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { CompanyData } from '../api/types';
+import { CompanyNewsComponent } from './CompanyNews';
 import { CompanyPredictionHistoryChart } from './CompanyPredictionHistoryChart';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
@@ -28,6 +30,12 @@ export const CompanyDetails = ({
   const { data: history } = useGetCompanyHistoricalPriceQuery({
     exchange: company.exchange!,
     ticker: company.ticker,
+  });
+
+  // Company News
+  const { data: news, isLoading: isNewsLoading } = useGetCompanyNewsQuery({
+    companyId: company_id,
+    companyName: company.name,
   });
 
   // Historical Reports
@@ -60,7 +68,7 @@ export const CompanyDetails = ({
 
   const handleAnalyze = async () => {
     try {
-      await analyzeCompany({ company_id, company, history });
+      await analyzeCompany({ company_id, company, history, news });
     } catch (err) {
       console.error('Failed to analyze company', err);
     }
@@ -161,6 +169,22 @@ export const CompanyDetails = ({
       {company.summary && (
         <p className="line-clamp-5 overflow-auto text-gray-700">{company.summary}</p>
       )}
+
+      {/* Latest News */}
+      <div className="mt-4 min-h-[150px]">
+        <h3 className="mb-2 text-lg font-semibold text-gray-800">📰 Recent News</h3>
+        {isNewsLoading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 w-3/4 rounded bg-gray-200" />
+            <div className="h-4 w-5/6 rounded bg-gray-200" />
+            <div className="h-4 w-2/3 rounded bg-gray-200" />
+          </div>
+        ) : news && news.length > 0 ? (
+          <CompanyNewsComponent news={news} isLoading={isNewsLoading} />
+        ) : (
+          <p className="text-sm text-gray-500">No recent news found.</p>
+        )}
+      </div>
 
       {/* Analyze Button + Status */}
       <div className="flex items-center space-x-4">
