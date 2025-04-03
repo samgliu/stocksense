@@ -1,7 +1,7 @@
 from app.schemas.company_news import NewsBase
 import httpx
 from typing import List
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 import os
 
@@ -14,8 +14,9 @@ async def fetch_company_news(company_name: str, company_id: UUID) -> List[NewsBa
         "api_token": NEWS_API_TOKEN,
         "search": company_name,
         "language": "en",
-        "categories": "business,tech",
+        "local": "us",
         "limit": 3,
+        "sort": "published_at",
     }
     async with httpx.AsyncClient() as client:
         response = await client.get(NEWS_API_URL, params=params)
