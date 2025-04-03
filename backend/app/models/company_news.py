@@ -1,5 +1,5 @@
 from app.database import Base
-from sqlalchemy import Column, String, Text, DateTime, ARRAY
+from sqlalchemy import Column, String, Text, DateTime, ARRAY, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
 import uuid
@@ -19,8 +19,7 @@ class CompanyNews(Base):
     language = Column(String, nullable=True)
     categories = Column(ARRAY(String), nullable=True)
     relevance_score = Column(String, nullable=True)
-    company_id = Column(UUID(as_uuid=True), nullable=False)
 
-    news = relationship(
-        "CompanyNews", back_populates="company", cascade="all, delete-orphan"
-    )
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
+
+    company = relationship("Company", backref="company_news")

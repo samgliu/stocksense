@@ -211,7 +211,16 @@ async def get_company_news(
     # 2. Fetch fresh news
     try:
         fetched_news = await fetch_company_news(company_name, company_id)
-        new_records = [CompanyNews(**news.dict()) for news in fetched_news]
+        new_records = [
+            CompanyNews(
+                **{
+                    **news.dict(),
+                    "url": str(news.url),
+                    "image_url": str(news.image_url) if news.image_url else None,
+                }
+            )
+            for news in fetched_news
+        ]
 
         db.add_all(new_records)
         await db.commit()

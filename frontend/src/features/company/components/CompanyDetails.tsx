@@ -1,5 +1,4 @@
 import {
-  CompanyData,
   useAnalyzeCompanyMutation,
   useGetCompanyAnalysisReportsQuery,
   useGetCompanyHistoricalPriceQuery,
@@ -7,6 +6,8 @@ import {
 } from '../api';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { CompanyData } from '../api/types';
+import { CompanyNews } from './CompanyNews';
 import { CompanyPredictionHistoryChart } from './CompanyPredictionHistoryChart';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
@@ -187,6 +188,7 @@ export const CompanyDetails = ({
           <ForecastChart prediction={prediction} />
         </div>
       )}
+      <CompanyNews companyId={company_id} companyName={company.name} />
       {insights && (
         <div className="mt-6 rounded bg-gray-50 p-4 text-sm text-gray-800 shadow-inner">
           <h3 className="mb-2 text-lg font-semibold">AI Analysis Result</h3>

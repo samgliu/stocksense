@@ -15,21 +15,19 @@ async def fetch_company_news(company_name: str, company_id: UUID) -> List[NewsBa
         "search": company_name,
         "language": "en",
         "categories": "business,tech",
-        "published_after": (datetime.now(timezone.utc).date().isoformat()),
         "limit": 3,
     }
     async with httpx.AsyncClient() as client:
         response = await client.get(NEWS_API_URL, params=params)
         response.raise_for_status()
-
         items = response.json().get("data", [])
         return [
             NewsBase(
                 title=item["title"],
                 description=item.get("description"),
                 snippet=item.get("snippet"),
-                url=item["url"],
-                image_url=item.get("image_url"),
+                url=str(item["url"]),
+                image_url=str(item.get("image_url")) if item.get("image_url") else None,
                 published_at=datetime.fromisoformat(
                     item["published_at"].replace("Z", "+00:00")
                 ),
