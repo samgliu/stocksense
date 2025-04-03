@@ -1,8 +1,13 @@
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -12,9 +17,13 @@ import {
   useGetDailyAnalysisQuery,
   useGetHistorySummaryQuery,
   useGetMonthlySummaryQuery,
+  useGetNewsSummaryQuery,
+  useGetTopCompaniesQuery,
+  useGetTopIndustriesQuery,
   useGetUsageCountQuery,
 } from '../api';
 
+import { CustomTooltip } from './CustomTooltip';
 import { Spinner } from '@/features/shared/Spinner';
 
 export const Dashboard = () => {
@@ -22,23 +31,69 @@ export const Dashboard = () => {
   const { data: monthlySummary, isLoading: isMonthlyLoading } = useGetMonthlySummaryQuery({});
   const { data: usageCount, isLoading: isUsageLoading } = useGetUsageCountQuery({});
   const { data: historySummary, isLoading: isHistoryLoading } = useGetHistorySummaryQuery({});
+  const { data: topCompanies, isLoading: isTopCompaniesLoading } = useGetTopCompaniesQuery({});
+  const { data: newsSummary, isLoading: isNewsSummaryLoading } = useGetNewsSummaryQuery({});
+  const { data: topIndustries, isLoading: isTopIndustriesLoading } = useGetTopIndustriesQuery({});
 
-  if (isDailyLoading || isMonthlyLoading || isUsageLoading || isHistoryLoading) {
+  if (
+    isDailyLoading ||
+    isMonthlyLoading ||
+    isUsageLoading ||
+    isHistoryLoading ||
+    isTopCompaniesLoading ||
+    isNewsSummaryLoading ||
+    isTopIndustriesLoading
+  ) {
     return <Spinner />;
   }
 
+  const COLORS = ['#60a5fa', '#818cf8', '#34d399', '#fbbf24', '#f87171'];
+
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    outerRadius,
+    percent,
+    index,
+    name,
+    sector,
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 20;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#333"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={12}
+      >
+        {`${sector} (${(percent * 100).toFixed(0)}%)`}
+      </text>
+    );
+  };
+
   return (
-    <div className="space-y-8 p-6">
-      {/* Title */}
-      <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
+    <div className="space-y-12 px-6 py-10 sm:px-10 lg:px-16">
+      {/* KPI Cards */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <KPI title="📅 This Month" value={monthlySummary.current_month_count} />
+        <KPI title="📆 Last Month" value={monthlySummary.last_month_count} />
+        <KPI title="📂 Total Records" value={historySummary.total_records} />
+        <KPI title="👥 Total Users" value={historySummary.total_users} />
+      </div>
 
       {/* Daily Analysis Chart */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-        <h3 className="mb-4 text-xl font-semibold text-gray-800">Daily Analysis</h3>
-        <ResponsiveContainer width="100%" height={300}>
+      <SectionCard title="📈 Daily Analysis (Last 30 Days)">
+        <ResponsiveContainer width="100%" height={320}>
           <LineChart data={dailyData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
+            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
             <YAxis />
             <Tooltip />
             <Legend />
@@ -47,51 +102,78 @@ export const Dashboard = () => {
               dataKey="count"
               stroke="#3b82f6"
               strokeWidth={2}
-              dot={{ r: 4 }}
+              dot={{ r: 3 }}
               activeDot={{ r: 6 }}
             />
           </LineChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* Monthly Summary */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-          <h4 className="mb-3 text-lg font-semibold text-gray-800">Current Month</h4>
-          <div className="text-2xl font-semibold text-blue-600">
-            {monthlySummary.current_month_count}
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-          <h4 className="mb-2 text-lg font-semibold text-gray-800">Last Month</h4>
-          <div className="text-2xl font-semibold text-blue-600">
-            {monthlySummary.last_month_count}
-          </div>
-        </div>
-      </div>
-
-      {/* History Summary */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-        <h3 className="mb-4 text-xl font-semibold text-gray-800">History Summary</h3>
-        <div className="text-lg text-gray-700">
-          <div className="mb-2">Total Records: {historySummary.total_records}</div>
-          <div>Total Users: {historySummary.total_users}</div>
-        </div>
-      </div>
+      </SectionCard>
 
       {/* Usage Count */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-          <h4 className="mb-2 text-lg font-semibold text-gray-800">Admins</h4>
-          <div className="text-2xl font-semibold text-blue-600">{usageCount.admin}</div>
-        </div>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-          <h4 className="mb-2 text-lg font-semibold text-gray-800">Users</h4>
-          <div className="text-2xl font-semibold text-blue-600">{usageCount.user}</div>
-        </div>
+        <KPI title="👩‍💼 Admin Usage" value={usageCount.admin} />
+        <KPI title="🧑‍💻 User Usage" value={usageCount.user} />
       </div>
+
+      <SectionCard title="🏢 Top Queried Companies">
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart data={topCompanies.slice(0, 10)}>
+            <XAxis dataKey="company_name" angle={-25} textAnchor="end" height={60} />
+            <YAxis />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </SectionCard>
+
+      {/* News Summary */}
+      <SectionCard title="📰 News Coverage by Company">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={newsSummary.slice(0, 5)}>
+            <XAxis dataKey="company_name" angle={-25} textAnchor="end" height={60} />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </SectionCard>
+
+      {/* Top Industries */}
+      <SectionCard title="🏭 Most Analyzed Industries">
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={topIndustries.slice(0, 5)}
+              dataKey="count"
+              nameKey="industry"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              labelLine={false}
+              label={renderCustomizedLabel}
+            >
+              {topIndustries.slice(0, 5).map((entry: any, index: number) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </SectionCard>
     </div>
   );
 };
+
+const KPI = ({ title, value }: { title: string; value: number }) => (
+  <div className="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm transition hover:shadow-md">
+    <h4 className="text-sm text-gray-500">{title}</h4>
+    <div className="mt-1 text-3xl font-bold text-blue-600">{value}</div>
+  </div>
+);
+
+const SectionCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <h3 className="mb-4 text-xl font-semibold text-gray-800">{title}</h3>
+    {children}
+  </div>
+);

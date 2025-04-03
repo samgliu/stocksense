@@ -1,3 +1,5 @@
+from app.models.company import Company
+from app.models.analysis_report import AnalysisReport
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, select
@@ -82,3 +84,48 @@ async def get_usage_count(db: AsyncSession = Depends(get_async_db)):
     rows = result.all()
 
     return {role.value: count for role, count in rows}
+
+
+@router.get("/top-companies")
+async def get_top_companies(db: AsyncSession = Depends(get_async_db)):
+    stmt = (
+        select(StockEntry.text_input, func.count().label("count"))
+        .group_by(StockEntry.text_input)
+        .order_by(func.count().desc())
+        .limit(10)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+    return [{"ticker": r.text_input, "count": r.count} for r in rows]
+
+
+from app.models.company_news import CompanyNews
+
+
+@router.get("/news-summary")
+async def get_news_summary(db: AsyncSession = Depends(get_async_db)):
+    start = datetime.now(timezone.utc) - timedelta(days=7)
+    stmt = (
+        select(func.date(CompanyNews.published_at), func.count())
+        .where(CompanyNews.published_at >= start)
+        .group_by(func.date(CompanyNews.published_at))
+        .order_by(func.date(CompanyNews.published_at))
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+    return [{"date": str(r[0]), "count": r[1]} for r in rows]
+
+
+@router.get("/top-industries")
+async def get_top_sectors(db: AsyncSession = Depends(get_async_db)):
+    stmt = (
+        select(Company.sector, func.count(StockEntry.text_input))
+        .join(Company, Company.ticker == StockEntry.text_input)
+        .where(Company.sector.isnot(None))
+        .group_by(Company.sector)
+        .order_by(func.count(StockEntry.text_input).desc())
+        .limit(10)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+    return [{"sector": r[0], "count": r[1]} for r in rows]
