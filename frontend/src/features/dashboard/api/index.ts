@@ -28,6 +28,15 @@ export const dashboardApi = createApi({
     getHistorySummary: builder.query({
       query: () => '/history-summary',
     }),
+    getTopCompanies: builder.query({
+      query: () => '/top-companies',
+    }),
+    getNewsSummary: builder.query({
+      query: () => '/news-summary',
+    }),
+    getTopIndustries: builder.query({
+      query: () => '/top-industries',
+    }),
   }),
 });
 
@@ -36,4 +45,7 @@ export const {
   useGetDailyAnalysisQuery,
   useGetUsageCountQuery,
   useGetHistorySummaryQuery,
+  useGetTopCompaniesQuery,
+  useGetNewsSummaryQuery,
+  useGetTopIndustriesQuery,
 } = dashboardApi;
