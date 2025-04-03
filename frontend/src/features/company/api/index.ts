@@ -34,12 +34,17 @@ export const companyApi = createApi({
     }),
     analyzeCompany: builder.mutation<
       JobResult,
-      { company_id: string; company: CompanyData; history?: CompanyHistoricalPrice }
+      {
+        company_id: string;
+        company: CompanyData;
+        history?: CompanyHistoricalPrice;
+        news?: CompanyNews[];
+      }
     >({
-      query: ({ company_id, company, history }) => ({
+      query: ({ company_id, company, history, news }) => ({
         url: `/companies/analyze`,
         method: 'POST',
-        body: { company_id, company, history },
+        body: { company_id, company, history, news },
       }),
     }),
     getJobStatus: builder.query<{ job_id?: string; status: string; result?: string }, string>({

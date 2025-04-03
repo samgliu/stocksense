@@ -119,10 +119,17 @@ class CompanyPayload(BaseModel):
     fulltime_employees: Optional[int] = None
 
 
+class NewsSnippet(BaseModel):
+    title: str
+    snippet: Optional[str] = None
+    published_at: datetime
+
+
 class AnalyzeRequest(BaseModel):
     company_id: str
     company: CompanyPayload
     history: Optional[List[HistoryPoint]] = None
+    news: Optional[List[NewsSnippet]] = None
 
 
 @router.post("/analyze")
@@ -155,7 +162,7 @@ async def analyze_company(
             "user_id": str(user.id),
             "email": user.email,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "body": body.dict(),
+            "body": body.model_dump(mode="json"),
         }
     )
     db.add(

@@ -1,21 +1,17 @@
-import { useGetCompanyNewsQuery } from '../api';
+import type { CompanyNews } from '../api/types';
 
-export const CompanyNews = ({
-  companyId,
-  companyName,
+export const CompanyNewsComponent = ({
+  news,
+  isLoading,
 }: {
-  companyId: string;
-  companyName: string;
+  news?: CompanyNews[];
+  isLoading: boolean;
 }) => {
-  const { data: news, isLoading } = useGetCompanyNewsQuery({ companyId, companyName });
-
   if (isLoading) return <div className="text-sm text-gray-500">Loading news...</div>;
   if (!news?.length) return null;
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800">📢 Recent News</h2>
-
       {news.map((item) => (
         <a
           key={item.url}

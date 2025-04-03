@@ -9,13 +9,25 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 # --- Prompt Builder ---
-def build_analysis_prompt(company: Dict, history: Optional[List[Dict]]) -> str:
+def build_analysis_prompt(
+    company: Dict, history: Optional[List[Dict]], news: Optional[List[Dict]]
+) -> str:
     history_section = ""
     if history:
         history_str = "\n".join(
             f"- {entry['date']}: ${entry['close']}" for entry in history[-60:]
         )
-        history_section = f"\n📈 Historical Stock Price (recent 30 days):\n{history_str}"
+        history_section = (
+            f"\n📈 Historical Stock Price (recent 30 days):\n{history_str}"
+        )
+
+    news_section = ""
+    if news:
+        news_str = "\n".join(
+            f"📰 {item.title} — {item.snippet or 'No summary available'} ({item.published_at.date()})"
+            for item in news
+        )
+        news_section = (f"\n📰 Recent News Headlines:\n{news_str}")
 
     prompt = f"""
     You are a financial analyst AI. Analyze the investment potential of the following company using its profile and recent stock performance data.
@@ -74,15 +86,18 @@ def build_analysis_prompt(company: Dict, history: Optional[List[Dict]]) -> str:
     📄 Description:
     {company.get('summary', 'No summary provided.')}
 
-    📈 Historical Stock Price (recent 30 days):
     {history_section}
+    
+    {news_section}
     """
     return prompt.strip()
 
 
 # --- Analysis Entry Point ---
-async def analyze_company_payload(company: Dict, history: Optional[List[Dict]]) -> str:
-    prompt = build_analysis_prompt(company, history)
+async def analyze_company_payload(
+    company: Dict, history: Optional[List[Dict]], news: Optional[List[Dict]]
+) -> str:
+    prompt = build_analysis_prompt(company, history, news)
 
     response = await asyncio.to_thread(
         client.models.generate_content,
