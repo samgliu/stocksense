@@ -4,6 +4,9 @@ from uuid import UUID, uuid4
 
 from app.models.analysis_report import AnalysisReport
 from app.schemas.analysis_report import AnalysisReportResponse
+from app.schemas.company_news import NewsResponse
+from app.models.company_news import CompanyNews
+from app.services.news import fetch_company_news
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -182,6 +185,36 @@ async def get_reports_for_company(
         .order_by(AnalysisReport.created_at.asc())
     )
     reports = result.scalars().all()
-    print(reports)
-    print(type(reports))
     return reports
+
+
+@router.get("/news/{company_id}", response_model=List[NewsResponse])
+async def get_company_news(
+    company_id: UUID, company_name: str, db: AsyncSession = Depends(get_async_db)
+):
+    today_start = datetime.now(timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    # 1. Check DB for today’s news
+    db_result = await db.execute(
+        select(CompanyNews).where(
+            CompanyNews.company_id == company_id,
+            CompanyNews.published_at >= today_start,
+        )
+    )
+    existing_news = db_result.scalars().all()
+
+    if existing_news:
+        return existing_news
+
+    # 2. Fetch fresh news
+    try:
+        fetched_news = await fetch_company_news(company_name, company_id)
+        new_records = [CompanyNews(**news.dict()) for news in fetched_news]
+
+        db.add_all(new_records)
+        await db.commit()
+        return new_records
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"News fetch failed: {e}")
