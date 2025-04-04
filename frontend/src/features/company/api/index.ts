@@ -24,7 +24,7 @@ export const companyApi = createApi({
   }),
   endpoints: (builder) => ({
     getCompanyById: builder.query<CompanyData, { id: string; ticker: string }>({
-      query: ({ id, ticker }) => `/companies/profile/{${id}/${ticker}`,
+      query: ({ id, ticker }) => `/companies/profile/${id}/${ticker}`,
     }),
     getCompanyHistoricalPrice: builder.query<
       CompanyHistoricalPrice,
