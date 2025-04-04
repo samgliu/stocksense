@@ -70,18 +70,27 @@ async def get_job_status(job_id: str, db: AsyncSession = Depends(get_async_db)):
         try:
             data = json.loads(cached_job)
 
-            # Ensure updated_at is present and properly parsed
             updated_at_str = data.get("updated_at")
             if not updated_at_str:
                 raise ValueError("Missing 'updated_at' in cached data")
 
             data["updated_at"] = datetime.fromisoformat(updated_at_str)
-            return JobStatusResponse(**data)
+            job_status = JobStatusResponse(**data)
+
+            if job_status.status == "done":
+                result = await db.execute(
+                    select(JobStatus).where(JobStatus.job_id == job_id)
+                )
+                job = result.scalar_one_or_none()
+                if job:
+                    await persist_analysis_report(job, db)
+                    await db.refresh(job)
+
+            return job_status
 
         except (ValueError, TypeError, json.JSONDecodeError) as e:
             print(f"⚠️ Redis cache parse failed for key {cache_key}: {e}")
 
-    # Fallback to DB (you probably already have this below)
     result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
     job = result.scalar_one_or_none()
     if not job:
