@@ -132,7 +132,7 @@ export const Dashboard = () => {
           <BarChart data={newsSummary.slice(0, 5)}>
             <XAxis dataKey="company_name" angle={-25} textAnchor="end" height={60} />
             <YAxis />
-            <Tooltip />
+            <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="count" fill="#60a5fa" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
