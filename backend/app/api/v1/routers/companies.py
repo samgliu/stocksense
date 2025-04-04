@@ -1,4 +1,6 @@
+import asyncio
 from datetime import datetime, timezone
+import json
 from typing import Optional, List
 from uuid import UUID, uuid4
 
@@ -7,6 +9,7 @@ from app.schemas.analysis_report import AnalysisReportResponse
 from app.schemas.company_news import NewsResponse
 from app.models.company_news import CompanyNews
 from app.services.news import fetch_company_news
+from app.services.redis import redis_client
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -48,15 +51,35 @@ class CompanyProfileOut(BaseModel):
 async def get_company_profile(
     request: Request, uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
 ):
+    cache_key = f"company:profile:{uuid}:{ticker}"
+
+    # Try Redis first
+    cached = await redis_client.get(cache_key)
+    if cached:
+        try:
+            return json.loads(cached)
+        except Exception as e:
+            print(f"⚠️ Failed to parse Redis cache for {cache_key}: {e}")
+
     profile = await fetch_company_profile_async(ticker)
     if profile:
+        await redis_client.set(
+            cache_key, json.dumps(profile), ex=60 * 60 * 6
+        )  # 6 hours TTL
         return profile
 
+    # DB fallback
     try:
         stmt = select(Company).where(Company.id == uuid)
         result = await db.execute(stmt)
         company = result.scalar_one_or_none()
         if company:
+            company_dict = (
+                company.to_dict()
+                if hasattr(company, "to_dict")
+                else json.loads(json.dumps(company.__dict__, default=str))
+            )
+            await redis_client.set(cache_key, json.dumps(company_dict), ex=60 * 60 * 6)
             return company
     except Exception as e:
         print(f"❌ DB fallback failed for {ticker}: {e}")
@@ -66,14 +89,30 @@ async def get_company_profile(
 
 @router.get("/historical/{exchange}/{ticker}")
 async def get_historical_prices(request: Request, exchange: str, ticker: str):
+    full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
+    cache_key = f"stock:historical:{full_ticker}"
+
     try:
-        full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
+        # Try Redis first
+        cached = await redis_client.get(cache_key)
+        if cached:
+            try:
+                return json.loads(cached)
+            except Exception as e:
+                print(f"⚠️ Redis parse failed for {cache_key}: {e}")
+
+        # Fetch from external source
         prices = await fetch_historical_prices(full_ticker)
         if not prices:
             raise HTTPException(status_code=404, detail="No historical data found")
+
+        await redis_client.set(
+            cache_key, json.dumps(prices), ex=60 * 60 * 6
+        )  # 6 hours TTL
         return prices
+
     except Exception as e:
-        print(f"Error fetching historical data: {e}")
+        print(f"❌ Error fetching historical data for {full_ticker}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching data")
 
 
@@ -164,6 +203,19 @@ async def analyze_company(
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "body": body.model_dump(mode="json"),
         }
+    )
+    await redis_client.set(
+        f"job:{job_id}:status",
+        json.dumps(
+            {
+                "job_id": job_id,
+                "status": "queued",
+                "result": None,
+                "analysis_report_id": None,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        ),
+        ex=600,
     )
     db.add(
         JobStatus(

@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from confluent_kafka import Consumer
 from sqlalchemy import select
@@ -11,6 +11,7 @@ from app.database import engine, AsyncSessionLocal
 from app.models import JobStatus, StockEntry, UsageLog
 from app.schemas.company import AnalyzeRequest
 from app.langgraph_app import run_analysis_graph
+from app.utils.redis import redis_client
 
 # Config
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
@@ -48,6 +49,22 @@ async def handle_message(data: dict, msg):
 
             job.status = "done"
             job.result = summary
+            job.updated_at = datetime.now(timezone.utc)
+            await db.flush()
+
+            job_status_data = {
+                "job_id": job_id,
+                "status": job.status,
+                "result": job.result,
+                "updated_at": job.updated_at.isoformat(),
+                "analysis_report_id": (
+                    str(job.analysis_report_id) if job.analysis_report_id else None
+                ),
+            }
+
+            await redis_client.set(
+                f"job:{job_id}:status", json.dumps(job_status_data), ex=3600
+            )
 
             db.add(
                 StockEntry(
@@ -58,7 +75,6 @@ async def handle_message(data: dict, msg):
                     model_used="gemini",
                 )
             )
-
             db.add(UsageLog(user_id=user_id, action="analyze"))
             await db.commit()
 

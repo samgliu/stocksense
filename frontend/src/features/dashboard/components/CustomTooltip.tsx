@@ -6,7 +6,7 @@ export const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>
     return (
       <div className="rounded border bg-white px-4 py-2 shadow">
         <p className="text-sm font-semibold">
-          {data.company_name} ({data.ticker || data.sector})
+          {data.company_name} ({data.ticker || data.sector || data.date})
         </p>
         <p className="text-sm text-gray-600">Queries: {data.count}</p>
       </div>

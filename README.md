@@ -11,11 +11,10 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 - Frontend state managed with Redux Toolkit
 - Company profile view with LLM-generated analysis and forecast
 - Forecast chart with 30-day price range prediction and confidence intervals
-- Downloadable AI analysis results
 - Fully containerized development and deployment via Docker Compose
 - Kafka-based background job processing using LangGraph worker (via FastAPI producer)
 - Frontend job status polling with seamless async user experience
-- Internal Semantic Search Lab for testing vector-based queries
+- Semantic Search for vector-based queries
 - Airflow DAGs for automated ETL workflows
 
 ## Tech Stack
@@ -26,7 +25,7 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 - Authentication: Firebase
 - Database: PostgreSQL
 - Orchestration: Apache Airflow
-- Background Jobs: Kafka + LangGraph
+- Background Jobs: Kafka + Redis + LangGraph Workers
 - Containerization: Docker + docker-compose
 
 ## Getting Started
