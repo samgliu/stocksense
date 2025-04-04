@@ -25,7 +25,7 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 - Authentication: Firebase
 - Database: PostgreSQL
 - Orchestration: Apache Airflow
-- Background Jobs: Kafka + LangGraph
+- Background Jobs: Kafka + Redis + LangGraph Workers
 - Containerization: Docker + docker-compose
 
 ## Getting Started
