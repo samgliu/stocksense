@@ -4,3 +4,4 @@ asyncpg
 langgraph
 google-genai
 pydantic
+redis[async]
