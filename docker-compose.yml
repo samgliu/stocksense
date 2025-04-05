@@ -12,7 +12,7 @@ services:
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /credentials/serviceAccountKey.json
     depends_on:
-      - db
+      # - db
       - kafka
 
   # frontend:
@@ -26,16 +26,16 @@ services:
   #   depends_on:
   #     - backend
 
-  db:
-    image: postgres:15
-    ports:
-      - '5432:5432'
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: stocksense
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+  # db:
+  #   image: postgres:15
+  #   ports:
+  #     - '5432:5432'
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: stocksense
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
 
   
   redis:
@@ -79,30 +79,30 @@ services:
       - ./worker-langgraph/.env
     depends_on:
       - kafka
-      - db
+      # - db
     restart: on-failure
 
   # airflow
-  airflow-db:
-    image: postgres:15
-    ports:
-      - '5433:5433'
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-    volumes:
-      - airflow_pgdata:/var/lib/postgresql/data
-    env_file:
-      - ./airflow/.env
+  # airflow-db:
+  #   image: postgres:15
+  #   ports:
+  #     - '5433:5433'
+  #   environment:
+  #     POSTGRES_USER: airflow
+  #     POSTGRES_PASSWORD: airflow
+  #     POSTGRES_DB: airflow
+  #   volumes:
+  #     - airflow_pgdata:/var/lib/postgresql/data
+  #   env_file:
+  #     - ./airflow/.env
 
   airflow-init:
     build:
       context: ./airflow
       dockerfile: Dockerfile
     image: apache/airflow:latest-python3.11
-    depends_on:
-      - airflow-db
+    # depends_on:
+    #   - airflow-db
     volumes:
       - ./airflow:/opt/airflow
     env_file:
@@ -148,7 +148,7 @@ services:
     command: scheduler
 
 volumes:
-  pgdata:
-  airflow_pgdata:
+  # pgdata:
+  # airflow_pgdata:
   kafka_data:
   redis-data:
