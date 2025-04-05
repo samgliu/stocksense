@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Dict
 from uuid import UUID
 from datetime import datetime
@@ -25,5 +25,4 @@ class AnalysisReportResponse(AnalysisReportBase):
     id: UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
