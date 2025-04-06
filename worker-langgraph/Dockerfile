@@ -5,4 +5,4 @@ WORKDIR /app
 COPY . . 
 RUN pip install -r requirements.txt
 
-CMD ["python", "-m", "app.consumer"]
+CMD ["sh", "-c", "python -m app.consumer & exec python app/health_server.py"]
