@@ -64,7 +64,7 @@ async def poll_next():
             consumername=REDIS_CONSUMER_NAME,
             streams={REDIS_STREAM: ">"},
             count=1,
-            block=5000,  # ms (5s)
+            block=20000,  # ms
         )
 
         if entries:
