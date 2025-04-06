@@ -195,7 +195,7 @@ async def analyze_company(
             raise HTTPException(status_code=429, detail="Daily usage limit reached")
 
     job_id = str(uuid4())
-    send_analysis_job(
+    await send_analysis_job(
         {
             "job_id": job_id,
             "user_id": str(user.id),

@@ -1,5 +1,15 @@
 import os
 import redis.asyncio as redis
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+REDIS_USE_SSL = os.getenv("REDIS_USE_SSL", "false").lower() == "true"
+
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    ssl=REDIS_USE_SSL,
+    decode_responses=True,
+)
