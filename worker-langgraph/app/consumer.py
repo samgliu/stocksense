@@ -14,7 +14,7 @@ from app.langgraph_app import run_analysis_graph
 from app.utils.redis import redis_client
 
 # Config
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER")
 KAFKA_TOPIC = "analysis-queue"
 
 # Kafka config
