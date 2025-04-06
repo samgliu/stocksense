@@ -8,12 +8,14 @@ from app.database import Base
 class UserRole(str, enum.Enum):
     USER = 'user'
     ADMIN = 'admin'
+    ANONYMOUS = 'anonymous'
 
 class User(Base):
     __tablename__ = 'users'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String, unique=True, nullable=False, index=True)
+    firebase_uid = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, nullable=True, index=True)
     name = Column(String)
     role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     verified = Column(Boolean, default=False)

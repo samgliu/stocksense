@@ -19,18 +19,27 @@ async def auth_verify(request: Request, db: AsyncSession = Depends(get_async_db)
 
     email = user_data.get("email")
     name = user_data.get("name")
+    firebase_uid = user_data.get("uid")
 
     # Fetch user
-    result = await db.execute(select(User).where(User.email == email))
+    result = await db.execute(select(User).where(User.firebase_uid == firebase_uid))
     user = result.scalar_one_or_none()
 
     now = datetime.now(timezone.utc)
 
     if not user:
+        if email == "samgliu19@gmail.com":
+            role = UserRole.ADMIN
+        elif email == "guest@stocksense.dev":
+            role = UserRole.ANONYMOUS
+        else:
+            role = UserRole.USER
+
         user = User(
+            firebase_uid=firebase_uid,
             email=email,
-            name=name,
-            role=UserRole.ADMIN if email == "samgliu19@gmail.com" else UserRole.USER,
+            name=name or "Anonymous",
+            role=role,
             verified=True,
             last_login=now,
         )

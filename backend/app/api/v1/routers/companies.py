@@ -178,7 +178,7 @@ async def analyze_company(
     db: AsyncSession = Depends(get_async_db),
 ):
     user_data = request.state.user
-    user_result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
     user = user_result.scalar_one()
 
     if user.role == UserRole.USER:
