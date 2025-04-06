@@ -39,4 +39,7 @@ export const routers = createBrowserRouter([
     path: '*',
     element: <NotFound />,
   },
+  {
+    basename: '/stocksense',
+  },
 ]);
