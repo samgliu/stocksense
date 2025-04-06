@@ -11,3 +11,4 @@ COPY ./alembic ./alembic
 COPY entrypoint.py .
 
 CMD ["python", "entrypoint.py"]
+EXPOSE 8000

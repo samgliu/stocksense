@@ -51,9 +51,7 @@ def main():
 
     print("🚀 Starting FastAPI server...")
     port = os.environ.get("PORT", "8000")
-    subprocess.run(
-        ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", port, "--reload"]
-    )
+    subprocess.run(["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", port])
 
 
 if __name__ == "__main__":
