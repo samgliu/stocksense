@@ -13,7 +13,11 @@ from app.utils.redis import redis_client
 from app.utils.message_queue import poll_next, commit
 from asyncio import sleep
 
-async def wait_for_job(db: AsyncSession, job_id: str, retries: int = 5, delay: float = 0.3):
+CONCURRENT_TASKS = 1
+
+async def wait_for_job(
+    db: AsyncSession, job_id: str, retries: int = 5, delay: float = 0.3
+):
     for _ in range(retries):
         result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
         job = result.scalar_one_or_none()
@@ -22,13 +26,12 @@ async def wait_for_job(db: AsyncSession, job_id: str, retries: int = 5, delay: f
         await sleep(delay)
     return None
 
+
 async def handle_message(data: dict, msg):
     async with AsyncSessionLocal() as db:
         try:
             job_id = data["job_id"]
             user_id = data["user_id"]
-            payload = AnalyzeRequest(**data["body"])
-
             print(f"⚙️  Processing job {job_id} for user {data['email']}...")
             job = await wait_for_job(db, job_id)
             if not job:
@@ -38,6 +41,15 @@ async def handle_message(data: dict, msg):
             job.status = "processing"
             await db.flush()
 
+            raw_input = data["body"]
+            if isinstance(raw_input, str):
+                try:
+                    raw_input = json.loads(raw_input)
+                except json.JSONDecodeError as e:
+                    print(f"❌ Failed to decode job input: {e}")
+                    return
+
+            payload = AnalyzeRequest(**raw_input)
             result = await run_analysis_graph(payload.model_dump())
             summary = result["result"]
 
@@ -80,14 +92,13 @@ async def handle_message(data: dict, msg):
 
 async def consume_loop():
     while True:
-        data, msg = await poll_next()
-        if not data:
-            await asyncio.sleep(0.1)
-            continue
-        if not isinstance(data, dict) or "job_id" not in data:
-            print("⚠️ Skipping invalid or empty Redis job payload")
-            continue
-        asyncio.create_task(handle_message(data, msg))
+        async with asyncio.TaskGroup() as tg:
+            for _ in range(CONCURRENT_TASKS):  # up to CONCURRENT_TASKS tasks per batch
+                data, msg = await poll_next()
+                if not data:
+                    await asyncio.sleep(0.1)
+                    continue
+                tg.create_task(handle_message(data, msg))
 
 
 if __name__ == "__main__":

@@ -1,14 +1,15 @@
-# app/services/message_queue.py
-
+import asyncio
 import os
 import json
-import asyncio
+from sqlalchemy import text
+from app.database import AsyncSessionLocal
+from app.models import JobStatus
 from confluent_kafka import Consumer as KafkaConsumer
-from app.utils.redis import redis_client
 
 USE_KAFKA = os.getenv("KAFKA_ENABLED", "").lower() == "true"
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "")
 KAFKA_TOPIC = "analysis-queue"
+DB_POLL_INTERVAL_SECONDS = 5
 
 consumer = None
 
@@ -28,16 +29,12 @@ if USE_KAFKA and KAFKA_BROKER:
         print(f"⚠️ Kafka consumer failed: {e}")
         consumer = None
 else:
-    print("📦 Redis consumer mode enabled")
-
-REDIS_STREAM = "analysis-stream"
-REDIS_CONSUMER_GROUP = "worker-group"
-REDIS_CONSUMER_NAME = "worker-1"
+    print("📦 Kafka disabled; using DB fallback polling")
 
 
 # POLL MESSAGE
 async def poll_next():
-    if consumer is not None:
+    if consumer:
         try:
             msg = consumer.poll(1.0)
             if msg and not msg.error():
@@ -48,35 +45,47 @@ async def poll_next():
             print(f"❌ Kafka poll exception: {e}")
         return None, None
 
-    # Redis Stream fallback (Kafka disabled)
+    # DB fallback using FOR UPDATE SKIP LOCKED
+    await asyncio.sleep(DB_POLL_INTERVAL_SECONDS)
     try:
-        # Create group if not exists
-        try:
-            await redis_client.xgroup_create(
-                REDIS_STREAM, REDIS_CONSUMER_GROUP, id="0", mkstream=True
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                text(
+                    """
+                SELECT * FROM job_status
+                WHERE status = 'queued'
+                ORDER BY created_at
+                FOR UPDATE SKIP LOCKED
+                LIMIT 1
+            """
+                )
             )
-        except Exception as e:
-            if "BUSYGROUP" not in str(e):
-                print(f"⚠️ Redis stream group creation failed: {e}")
+            row = result.fetchone()
 
-        entries = await redis_client.xreadgroup(
-            groupname=REDIS_CONSUMER_GROUP,
-            consumername=REDIS_CONSUMER_NAME,
-            streams={REDIS_STREAM: ">"},
-            count=1,
-            block=20000,  # ms
-        )
+            if row is None:
+                return None, None
 
-        if entries:
-            stream_key, messages = entries[0]
-            msg_id, msg_data = messages[0]
-            payload = json.loads(msg_data["payload"])
-            return payload, (REDIS_STREAM, msg_id)
+            # Mark as processing
+            await db.execute(
+                text(
+                    """
+                UPDATE job_status
+                SET status = 'processing', updated_at = NOW()
+                WHERE id = :id
+            """
+                ),
+                {"id": row.id},
+            )
+            await db.commit()
 
-        return None, None  # timeout reached, nothing to do
-
+            return {
+                "job_id": row.job_id,
+                "user_id": str(row.user_id),
+                "email": "",
+                "body": row.input,
+            }, None
     except Exception as e:
-        print(f"❌ Redis stream read error: {e}")
+        print(f"❌ DB poll failed: {e}")
         return None, None
 
 
@@ -84,11 +93,3 @@ async def poll_next():
 def commit(msg):
     if consumer and msg:
         consumer.commit(msg)
-    elif isinstance(msg, tuple) and len(msg) == 2:
-        stream_name, msg_id = msg
-        try:
-            asyncio.create_task(
-                redis_client.xack(stream_name, REDIS_CONSUMER_GROUP, msg_id)
-            )
-        except Exception as e:
-            print(f"❌ Redis stream ack failed: {e}")
