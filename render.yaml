@@ -5,6 +5,8 @@ services:
     plan: free
     region: oregon
     dockerfilePath: ./backend/Dockerfile
+    buildCommand: ''
+    startCommand: 'python entrypoint.py'
     autoDeploy: false
     envVars:
       - key: GEMINI_API_KEY
@@ -42,6 +44,8 @@ services:
     plan: free
     region: oregon
     dockerfilePath: ./worker-langgraph/Dockerfile
+    buildCommand: ''
+    startCommand: 'python -m app.consumer'
     autoDeploy: false
     envVars:
       - key: GEMINI_API_KEY
