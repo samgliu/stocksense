@@ -8,6 +8,7 @@ from datetime import datetime
 class UserRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
+    ANONYMOUS = "anonymous"
 
 
 class UserBase(BaseModel):
@@ -17,8 +18,8 @@ class UserBase(BaseModel):
 
 class UserOut(BaseModel):
     id: UUID
-    email: str
-    name: str
+    email: Optional[str]
+    name: Optional[str]    
     role: str
     verified: bool
     usage_count_today: int

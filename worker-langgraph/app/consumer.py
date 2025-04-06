@@ -75,7 +75,6 @@ async def handle_message(data: dict, msg):
                     model_used="gemini",
                 )
             )
-            db.add(UsageLog(user_id=user_id, action="analyze"))
             await db.commit()
 
             consumer.commit(msg)

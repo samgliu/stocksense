@@ -22,7 +22,7 @@ async def analyze_stock_endpoint(
     db: AsyncSession = Depends(get_async_db),
 ):
     user_data = request.state.user
-    user_result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
     user = user_result.scalar_one()
 
     if user.role == UserRole.USER:
@@ -60,7 +60,7 @@ async def analyze_stock_endpoint(
 @router.get("/history", response_model=list[StockHistoryItem])
 async def get_history(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user
-    user_result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
     user = user_result.scalar_one()
 
     entries_result = await db.execute(
