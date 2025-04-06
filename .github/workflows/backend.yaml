@@ -27,4 +27,5 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           CI: true
-        run: render deploy --yaml render.yaml --yes
+        run: |
+          render deploys create --yaml render.yaml --yes
