@@ -47,11 +47,13 @@ async def poll_next():
     # Redis fallback
     try:
         data = await redis_client.rpop(KAFKA_TOPIC)
-        if data:
-            return json.loads(data), None
+        if data is None:
+            return None, None
+
+        return json.loads(data), None
     except Exception as e:
         print(f"❌ Redis JSON decode error: {e}")
-    return None, None
+        return None, None
 
 
 # COMMIT OFFSET
