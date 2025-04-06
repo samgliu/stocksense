@@ -1,35 +1,26 @@
 import asyncio
 import json
-import os
 from datetime import datetime, timezone
 
-from confluent_kafka import Consumer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import engine, AsyncSessionLocal
+from app.database import AsyncSessionLocal
 from app.models import JobStatus, StockEntry, UsageLog
 from app.schemas.company import AnalyzeRequest
 from app.langgraph_app import run_analysis_graph
 from app.utils.redis import redis_client
+from app.utils.message_queue import poll_next, commit
+from asyncio import sleep
 
-# Config
-KAFKA_BROKER = os.getenv("KAFKA_BROKER")
-KAFKA_TOPIC = "analysis-queue"
-
-# Kafka config
-consumer = Consumer(
-    {
-        "bootstrap.servers": KAFKA_BROKER,
-        "group.id": "langgraph-consumer",
-        "auto.offset.reset": "earliest",
-        "enable.auto.commit": False,
-    }
-)
-
-consumer.subscribe([KAFKA_TOPIC])
-print(f"🚀 LangGraph worker is listening to '{KAFKA_TOPIC}'...")
-
+async def wait_for_job(db: AsyncSession, job_id: str, retries: int = 5, delay: float = 0.3):
+    for _ in range(retries):
+        result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
+        job = result.scalar_one_or_none()
+        if job:
+            return job
+        await sleep(delay)
+    return None
 
 async def handle_message(data: dict, msg):
     async with AsyncSessionLocal() as db:
@@ -39,8 +30,11 @@ async def handle_message(data: dict, msg):
             payload = AnalyzeRequest(**data["body"])
 
             print(f"⚙️  Processing job {job_id} for user {data['email']}...")
-            job = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
-            job = job.scalar_one()
+            job = await wait_for_job(db, job_id)
+            if not job:
+                print(f"❌ Job {job_id} not found after retries")
+                commit(msg)
+                return
             job.status = "processing"
             await db.flush()
 
@@ -77,8 +71,8 @@ async def handle_message(data: dict, msg):
             )
             await db.commit()
 
-            consumer.commit(msg)
-            print(f"✅ Job {job_id} done and committed to Kafka")
+            commit(msg)
+            print(f"✅ Job {job_id} done and committed")
 
         except Exception as e:
             print(f"❌ Error processing job {data.get('job_id')}: {e}")
@@ -86,20 +80,11 @@ async def handle_message(data: dict, msg):
 
 async def consume_loop():
     while True:
-        msg = consumer.poll(1.0)
-        if msg is None:
+        data, msg = await poll_next()
+        if not data:
             await asyncio.sleep(0.1)
             continue
-
-        if msg.error():
-            print("❌ Kafka error:", msg.error())
-            continue
-
-        try:
-            data = json.loads(msg.value())
-            asyncio.create_task(handle_message(data, msg))
-        except Exception as e:
-            print(f"❌ JSON decode error: {e}")
+        asyncio.create_task(handle_message(data, msg))
 
 
 if __name__ == "__main__":
