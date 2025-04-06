@@ -13,6 +13,7 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 - Forecast chart with 30-day price range prediction and confidence intervals
 - Fully containerized development and deployment via Docker Compose
 - Kafka-based background job processing using LangGraph worker (via FastAPI producer)
+- Redis used for caching job status and improving async experience
 - Frontend job status polling with seamless async user experience
 - Semantic Search for vector-based queries
 - Airflow DAGs for automated ETL workflows
@@ -22,11 +23,13 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 - Frontend: React + Vite + Tailwind CSS + Redux Toolkit
 - Backend: FastAPI (Python)
 - Vector Search: SentenceTransformers + Qdrant
-- Authentication: Firebase
-- Database: PostgreSQL
-- Orchestration: Apache Airflow
+- Authentication: Firebase (Google SSO + Anonymous)
+- Database: PostgreSQL (via Supabase or local)
+- Orchestration: Apache Airflow (local)
 - Background Jobs: Kafka + Redis + LangGraph Workers
 - Containerization: Docker + docker-compose
+- Caching: Redis
+- Messaging Queue: Kafka (local with Docker)
 
 ## Getting Started
 
@@ -66,9 +69,11 @@ Use Airflow DAGs or manual scripts to:
 ### Cloud Deployment (Planned)
 
 - Frontend: GitHub Pages or Vercel
-- Backend: Render or Cloud Run
+- Backend: Render, Cloud Run, or Oracle Free Tier K8s
 - Qdrant: Qdrant Cloud
-- PostgreSQL: Supabase or Neon
+- PostgreSQL: Supabase
+- Redis: Upstash or containerized with app
+- Kafka: Containerized (local Docker or K8s only)
 - API security: Cloudflare Zero Trust
 
 ## Future Improvements
@@ -77,8 +82,9 @@ StockSense is an ongoing project with several enhancements planned:
 
 - **CI/CD & Quality**: Add unit/integration tests (Vitest, Pytest), GitHub Actions pipelines, and Sentry monitoring.
 - **Historical Data & ML**: Enable historical CSV upload, price trend prediction, and advanced data visualization.
-- **Semantic Search**: Expand Qdrant-powered search with text embeddings and real-time semantic filtering.
-- **Async Backend**: Add Redis and Kafka job queues with LangGraph worker consumers for scalable background tasks.
+- **Streaming LLM**: Stream AI responses token-by-token to frontend for a better user experience.
+- **AI Agent**: Add intelligent memory-aware analysis agent to handle free text queries.
+- **Semantic Search**: Expand Qdrant-powered search with real-time semantic filtering.
 - **Data Pipelines**: Automate enrichment and ETL with Airflow and DBT.
-- **Cloud Deployment**: Deploy production-ready app using Terraform and Kubernetes on AWS or GCP.
+- **Cloud Deployment**: Deploy production-ready app using Terraform and Kubernetes on Oracle or AWS/GCP.
 - **Feature Flags & Analytics**: Add user behavior tracking and controlled feature rollouts.

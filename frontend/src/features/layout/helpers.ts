@@ -1,5 +1,5 @@
 export const getInitials = (name: string | null, email: string | null) => {
-  if (name) {
+  if (name && !name.includes('Anonymous')) {
     const cleanName = name.replace(/\(.*?\)/, '').trim();
 
     return cleanName
@@ -9,7 +9,7 @@ export const getInitials = (name: string | null, email: string | null) => {
       .toUpperCase();
   }
 
-  if (email) {
+  if (email && !email.includes('guest')) {
     return email[0]?.toUpperCase() ?? '?';
   }
 
