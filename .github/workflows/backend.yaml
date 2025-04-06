@@ -18,11 +18,10 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Install Render CLI (latest)
+      - name: Install Render CLI
         run: |
-          curl -L https://github.com/render-oss/cli/releases/latest/download/cli_linux_amd64.tar.gz -o render.tar.gz
-          tar -xzf render.tar.gz
-          sudo mv render /usr/local/bin/
+          curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | sh
+          echo "$HOME/.render/bin" >> $GITHUB_PATH
 
       - name: Deploy all services from render.yaml
         env:
