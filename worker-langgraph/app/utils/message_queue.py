@@ -30,6 +30,10 @@ if USE_KAFKA and KAFKA_BROKER:
 else:
     print("📦 Redis consumer mode enabled")
 
+REDIS_STREAM = "analysis-stream"
+REDIS_CONSUMER_GROUP = "worker-group"
+REDIS_CONSUMER_NAME = "worker-1"
+
 
 # POLL MESSAGE
 async def poll_next():
@@ -44,15 +48,35 @@ async def poll_next():
             print(f"❌ Kafka poll exception: {e}")
         return None, None
 
-    # Redis fallback
+    # Redis Stream fallback (Kafka disabled)
     try:
-        data = await redis_client.rpop(KAFKA_TOPIC)
-        if data is None:
-            return None, None
+        # Create group if not exists
+        try:
+            await redis_client.xgroup_create(
+                REDIS_STREAM, REDIS_CONSUMER_GROUP, id="0", mkstream=True
+            )
+        except Exception as e:
+            if "BUSYGROUP" not in str(e):
+                print(f"⚠️ Redis stream group creation failed: {e}")
 
-        return json.loads(data), None
+        entries = await redis_client.xreadgroup(
+            groupname=REDIS_CONSUMER_GROUP,
+            consumername=REDIS_CONSUMER_NAME,
+            streams={REDIS_STREAM: ">"},
+            count=1,
+            block=5000,  # ms (5s)
+        )
+
+        if entries:
+            stream_key, messages = entries[0]
+            msg_id, msg_data = messages[0]
+            payload = json.loads(msg_data["payload"])
+            return payload, (REDIS_STREAM, msg_id)
+
+        return None, None  # timeout reached, nothing to do
+
     except Exception as e:
-        print(f"❌ Redis JSON decode error: {e}")
+        print(f"❌ Redis stream read error: {e}")
         return None, None
 
 
@@ -60,3 +84,11 @@ async def poll_next():
 def commit(msg):
     if consumer and msg:
         consumer.commit(msg)
+    elif isinstance(msg, tuple) and len(msg) == 2:
+        stream_name, msg_id = msg
+        try:
+            asyncio.create_task(
+                redis_client.xack(stream_name, REDIS_CONSUMER_GROUP, msg_id)
+            )
+        except Exception as e:
+            print(f"❌ Redis stream ack failed: {e}")

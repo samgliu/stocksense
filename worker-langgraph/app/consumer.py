@@ -84,6 +84,9 @@ async def consume_loop():
         if not data:
             await asyncio.sleep(0.1)
             continue
+        if not isinstance(data, dict) or "job_id" not in data:
+            print("⚠️ Skipping invalid or empty Redis job payload")
+            continue
         asyncio.create_task(handle_message(data, msg))
 
 
