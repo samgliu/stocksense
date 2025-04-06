@@ -1,0 +1,78 @@
+services:
+  - type: web
+    name: backend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    buildCommand: ''
+    startCommand: 'python entrypoint.py'
+    autoDeploy: false
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_CLOUD_URL
+        sync: false
+      - key: FMP_API_KEY
+        sync: false
+      - key: FMP_PROFILE_URL
+        sync: false
+      - key: UUID_NAMESPACE
+        sync: false
+      - key: THE_NEWS_API_KEY
+        sync: false
+      - key: KAFKA_ENABLED
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_USE_SSL
+        sync: false
+
+  - type: worker
+    name: langgraph-worker
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./worker-langgraph/Dockerfile
+    buildCommand: ''
+    startCommand: 'python -m app.consumer'
+    autoDeploy: false
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_CLOUD_URL
+        sync: false
+      - key: FMP_API_KEY
+        sync: false
+      - key: FMP_PROFILE_URL
+        sync: false
+      - key: UUID_NAMESPACE
+        sync: false
+      - key: THE_NEWS_API_KEY
+        sync: false
+      - key: KAFKA_ENABLED
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_USE_SSL
+        sync: false
