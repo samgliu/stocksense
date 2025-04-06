@@ -28,4 +28,4 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           CI: true
         run: |
-          render deploys create --yaml render.yaml --yes
+          render blueprint deploy --yes
