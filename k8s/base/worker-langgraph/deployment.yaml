@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-langgraph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker-langgraph
+  template:
+    metadata:
+      labels:
+        app: worker-langgraph
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: worker
+          image: ghcr.io/samgliu/stocksense-worker-langgraph:latest          
+          command: ['python', '-m', 'app.consumer']
+          envFrom:
+            - secretRef:
+                name: worker-secrets
+            - configMapRef:
+                name: worker-config
