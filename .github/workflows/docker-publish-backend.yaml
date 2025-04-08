@@ -1,15 +1,15 @@
-name: Publish Worker Docker Image
+name: Publish Backend Docker Image
 
 on:
   push:
     branches: [main]
     paths:
-      - 'worker-langgraph/**'
+      - 'backend/**'
   workflow_dispatch:
 
 jobs:
   build-and-push:
-    name: Build & Push Worker Image
+    name: Build & Push Backend Image
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push worker image
+      - name: Build and push backend image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/stocksense-worker:latest ./worker-langgraph
-          docker push ghcr.io/${{ github.repository_owner }}/stocksense-worker:latest
+          docker build -t ghcr.io/${{ github.repository_owner }}/stocksense-backend:latest ./backend
+          docker push ghcr.io/${{ github.repository_owner }}/stocksense-backend:latest
