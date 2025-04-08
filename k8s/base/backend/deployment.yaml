@@ -17,6 +17,7 @@ spec:
       containers:
         - name: backend
           image: ghcr.io/samgliu/stocksense-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           envFrom:

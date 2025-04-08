@@ -16,7 +16,8 @@ spec:
         - name: ghcr-secret
       containers:
         - name: worker
-          image: ghcr.io/samgliu/stocksense-worker-langgraph:latest          
+          image: ghcr.io/samgliu/stocksense-worker:latest
+          imagePullPolicy: Always         
           command: ['python', '-m', 'app.consumer']
           envFrom:
             - secretRef:

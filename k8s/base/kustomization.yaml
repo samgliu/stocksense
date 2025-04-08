@@ -3,5 +3,9 @@ kind: Kustomization
 
 resources:
   - backend/deployment.yaml
+  - backend/secrets.yaml
+  - backend/config.yaml
   - backend/service.yaml
   - worker-langgraph/deployment.yaml
+  - worker-langgraph/secrets.yaml
+  - worker-langgraph/config.yaml

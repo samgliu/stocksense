@@ -12,6 +12,8 @@ build
 # Local env/config
 .env
 *.sqlite3
+secrets*
+config*
 
 # System
 .DS_Store
