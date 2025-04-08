@@ -1,0 +1,34 @@
+name: Build & Push Docker Images to GHCR
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  DOCKER_USERNAME: samgliu
+  BACKEND_IMAGE: ghcr.io/samgliu/stocksense-backend
+  WORKER_IMAGE: ghcr.io/samgliu/stocksense-worker-langgraph
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ env.DOCKER_USERNAME }} --password-stdin
+
+      - name: Build backend image
+        run: |
+          docker build -t $BACKEND_IMAGE:latest -f backend/Dockerfile .
+          docker push $BACKEND_IMAGE:latest
+
+      - name: Build worker image
+        run: |
+          docker build -t $WORKER_IMAGE:latest -f worker-langgraph/Dockerfile .
+          docker push $WORKER_IMAGE:latest
