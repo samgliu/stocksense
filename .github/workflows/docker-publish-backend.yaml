@@ -21,7 +21,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_PAT }}
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Build and push backend image
         run: |
