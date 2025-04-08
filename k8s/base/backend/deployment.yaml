@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+          - name: ghcr-secret
+      volumes:
+        - name: firebase-credentials
+          secret:
+            secretName: firebase-credentials
+      containers:
+        - name: backend
+          image: ghcr.io/samgliu/stocksense-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: backend-secrets
+            - configMapRef:
+                name: backend-config
+          volumeMounts:
+            - name: firebase-credentials
+              mountPath: /app/credentials
+              readOnly: true
