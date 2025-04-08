@@ -8,6 +8,7 @@ redis[async]
 pydantic
 pydantic[email]
 sentence_transformers
+accelerate
 
 # File upload & parsing
 python-multipart
