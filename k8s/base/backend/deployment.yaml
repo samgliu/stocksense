@@ -14,6 +14,10 @@ spec:
     spec:
       imagePullSecrets:
           - name: ghcr-secret
+      volumes:
+        - name: firebase-credentials
+          secret:
+            secretName: firebase-credentials
       containers:
         - name: backend
           image: ghcr.io/samgliu/stocksense-backend:latest
@@ -25,3 +29,7 @@ spec:
                 name: backend-secrets
             - configMapRef:
                 name: backend-config
+          volumeMounts:
+            - name: firebase-credentials
+              mountPath: /app/credentials
+              readOnly: true

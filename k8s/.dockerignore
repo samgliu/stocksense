@@ -12,7 +12,7 @@ build
 # Local env/config
 .env
 *.sqlite3
-secrets*
+*secrets*
 config*
 
 # System
