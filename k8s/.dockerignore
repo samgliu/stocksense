@@ -1,0 +1,20 @@
+# Node / Python stuff
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Build outputs
+dist
+build
+
+# Local env/config
+.env
+*.sqlite3
+*secrets*
+config*
+
+# System
+.DS_Store
+.vscode
