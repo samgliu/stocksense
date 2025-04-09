@@ -12,36 +12,31 @@ import SignInRoute from '@/routes/SignInRoute';
 import StockAnalyzePage from '../features/stock/pages/StockAnalyzePage';
 import { StockHistory } from '@/features/stock/components/StockHistory';
 
-export const routers = createBrowserRouter(
-  [
-    {
-      path: '/',
-      element: <Layout />,
-      children: [
-        { index: true, element: <Navigate to="/home" replace /> },
-        { path: 'signin', element: <SignInRoute /> },
-
-        {
-          path: '',
-          element: <ProtectedRoute />,
-          errorElement: <ErrorElement />,
-          children: [
-            { path: 'home', element: <HomeRoute /> },
-            { path: 'semantic-search', element: <SemanticSearch /> },
-            { path: 'company/profile/:id/:ticker', element: <CompanyProfile /> },
-            { path: 'analyze', element: <StockAnalyzePage /> },
-            { path: 'history', element: <StockHistory /> },
-            { path: 'account', element: <AccountRoute /> },
-          ],
-        },
-      ],
-    },
-    {
-      path: '*',
-      element: <NotFound />,
-    },
-  ],
+export const routers = createBrowserRouter([
   {
-    basename: '/stocksense',
+    path: '/',
+    element: <Layout />,
+    children: [
+      { index: true, element: <Navigate to="/home" replace /> },
+      { path: 'signin', element: <SignInRoute /> },
+
+      {
+        path: '',
+        element: <ProtectedRoute />,
+        errorElement: <ErrorElement />,
+        children: [
+          { path: 'home', element: <HomeRoute /> },
+          { path: 'semantic-search', element: <SemanticSearch /> },
+          { path: 'company/profile/:id/:ticker', element: <CompanyProfile /> },
+          { path: 'analyze', element: <StockAnalyzePage /> },
+          { path: 'history', element: <StockHistory /> },
+          { path: 'account', element: <AccountRoute /> },
+        ],
+      },
+    ],
   },
-);
+  {
+    path: '*',
+    element: <NotFound />,
+  },
+]);
