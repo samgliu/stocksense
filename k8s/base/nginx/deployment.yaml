@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ingress-controller
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-ingress-controller
+  template:
+    metadata:
+      labels:
+        app: nginx-ingress-controller
+    spec:
+      containers:
+        - name: nginx-ingress-controller
+          image: k8s.gcr.io/ingress-nginx/controller:v1.1.0
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+            - containerPort: 8443
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress-controller
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx-ingress-controller
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
