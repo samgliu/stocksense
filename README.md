@@ -2,34 +2,38 @@
 
 StockSense is an AI-powered stock analysis and semantic search platform. It combines structured financial data with natural language understanding to enable deeper exploration of public companies through intelligent search and analysis.
 
+## Demo
+
+You can try the live demo of **StockSense** here: [Live Demo](https://samgliu.github.io/stocksense).
+
 ## Features
 
-- Semantic search for natural language stock queries (powered by Qdrant and SentenceTransformers)
-- Company summaries integrated from existing SP500 datasets
-- SP500 company enrichment with sector, industry, and financials
-- Firebase-authenticated API with RTK Query support
-- Frontend state managed with Redux Toolkit
-- Company profile view with LLM-generated analysis and forecast
-- Forecast chart with 30-day price range prediction and confidence intervals
+- **Semantic Search** for natural language stock queries (powered by Qdrant and SentenceTransformers)
+- **Company Summaries** integrated from existing SP500 datasets
+- **SP500 Company Enrichment** with sector, industry, and financials
+- **Firebase-Authenticated API** with RTK Query support
+- **Frontend State Managed** with Redux Toolkit
+- **Company Profile View** with LLM-generated analysis and forecast
+- **Forecast Chart** with 30-day price range prediction and confidence intervals
 - Fully containerized development and deployment via Docker Compose
-- Kafka-based background job processing using LangGraph worker (via FastAPI producer)
-- Redis used for caching job status and improving async experience
-- Frontend job status polling with seamless async user experience
-- Semantic Search for vector-based queries
-- Airflow DAGs for automated ETL workflows
+- **Kafka-Based Background Job Processing** using LangGraph worker (via FastAPI producer)
+- **Redis** used for caching job status and improving async experience
+- **Frontend Job Status Polling** with seamless async user experience
+- **Semantic Search** for vector-based queries
+- **Airflow DAGs** for automated ETL workflows
 
 ## Tech Stack
 
-- Frontend: React + Vite + Tailwind CSS + Redux Toolkit
-- Backend: FastAPI (Python)
-- Vector Search: SentenceTransformers + Qdrant
-- Authentication: Firebase (Google SSO + Anonymous)
-- Database: PostgreSQL (via Supabase or local)
-- Orchestration: Apache Airflow (local)
-- Background Jobs: Kafka + Redis + LangGraph Workers
-- Containerization: Docker + docker-compose
-- Caching: Redis
-- Messaging Queue: Kafka (local with Docker)
+- **Frontend**: React + Vite + Tailwind CSS + Redux Toolkit, hosted on [GitHub Pages](https://samgliu.github.io/stocksense/)
+- **Backend**: FastAPI (Python), hosted on Oracle ARM-based K8s instance
+- **Vector Search**: SentenceTransformers + Qdrant
+- **Authentication**: Firebase (Google SSO + Anonymous)
+- **Database**: PostgreSQL (via Supabase or local)
+- **Orchestration**: Apache Airflow (local)
+- **Background Jobs**: Kafka + Redis + LangGraph Workers
+- **Containerization**: Docker + docker-compose
+- **Caching**: Redis
+- **Messaging Queue**: Kafka (local with Docker)
 
 ## Getting Started
 
@@ -66,15 +70,16 @@ Use Airflow DAGs or manual scripts to:
 - Generate embeddings from summaries
 - Upload embeddings and metadata to Qdrant
 
-### Cloud Deployment (Planned)
+## Cloud Deployment (Current Setup)
 
-- Frontend: GitHub Pages or Vercel
-- Backend: Render, Cloud Run, or Oracle Free Tier K8s
-- Qdrant: Qdrant Cloud
-- PostgreSQL: Supabase
-- Redis: Upstash or containerized with app
-- Kafka: Containerized (local Docker or K8s only)
-- API security: Cloudflare Zero Trust
+- **Frontend**: [GitHub Pages](https://samgliu.github.io/stocksense/)
+- **Backend**: Oracle K8s Instance
+- **Qdrant**: Qdrant Cloud
+- **PostgreSQL**: Supabase
+- **Redis**: Upstash or containerized with the app
+- **Kafka**: Containerized (local Docker or K8s only)
+- **API Security**: Cloudflare Zero Trust
+- **SSL Termination**: Cloudflare Origin SSL Certificates for secure API communication
 
 ## Future Improvements
 
