@@ -4,7 +4,7 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 
 ## Demo
 
-You can try the live demo of **StockSense** here: [Live Demo](https://samgliu.github.io/stocksense).
+You can try the live demo of **StockSense** here: <a href="https://samgliu.github.io/stocksense" target="_blank">Live Demo</a>.
 
 ## Features
 
