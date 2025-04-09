@@ -20,6 +20,7 @@ asyncpg
 sqlalchemy
 psycopg2-binary  # PostgreSQL driver
 alembic          # Database migrations
+backoff
 
 # Auth & Firebase
 firebase-admin

@@ -1,6 +1,7 @@
 confluent-kafka
 sqlalchemy
 asyncpg
+backoff
 langgraph
 google-genai
 pydantic
