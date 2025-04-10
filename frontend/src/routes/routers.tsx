@@ -1,4 +1,4 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { Navigate, createHashRouter } from 'react-router-dom';
 
 import AccountRoute from '@/routes/AccountRoute';
 import { CompanyProfile } from '@/features/company/components/CompanyProfile';
@@ -12,36 +12,31 @@ import SignInRoute from '@/routes/SignInRoute';
 import StockAnalyzePage from '../features/stock/pages/StockAnalyzePage';
 import { StockHistory } from '@/features/stock/components/StockHistory';
 
-export const routers = createBrowserRouter(
-  [
-    {
-      path: '/',
-      element: <Layout />,
-      children: [
-        { index: true, element: <Navigate to="/home" replace /> },
-        { path: 'signin', element: <SignInRoute /> },
-
-        {
-          path: '',
-          element: <ProtectedRoute />,
-          errorElement: <ErrorElement />,
-          children: [
-            { path: 'home', element: <HomeRoute /> },
-            { path: 'semantic-search', element: <SemanticSearch /> },
-            { path: 'company/profile/:id/:ticker', element: <CompanyProfile /> },
-            { path: 'analyze', element: <StockAnalyzePage /> },
-            { path: 'history', element: <StockHistory /> },
-            { path: 'account', element: <AccountRoute /> },
-          ],
-        },
-      ],
-    },
-    {
-      path: '*',
-      element: <NotFound />,
-    },
-  ],
+export const routers = createHashRouter([
   {
-    basename: '/stocksense',
+    path: '/',
+    element: <Layout />,
+    children: [
+      { index: true, element: <Navigate to="/home" replace /> },
+      { path: 'signin', element: <SignInRoute /> },
+
+      {
+        path: '',
+        element: <ProtectedRoute />,
+        errorElement: <ErrorElement />,
+        children: [
+          { path: 'home', element: <HomeRoute /> },
+          { path: 'semantic-search', element: <SemanticSearch /> },
+          { path: 'company/profile/:id/:ticker', element: <CompanyProfile /> },
+          { path: 'analyze', element: <StockAnalyzePage /> },
+          { path: 'history', element: <StockHistory /> },
+          { path: 'account', element: <AccountRoute /> },
+        ],
+      },
+    ],
   },
-);
+  {
+    path: '*',
+    element: <NotFound />,
+  },
+]);
