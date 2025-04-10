@@ -19,11 +19,11 @@ if DATABASE_URL.startswith("postgresql://"):
 engine = create_async_engine(
     DATABASE_URL,
     future=True,
-    echo=True,
-    pool_size=15,
-    max_overflow=30,
-    pool_timeout=30,
-    pool_recycle=1800,
+    echo=False,
+    pool_size=30,
+    max_overflow=50,
+    pool_timeout=60,
+    pool_recycle=600,
     pool_pre_ping=True,
 )
 
