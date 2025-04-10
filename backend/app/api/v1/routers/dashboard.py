@@ -27,7 +27,7 @@ async def get_daily_analysis(db: AsyncSession = Depends(get_async_db)):
         )
         .where(StockEntry.created_at >= start_date)
         .group_by(func.date(StockEntry.created_at))
-        .order_by("date")
+        .order_by(func.date(StockEntry.created_at))
     )
 
     result = await db.execute(stmt)

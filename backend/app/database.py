@@ -1,6 +1,11 @@
 import os
+from typing import AsyncGenerator
 import backoff
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    async_sessionmaker,
+    AsyncSession,
+)
 from sqlalchemy.orm import declarative_base
 from asyncpg import exceptions
 
@@ -11,7 +16,16 @@ if not DATABASE_URL:
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
 
-engine = create_async_engine(DATABASE_URL, future=True, echo=True)
+engine = create_async_engine(
+    DATABASE_URL,
+    future=True,
+    echo=True,
+    pool_size=15,
+    max_overflow=30,
+    pool_timeout=30,
+    pool_recycle=1800,
+    pool_pre_ping=True,
+)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine, expire_on_commit=False, autoflush=False, autocommit=False
@@ -26,7 +40,13 @@ Base = declarative_base()
     max_tries=5,
     jitter=backoff.full_jitter,
 )
-async def get_async_db():
-    """Async database connection with retry logic"""
-    async with AsyncSessionLocal() as session:
-        return session
+async def _get_session() -> AsyncSession:
+    return AsyncSessionLocal()
+
+
+async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
+    session = await _get_session()
+    try:
+        yield session
+    finally:
+        await session.close()
