@@ -52,8 +52,14 @@ async def get_monthly_summary(db: AsyncSession = Depends(get_async_db)):
         StockEntry.created_at < start_of_this_month,
     )
 
-    current_month_count = (await db.execute(current_month_stmt)).scalar()
-    last_month_count = (await db.execute(last_month_stmt)).scalar()
+    stmt = select(
+        func.count().filter(StockEntry.created_at >= start_of_this_month),
+        func.count().filter(
+            StockEntry.created_at >= start_of_last_month,
+            StockEntry.created_at < start_of_this_month,
+        ),
+    )
+    current_month_count, last_month_count = (await db.execute(stmt)).one()
 
     return {
         "current_month_count": current_month_count,
@@ -75,7 +81,7 @@ async def get_history_summary(db: AsyncSession = Depends(get_async_db)):
 @router.get("/usage-count")
 async def get_usage_count(db: AsyncSession = Depends(get_async_db)):
     stmt = (
-        select(User.role, func.count(UsageLog.id).label("usage_count"))
+        select(User.role, func.count(func.distinct(UsageLog.id)).label("usage_count"))
         .join(UsageLog, UsageLog.user_id == User.id)
         .group_by(User.role)
     )

@@ -195,6 +195,16 @@ async def analyze_company(
             raise HTTPException(status_code=429, detail="Daily usage limit reached")
 
     job_id = str(uuid4())
+    db.add(
+        JobStatus(
+            job_id=job_id,
+            user_id=user.id,
+            status="queued",
+            input=body.json(),
+        )
+    )
+    db.add(UsageLog(user_id=user.id, action="analyze"))
+    await db.commit()
     await send_analysis_job(
         {
             "job_id": job_id,
@@ -217,17 +227,6 @@ async def analyze_company(
         ),
         ex=600,
     )
-    db.add(
-        JobStatus(
-            job_id=job_id,
-            user_id=user.id,
-            status="queued",
-            input=body.json(),
-        )
-    )
-    db.add(UsageLog(user_id=user.id, action="analyze"))
-    await db.commit()
-
     return {"status": "queued", "job_id": job_id}
 
 

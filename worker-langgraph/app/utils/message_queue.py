@@ -60,7 +60,7 @@ async def poll_next():
             """
                 )
             )
-            row = result.fetchone()
+            row = result.mappings().fetchone()
 
             if row is None:
                 return None, None
