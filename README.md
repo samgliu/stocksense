@@ -4,36 +4,41 @@ StockSense is an AI-powered stock analysis and semantic search platform. It comb
 
 ## Demo
 
-You can try the live demo of **StockSense** here: <a href="https://samgliu.github.io/stocksense" target="_blank">Live Demo</a>.
+You can try the live demo of **StockSense** here:
+
+- **Cloudflare Pages**: [https://stocksense.pages.dev](https://stocksense.pages.dev)
+- **GitHub Pages**: [https://samgliu.github.io/stocksense](https://samgliu.github.io/stocksense)
 
 ## Features
 
 - **Semantic Search** for natural language stock queries (powered by Qdrant and SentenceTransformers)
-- **Company Summaries** integrated from existing SP500 datasets
-- **SP500 Company Enrichment** with sector, industry, and financials
+- **Company Summaries** integrated from SP500 datasets
+- **SP500 Enrichment** with sector, industry, and financials
 - **Firebase-Authenticated API** with RTK Query support
 - **Frontend State Managed** with Redux Toolkit
-- **Company Profile View** with LLM-generated analysis and forecast
-- **Forecast Chart** with 30-day price range prediction and confidence intervals
-- Fully containerized development and deployment via Docker Compose
-- **Kafka-Based Background Job Processing** using LangGraph worker (via FastAPI producer)
-- **Redis** used for caching job status and improving async experience
-- **Frontend Job Status Polling** with seamless async user experience
-- **Semantic Search** for vector-based queries
-- **Airflow DAGs** for automated ETL workflows
+- **Company Profile View** with LLM-generated insights and price forecast
+- **Forecast Chart** with 30-day prediction and confidence intervals
+- **Kafka-Based Job Queue on Kubernetes** for decoupled analysis processing
+- **LangGraph Worker** consuming from Kafka topics for AI-driven analysis
+- **Redis Caching** for job tracking and faster async UX
+- **Frontend Job Status Polling** with seamless experience
+- **Airflow DAGs** for automated ETL pipelines
+- Fully containerized local development via Docker Compose
 
 ## Tech Stack
 
-- **Frontend**: React + Vite + Tailwind CSS + Redux Toolkit, hosted on [GitHub Pages](https://samgliu.github.io/stocksense/)
-- **Backend**: FastAPI (Python), hosted on Oracle ARM-based K8s instance
-- **Vector Search**: SentenceTransformers + Qdrant
+- **Frontend**: React + Vite + Tailwind CSS + Redux Toolkit  
+   Deployed via both [GitHub Pages](https://samgliu.github.io/stocksense) and [Cloudflare Pages](https://stocksense.pages.dev)
+- **Backend**: FastAPI (Python), deployed on Oracle K8s cluster (ARM)
+- **Vector Search**: SentenceTransformers + Qdrant Cloud
 - **Authentication**: Firebase (Google SSO + Anonymous)
-- **Database**: PostgreSQL (via Supabase or local)
+- **Database**: PostgreSQL (Supabase)
+- **Job Queue**: **Kafka on Kubernetes** (KRaft mode, Bitnami Helm)
+- **Worker**: LangGraph consumer service (FastAPI microservice)
+- **Caching**: Redis (Upstash or containerized)
 - **Orchestration**: Apache Airflow (local)
-- **Background Jobs**: Kafka + Redis + LangGraph Workers
 - **Containerization**: Docker + docker-compose
-- **Caching**: Redis
-- **Messaging Queue**: Kafka (local with Docker)
+- **Infrastructure**: K8s on Oracle Cloud
 
 ## Getting Started
 
@@ -72,24 +77,28 @@ Use Airflow DAGs or manual scripts to:
 
 ## Cloud Deployment (Current Setup)
 
-- **Frontend**: [GitHub Pages](https://samgliu.github.io/stocksense/)
-- **Backend**: Oracle K8s Instance
-- **Qdrant**: Qdrant Cloud
-- **PostgreSQL**: Supabase
-- **Redis**: Upstash or containerized with the app
-- **Kafka**: Containerized (local Docker or K8s only)
+- **Frontend**:
+  - GitHub Pages: `https://samgliu.github.io/stocksense`
+  - Cloudflare Pages: `https://stocksense.pages.dev`
+- **Backend API**: Oracle ARM K8s Instance
+- **Kafka**: Bitnami Kafka Helm chart on K8s
+- **Vector Search**: Qdrant Cloud
+- **Database**: Supabase PostgreSQL
+- **Redis**: Upstash (or containerized locally)
+- **Job Queue**: Kafka topics for async job pipeline
 - **API Security**: Cloudflare Zero Trust
-- **SSL Termination**: Cloudflare Origin SSL Certificates for secure API communication
+- **SSL Termination**: Cloudflare Origin CA + HTTPS Proxy
 
 ## Future Improvements
 
 StockSense is an ongoing project with several enhancements planned:
 
-- **CI/CD & Quality**: Add unit/integration tests (Vitest, Pytest), GitHub Actions pipelines, and Sentry monitoring.
-- **Historical Data & ML**: Enable historical CSV upload, price trend prediction, and advanced data visualization.
-- **Streaming LLM**: Stream AI responses token-by-token to frontend for a better user experience.
-- **AI Agent**: Add intelligent memory-aware analysis agent to handle free text queries.
-- **Semantic Search**: Expand Qdrant-powered search with real-time semantic filtering.
-- **Data Pipelines**: Automate enrichment and ETL with Airflow and DBT.
-- **Cloud Deployment**: Deploy production-ready app using Terraform and Kubernetes on Oracle or AWS/GCP.
-- **Feature Flags & Analytics**: Add user behavior tracking and controlled feature rollouts.
+- **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest), and monitoring tools like Sentry or Prometheus.
+- **Historical Data & ML**: Enable CSV uploads for historical stock data, integrate trend forecasting models, and build rich visualizations.
+- **Streaming LLM Responses**: Implement token-by-token streaming of AI outputs for real-time feedback.
+- **AI Agent**: Introduce a memory-aware, context-retaining agent to analyze and respond to complex user queries.
+- **Advanced Semantic Search**: Enhance vector-based search with real-time filters, rankings, and multilingual support.
+- **ETL & Data Pipelines**: Scale up enrichment pipelines with Airflow, and optionally integrate DBT for transformation layers.
+- **Cloud Infra-as-Code**: Improve production deployment with Terraform modules for full Oracle/GCP/AWS setup.
+- **Feature Flags & Analytics**: Add LaunchDarkly-style toggles and user behavior tracking with tools like PostHog or RudderStack.
+- **Multi-Tenant & Role-Based Access**: Add per-user data isolation and RBAC for enterprise readiness.

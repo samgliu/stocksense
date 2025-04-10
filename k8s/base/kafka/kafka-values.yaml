@@ -1,0 +1,26 @@
+kraft:
+  enabled: true
+  clusterId: 'VcZLyB1mTSu2QaOJrcSPtA=='
+
+replicaCount: 1
+
+listeners:
+  client:
+    protocol: PLAINTEXT
+
+auth:
+  enabled: false
+
+persistence:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+service:
+  type: LoadBalancer
