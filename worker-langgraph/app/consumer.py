@@ -15,6 +15,7 @@ from asyncio import sleep
 
 CONCURRENT_TASKS = 1
 
+
 async def wait_for_job(
     db: AsyncSession, job_id: str, retries: int = 5, delay: float = 0.3
 ):
@@ -39,6 +40,7 @@ async def handle_message(data: dict, msg):
                 commit(msg)
                 return
             job.status = "processing"
+            await db.commit()
             await db.flush()
 
             raw_input = data["body"]
@@ -68,10 +70,6 @@ async def handle_message(data: dict, msg):
                 ),
             }
 
-            await redis_client.set(
-                f"job:{job_id}:status", json.dumps(job_status_data), ex=3600
-            )
-
             db.add(
                 StockEntry(
                     user_id=user_id,
@@ -82,12 +80,18 @@ async def handle_message(data: dict, msg):
                 )
             )
             await db.commit()
-
             commit(msg)
+            await redis_client.set(
+                f"job:{job_id}:status", json.dumps(job_status_data), ex=3600
+            )
             print(f"✅ Job {job_id} done and committed")
 
         except Exception as e:
+            await db.rollback()
             print(f"❌ Error processing job {data.get('job_id')}: {e}")
+        finally:
+            if msg:
+                commit(msg)
 
 
 async def consume_loop():

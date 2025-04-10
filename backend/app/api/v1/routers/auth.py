@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 
 from app.database import get_async_db
@@ -54,14 +55,14 @@ async def auth_verify(request: Request, db: AsyncSession = Depends(get_async_db)
     start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
 
-    usage_result = await db.execute(
-        select(UsageLog).filter(
+    usage_count_result = await db.execute(
+        select(func.count(UsageLog.id)).filter(
             UsageLog.user_id == user.id,
             UsageLog.created_at >= start_of_day,
             UsageLog.created_at < end_of_day,
         )
     )
-    usage_count_today = len(usage_result.scalars().all())
+    usage_count_today = usage_count_result.scalar_one()
 
     return {
         "id": str(user.id),
