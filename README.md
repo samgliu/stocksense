@@ -27,16 +27,16 @@ You can try the live demo of **StockSense** here:
 
 ## Tech Stack
 
-- **Frontend**: React + Vite + Tailwind CSS + Redux Toolkit  
-   Deployed via both [GitHub Pages](https://samgliu.github.io/stocksense) and [Cloudflare Pages](https://stocksense.pages.dev)
-- **Backend**: FastAPI (Python), deployed on Oracle K8s cluster (ARM)
+- **Frontend**: React, Vite, Tailwind CSS, Redux Toolkit  
+  Deployed on [GitHub Pages](https://samgliu.github.io/stocksense) and [Cloudflare Pages](https://stocksense.pages.dev)
+- **Backend**: FastAPI (Python), deployed on Oracle Cloud Kubernetes
+- **Worker**: LangGraph consumer service on Kubernetes, utilizing Kafka, Redis, and LangGraph
 - **Vector Search**: SentenceTransformers + Qdrant Cloud
-- **Authentication**: Firebase (Google SSO + Anonymous)
+- **Authentication**: Firebase (Google SSO, Anonymous)
 - **Database**: PostgreSQL (Supabase)
-- **Job Queue**: **Kafka on Kubernetes** (KRaft mode, Bitnami Helm)
-- **Worker**: LangGraph consumer service (FastAPI microservice)
-- **Caching**: Redis (Upstash or containerized)
-- **Orchestration**: Apache Airflow (local)
+- **Job Queue**: Kafka (KRaft mode, Bitnami Helm) on Kubernetes
+- **Caching**: Redis (using Redis [async] on Oracle Cloud Kubernetes, or Upstash, or containerized locally)
+- **Orchestration**: Apache Airflow (local setup)
 - **Containerization**: Docker + docker-compose
 - **Infrastructure**: K8s on Oracle Cloud
 
@@ -75,18 +75,18 @@ Use Airflow DAGs or manual scripts to:
 - Generate embeddings from summaries
 - Upload embeddings and metadata to Qdrant
 
-## Cloud Deployment (Current Setup)
+## Cloud Deployment
 
 - **Frontend**:
-  - GitHub Pages: `https://samgliu.github.io/stocksense`
-  - Cloudflare Pages: `https://stocksense.pages.dev`
-- **Backend API**: K8s on Oracle Cloud
+  - GitHub Pages: https://samgliu.github.io/stocksense
+  - Cloudflare Pages: https://stocksense.pages.dev
+- **Backend API**: Deployed on Oracle Cloud K8s
 - **Kafka**: K8s on Oracle Cloud
+- **LangGraph Worker**: K8s on Oracle Cloud
 - **Vector Search**: Qdrant Cloud
 - **Database**: Supabase PostgreSQL
-- **Redis**: K8s on Oracle Cloud (Upstash or containerized locally)
-- **Job Queue**: Kafka topics for async job pipeline
-- **API Security**: Cloudflare Zero Trust
+- **Redis**: K8s on Oracle Cloud (Upstash or containerized)
+- **Job Queue**: Kafka
 - **SSL Termination**: Cloudflare Origin CA + HTTPS Proxy
 
 ## Future Improvements
