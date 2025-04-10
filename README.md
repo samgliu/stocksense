@@ -80,11 +80,11 @@ Use Airflow DAGs or manual scripts to:
 - **Frontend**:
   - GitHub Pages: `https://samgliu.github.io/stocksense`
   - Cloudflare Pages: `https://stocksense.pages.dev`
-- **Backend API**: Oracle ARM K8s Instance
-- **Kafka**: Bitnami Kafka Helm chart on K8s
+- **Backend API**: K8s on Oracle Cloud
+- **Kafka**: K8s on Oracle Cloud
 - **Vector Search**: Qdrant Cloud
 - **Database**: Supabase PostgreSQL
-- **Redis**: Upstash (or containerized locally)
+- **Redis**: K8s on Oracle Cloud (Upstash or containerized locally)
 - **Job Queue**: Kafka topics for async job pipeline
 - **API Security**: Cloudflare Zero Trust
 - **SSL Termination**: Cloudflare Origin CA + HTTPS Proxy
