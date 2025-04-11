@@ -5,6 +5,9 @@ from app.core.security import verify_firebase_token
 
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        public_paths = ["/health", "/docs", "/openapi.json"]
+        if request.url.path in public_paths:
+            return await call_next(request)
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             try:
