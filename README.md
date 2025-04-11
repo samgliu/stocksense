@@ -8,6 +8,7 @@ You can try the live demo of **StockSense** here:
 
 - **Cloudflare Pages**: [https://stocksense.pages.dev](https://stocksense.pages.dev)
 - **GitHub Pages**: [https://samgliu.github.io/stocksense](https://samgliu.github.io/stocksense)
+- **Backend API Docs**: [API Docs](https://api.samliu.site/docs)
 
 ## Features
 
