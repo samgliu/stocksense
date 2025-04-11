@@ -29,20 +29,28 @@ jobs:
         working-directory: frontend
         run: yarn install --frozen-lockfile
 
+      - name: Run lint
+        working-directory: frontend
+        run: yarn lint
+
+      - name: Run tests
+        working-directory: frontend
+        run: yarn test --ci --testTimeout=10000
+
       - name: Build project
         working-directory: frontend
         env:
-            VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
-            VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
-            VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
-            VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
-            VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
-            VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-            VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
-            VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
-            VITE_GUEST_EMAIL: ${{ vars.VITE_GUEST_EMAIL }}
-            VITE_GUEST_PASSWORD: ${{ vars.VITE_GUEST_PASSWORD }}
-            VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
+          VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_GUEST_EMAIL: ${{ vars.VITE_GUEST_EMAIL }}
+          VITE_GUEST_PASSWORD: ${{ vars.VITE_GUEST_PASSWORD }}
+          VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
         run: yarn build
 
       - name: Deploy to GitHub Pages

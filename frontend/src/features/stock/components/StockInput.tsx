@@ -7,7 +7,7 @@ import { useState } from 'react';
 export const StockInput = () => {
   const [text, setText] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [analyzeStock, { isLoading, reset }] = useAnalyzeStockMutation();
+  const [analyzeStock, { isLoading }] = useAnalyzeStockMutation();
   const dispatch = useAppDispatch();
 
   const handleAnalyze = async () => {

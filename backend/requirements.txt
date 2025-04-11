@@ -1,38 +1,38 @@
-# Core server
+# --- Core server ---
 fastapi
 uvicorn[standard]
 confluent-kafka
 redis[async]
 
-# Data models & validation
+# --- Data models & validation ---
 pydantic
 pydantic[email]
 sentence_transformers
 accelerate
 
-# File upload & parsing
+# --- File upload & parsing ---
 python-multipart
 pdfplumber
 pandas
 
-# Database
+# --- Database ---
 asyncpg
 sqlalchemy
-psycopg2-binary  # PostgreSQL driver
-alembic          # Database migrations
+psycopg2-binary
+alembic
 backoff
 
-# Auth & Firebase
+# --- Auth & Firebase ---
 firebase-admin
 
-# AI APIs
+# --- AI APIs ---
 langgraph
 openai
 google-genai
 yfinance
 
-# Security
+# --- Security ---
 slowapi
 
-# Optional: load .env files
+# --- Env vars ---
 python-dotenv

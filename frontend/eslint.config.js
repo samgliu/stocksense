@@ -7,6 +7,17 @@ import tsParser from '@typescript-eslint/parser';
 import tseslint from '@typescript-eslint/eslint-plugin';
 
 export default [
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '*.config.*',
+    ],
+  },
   js.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -17,6 +28,14 @@ export default [
         sourceType: 'module',
         project: './tsconfig.json',
         tsconfigRootDir: path.resolve(),
+      },
+      globals: {
+        console: true,
+        setInterval: true,
+        clearInterval: true,
+        document: true,
+        process: true,
+        React: true,
       },
     },
     plugins: {
@@ -32,6 +51,16 @@ export default [
     settings: {
       react: {
         version: 'detect',
+      },
+    },
+  },
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    languageOptions: {
+      globals: {
+        describe: true,
+        it: true,
+        expect: true,
       },
     },
   },

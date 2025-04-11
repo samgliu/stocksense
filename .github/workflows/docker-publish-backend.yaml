@@ -8,9 +8,42 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    name: Run Pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt', 'backend/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        working-directory: ./backend
+        run: |
+          PYTHONPATH=. pytest --disable-warnings
+
   build-and-push:
     name: Build & Push Backend Image
     runs-on: ubuntu-latest
+    needs: test
 
     steps:
       - name: Checkout code

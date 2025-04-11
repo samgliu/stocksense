@@ -26,7 +26,7 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
     confidence['90%'].min,
     confidence['90%'].max,
   ];
-  
+
   const labelMap = new Map<number, string>([
     [confidence['70%'].min, `$${confidence['70%'].min}`],
     [confidence['70%'].max, `$${confidence['70%'].max}`],

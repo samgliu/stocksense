@@ -1,6 +1,6 @@
 {
   "name": "stocksense",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "vite",
@@ -44,5 +44,6 @@
     "typescript": "^5.8.2",
     "vite": "^6.2.3"
   },
+  "type": "module",
   "homepage": "https://samgliu.github.io/stocksense"
 }

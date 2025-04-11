@@ -1,4 +1,4 @@
-from app.api.v1.routers import stock, auth, dashboard, search, companies, worker
+from app.api.v1.routers import health, stock, auth, dashboard, search, companies, worker
 from app.middleware.cors import add_cors_middleware
 from fastapi import FastAPI
 from app.middleware.cors import add_cors_middleware
@@ -17,6 +17,7 @@ add_gzip_middleware(app)
 add_rate_limit_middleware(app)
 
 # Routers
+app.include_router(health.router, tags=["Health"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(stock.router, prefix="/api/v1/stock", tags=["Stock"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
