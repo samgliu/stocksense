@@ -38,6 +38,7 @@ jobs:
       - name: Run tests
         working-directory: ./backend
         run: |
+          cp .env.test .env
           PYTHONPATH=. pytest --disable-warnings
 
   build-and-push:
