@@ -24,6 +24,7 @@ You can try the live demo of **StockSense** here:
 - **Redis Caching** for job tracking and faster async UX
 - **Frontend Job Status Polling** with seamless experience
 - **Airflow DAGs** for automated ETL pipelines
+- **Testing Pipeline** with Pytest and Jest integrated into GitHub Actions
 - Fully containerized local development via Docker Compose
 
 ## Tech Stack
