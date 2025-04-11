@@ -4,7 +4,7 @@ from app.agents.analyzer import handle_analysis_job
 
 
 async def main():
-    print("🚀 Worker starting...", flush=True)
+    print("🚀 Worker started", flush=True)
 
     consumer = get_consumer()
     if not consumer:
