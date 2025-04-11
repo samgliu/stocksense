@@ -11,11 +11,22 @@ KAFKA_BROKER = os.getenv("KAFKA_BROKER", "")
 KAFKA_TOPIC = "analysis-queue"
 DB_POLL_INTERVAL_SECONDS = 5
 
-consumer = None
 
-if USE_KAFKA and KAFKA_BROKER:
+_kafka_consumer = None  # internal cache
+
+
+def get_consumer():
+    global _kafka_consumer
+
+    if _kafka_consumer is not None:
+        return _kafka_consumer
+
+    if not (USE_KAFKA and KAFKA_BROKER):
+        print("📦 Kafka disabled; using DB fallback polling")
+        return None
+
     try:
-        consumer = KafkaConsumer(
+        _kafka_consumer = KafkaConsumer(
             {
                 "bootstrap.servers": KAFKA_BROKER,
                 "group.id": "langgraph-consumer",
@@ -23,20 +34,18 @@ if USE_KAFKA and KAFKA_BROKER:
                 "enable.auto.commit": False,
             }
         )
-        consumer.subscribe([KAFKA_TOPIC])
-        print(f"✅ Kafka consumer initialized on topic '{KAFKA_TOPIC}'")
+        _kafka_consumer.subscribe([KAFKA_TOPIC])
+        return _kafka_consumer
     except Exception as e:
         print(f"⚠️ Kafka consumer failed: {e}")
-        consumer = None
-else:
-    print("📦 Kafka disabled; using DB fallback polling")
+        return None
 
 
 # POLL MESSAGE
-async def poll_next():
+async def poll_next(consumer=None):
     if consumer:
         try:
-            msg = consumer.poll(1.0)
+            msg = consumer.poll(5.0)
             if msg and not msg.error():
                 return json.loads(msg.value()), msg
             elif msg and msg.error():
@@ -52,12 +61,12 @@ async def poll_next():
             result = await db.execute(
                 text(
                     """
-                SELECT * FROM job_status
-                WHERE status = 'queued'
-                ORDER BY created_at
-                FOR UPDATE SKIP LOCKED
-                LIMIT 1
-            """
+                    SELECT * FROM job_status
+                    WHERE status = 'queued'
+                    ORDER BY created_at
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT 1
+                """
                 )
             )
             row = result.mappings().fetchone()
@@ -69,10 +78,10 @@ async def poll_next():
             await db.execute(
                 text(
                     """
-                UPDATE job_status
-                SET status = 'processing', updated_at = NOW()
-                WHERE id = :id
-            """
+                    UPDATE job_status
+                    SET status = 'processing', updated_at = NOW()
+                    WHERE id = :id
+                    """
                 ),
                 {"id": row.id},
             )
@@ -91,5 +100,6 @@ async def poll_next():
 
 # COMMIT OFFSET
 def commit(msg):
+    consumer = get_consumer()
     if consumer and msg:
         consumer.commit(msg)

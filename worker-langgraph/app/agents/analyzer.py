@@ -1,4 +1,3 @@
-import asyncio
 import json
 from datetime import datetime, timezone
 
@@ -6,14 +5,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import AsyncSessionLocal
-from app.models import JobStatus, StockEntry, UsageLog
+from app.models import JobStatus, StockEntry
 from app.schemas.company import AnalyzeRequest
-from app.langgraph_app import run_analysis_graph
+from app.agents.analyzer_agent import run_analysis_graph
 from app.utils.redis import redis_client
 from app.utils.message_queue import poll_next, commit
 from asyncio import sleep
-
-CONCURRENT_TASKS = 1
 
 
 async def wait_for_job(
@@ -28,7 +25,7 @@ async def wait_for_job(
     return None
 
 
-async def handle_message(data: dict, msg):
+async def handle_analysis_job(data: dict, msg):
     async with AsyncSessionLocal() as db:
         try:
             job_id = data["job_id"]
@@ -92,18 +89,3 @@ async def handle_message(data: dict, msg):
         finally:
             if msg:
                 commit(msg)
-
-
-async def consume_loop():
-    while True:
-        async with asyncio.TaskGroup() as tg:
-            for _ in range(CONCURRENT_TASKS):  # up to CONCURRENT_TASKS tasks per batch
-                data, msg = await poll_next()
-                if not data:
-                    await asyncio.sleep(0.1)
-                    continue
-                tg.create_task(handle_message(data, msg))
-
-
-if __name__ == "__main__":
-    asyncio.run(consume_loop())
