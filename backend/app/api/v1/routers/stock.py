@@ -25,7 +25,7 @@ async def analyze_stock_endpoint(
     user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
     user = user_result.scalar_one()
 
-    if user.role == UserRole.USER:
+    if user.role != UserRole.ADMIN:
         start_of_day = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
