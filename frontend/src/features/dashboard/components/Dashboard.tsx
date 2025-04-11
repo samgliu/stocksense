@@ -55,8 +55,7 @@ export const Dashboard = () => {
     midAngle,
     outerRadius,
     percent,
-    index,
-    name,
+
     sector,
   }: any) => {
     const RADIAN = Math.PI / 180;

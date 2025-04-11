@@ -1,6 +1,6 @@
 import { TooltipProps } from 'recharts';
 
-export const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+export const CustomTooltip = ({ active, payload }: TooltipProps<any, any>) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
