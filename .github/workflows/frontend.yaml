@@ -25,6 +25,10 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
 
+      - name: Install dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
+
       - name: Run lint
         working-directory: frontend
         run: yarn lint
@@ -32,10 +36,6 @@ jobs:
       - name: Run tests
         working-directory: frontend
         run: yarn test --ci --testTimeout=10000
-
-      - name: Install dependencies
-        working-directory: frontend
-        run: yarn install --frozen-lockfile
 
       - name: Build project
         working-directory: frontend
