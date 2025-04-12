@@ -15,6 +15,7 @@ You can try the live demo of **StockSense** here:
 - **Semantic Search** for natural language stock queries (powered by Qdrant and SentenceTransformers)
 - **Company Summaries** integrated from SP500 datasets
 - **SP500 Enrichment** with sector, industry, and financials
+- **LLM-Generated Insights** enriched using a local Ollama-hosted model
 - **Firebase-Authenticated API** with RTK Query support
 - **Frontend State Managed** with Redux Toolkit
 - **Company Profile View** with LLM-generated insights and price forecast
