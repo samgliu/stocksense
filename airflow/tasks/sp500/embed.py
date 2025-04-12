@@ -15,7 +15,7 @@ def generate_embeddings():
             text(
                 """
                 SELECT id, name, ticker, shortname, exchange, industry, sector, country,
-                       current_price, market_cap, ebitda, revenue_growth, summary, website, fulltime_employees
+                       current_price, market_cap, ebitda, revenue_growth, summary, website, fulltime_employees, insights
                 FROM companies
             """
             )
@@ -38,10 +38,14 @@ def generate_embeddings():
                 None,
                 [
                     str(record.get("name")),
+                    str(record.get("exchange")),
                     str(record.get("ticker")),
                     str(record.get("industry")),
                     str(record.get("sector")),
+                    str(record.get("website")),
+                    str(record.get("country")),
                     str(record.get("summary")),
+                    str(record.get("insights")),
                 ],
             )
         )
