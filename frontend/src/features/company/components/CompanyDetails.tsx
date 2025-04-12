@@ -170,6 +170,13 @@ export const CompanyDetails = ({
         <p className="line-clamp-5 overflow-auto text-gray-700">{company.summary}</p>
       )}
 
+      {/* Insights */}
+      {company.insights && (
+        <div className="mt-6 max-h-[250px] overflow-auto rounded bg-gray-50 p-4 text-sm text-gray-800 shadow-inner">
+          <Markdown result={company.insights} />
+        </div>
+      )}
+
       {/* Latest News */}
       <div className="mt-4 min-h-[150px]">
         <h3 className="mb-2 text-lg font-semibold text-gray-800">📰 Recent News</h3>

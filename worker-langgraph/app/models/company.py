@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Numeric, DateTime, text
+from sqlalchemy import Column, String, Text, Float, Numeric, DateTime, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.database import Base
@@ -27,6 +27,7 @@ class Company(Base):
 
     # Optional enrichment
     summary = Column(String, nullable=True)
+    insights = Column(Text, nullable=True)
     website = Column(String, nullable=True)
 
     # Financials
