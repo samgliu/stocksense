@@ -95,7 +95,7 @@ Use Airflow DAGs or manual scripts to:
 ## Future Improvements
 
 StockSense is an ongoing project with several enhancements planned:
-
+- **Auto-Trader (Simulated)**: Build an AI-powered auto-trading system where users subscribe to tickers with configurable rules (e.g. wash sale settings). Periodic analysis is triggered via Kubernetes CronJobs, publishing jobs to Kafka. A LangGraph-based agent running in the worker processes each job by aggregating real-time signals—price trends, Gemini insights, and sentiment from Reddit/X (via serverless cloud functions). Trade decisions are simulated and logged, with notifications and analysis delivered via email or dashboard.
 - **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest), and monitoring tools like Sentry or Prometheus.
 - **Historical Data & ML**: Enable CSV uploads for historical stock data, integrate trend forecasting models, and build rich visualizations.
 - **Streaming LLM Responses**: Implement token-by-token streaming of AI outputs for real-time feedback.
