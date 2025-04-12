@@ -180,6 +180,7 @@ class NewsSnippet(BaseModel):
 class AnalyzeRequest(BaseModel):
     company_id: str
     company: CompanyPayload
+    insights: Optional[str] = None
     history: Optional[List[HistoryPoint]] = None
     news: Optional[List[NewsSnippet]] = None
 
