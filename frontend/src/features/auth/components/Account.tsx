@@ -59,7 +59,7 @@ export const Account = () => {
           <li>
             <span className="font-medium text-gray-600">Usage Today:</span>{' '}
             <span className="font-medium">
-              {usage} / {role === 'user' ? 3 : '∞'}
+              {usage} / {role !== 'admin' ? 20 : '∞'}
             </span>
           </li>
         )}

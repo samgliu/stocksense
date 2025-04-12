@@ -34,7 +34,6 @@ export const Dashboard = () => {
   const { data: topCompanies, isLoading: isTopCompaniesLoading } = useGetTopCompaniesQuery({});
   const { data: newsSummary, isLoading: isNewsSummaryLoading } = useGetNewsSummaryQuery({});
   const { data: topIndustries, isLoading: isTopIndustriesLoading } = useGetTopIndustriesQuery({});
-
   if (
     isDailyLoading ||
     isMonthlyLoading ||
@@ -111,7 +110,7 @@ export const Dashboard = () => {
       {/* Usage Count */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <KPI title="👩‍💼 Admin Usage" value={usageCount.admin} />
-        <KPI title="🧑‍💻 User Usage" value={usageCount.user} />
+        <KPI title="🧑‍💻 User Usage" value={(usageCount.user || 0) + (usageCount.anonymous || 0)} />
       </div>
 
       <SectionCard title="🏢 Top Queried Companies">
