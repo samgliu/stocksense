@@ -20,38 +20,55 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
     { x: max, y: 0 },
   ];
 
-  const ticks = [
-    confidence['70%'].min,
-    confidence['70%'].max,
-    confidence['90%'].min,
-    confidence['90%'].max,
-  ];
+  const ticks = Array.from(
+    new Set([
+      confidence['70%'].min,
+      confidence['70%'].max,
+      confidence['90%'].min,
+      confidence['90%'].max,
+      average,
+    ]),
+  ).sort((a, b) => a - b);
 
-  const labelMap = new Map<number, string>([
-    [confidence['70%'].min, `$${confidence['70%'].min}`],
-    [confidence['70%'].max, `$${confidence['70%'].max}`],
-    [confidence['90%'].min, `$${confidence['90%'].min}`],
-    [confidence['90%'].max, `$${confidence['90%'].max}`],
-  ]);
+  const labelMap = new Map<number, string>(ticks.map((value) => [value, `$${value.toFixed(2)}`]));
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
       <h3 className="mb-4 text-lg font-semibold text-gray-800">📈 30-Day Price Forecast</h3>
-      <ResponsiveContainer width="100%" height={140}>
-        <AreaChart data={dummyData}>
+      {/* Band Legends */}
+      <div className="mt-2 mr-4 flex justify-center gap-4 text-sm text-gray-500">
+        <div className="flex items-center gap-2">
+          <span className="inline-block h-3 w-4 rounded-sm bg-blue-300" />
+          <span>90% Confidence</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-block h-3 w-4 rounded-sm bg-blue-500" />
+          <span>70% Confidence</span>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={160}>
+        <AreaChart data={dummyData} margin={{ top: 10, right: 20, left: 20, bottom: 30 }}>
           <XAxis
             dataKey="x"
             type="number"
             domain={[min, max]}
             ticks={ticks}
+            interval={0}
             tickFormatter={(v) => labelMap.get(v) ?? ''}
-            tick={{ fontSize: 12 }}
+            tick={{ fontSize: 12, dy: 10 }}
             axisLine={false}
           />
           <YAxis hide domain={[0, 1]} />
-          <Tooltip contentStyle={{ display: 'none' }} />
+          <Tooltip
+            formatter={(value: number, name: string, props) => [
+              `$${props.payload.x.toFixed(2)}`,
+              'Price',
+            ]}
+            labelFormatter={() => ''}
+            contentStyle={{ fontSize: 12 }}
+          />
 
-          {/* 90% confidence band (lighter) */}
+          {/* 90% confidence band */}
           <ReferenceArea
             x1={confidence['90%'].min}
             x2={confidence['90%'].max}
@@ -61,7 +78,7 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
             strokeOpacity={0}
           />
 
-          {/* 70% confidence band (darker, on top) */}
+          {/* 70% confidence band */}
           <ReferenceArea
             x1={confidence['70%'].min}
             x2={confidence['70%'].max}
@@ -73,8 +90,7 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
         </AreaChart>
       </ResponsiveContainer>
 
-      {/* Bottom labels */}
-      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
         <div className="flex items-center gap-1">
           <span className="text-lg text-blue-600">🔵</span>
           <span>
