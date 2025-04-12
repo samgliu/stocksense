@@ -53,22 +53,35 @@ async def get_company_profile(
 ):
     cache_key = f"company:profile:{uuid}:{ticker}"
 
-    # Try Redis first
+    # Try Redis cache first
     cached = await redis_client.get(cache_key)
     if cached:
         try:
             return json.loads(cached)
         except Exception as e:
-            print(f"⚠️ Failed to parse Redis cache for {cache_key}: {e}")
+            print(f"Failed to parse Redis cache for {cache_key}: {e}")
 
+    # Try fetching from external FMP API
     profile = await fetch_company_profile_async(ticker)
+
     if profile:
-        await redis_client.set(
-            cache_key, json.dumps(profile), ex=60 * 60 * 6
-        )  # 6 hours TTL
+        try:
+            # Try to fetch insights from your database
+            stmt = select(Company).where(Company.id == uuid)
+            result = await db.execute(stmt)
+            company = result.scalar_one_or_none()
+
+            if company and company.insights:
+                profile["insights"] = company.insights
+
+        except Exception as e:
+            print(f"Failed to fetch insights for {uuid}: {e}")
+
+        # Cache the combined profile
+        await redis_client.set(cache_key, json.dumps(profile), ex=60 * 60 * 6)
         return profile
 
-    # DB fallback
+    # Fallback to local database if FMP call fails
     try:
         stmt = select(Company).where(Company.id == uuid)
         result = await db.execute(stmt)
@@ -80,9 +93,9 @@ async def get_company_profile(
                 else json.loads(json.dumps(company.__dict__, default=str))
             )
             await redis_client.set(cache_key, json.dumps(company_dict), ex=60 * 60 * 6)
-            return company
+            return company_dict
     except Exception as e:
-        print(f"❌ DB fallback failed for {ticker}: {e}")
+        print(f"DB fallback failed for {ticker}: {e}")
 
     raise HTTPException(status_code=404, detail="Company not found")
 
@@ -178,7 +191,9 @@ async def analyze_company(
     db: AsyncSession = Depends(get_async_db),
 ):
     user_data = request.state.user
-    user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
+    user_result = await db.execute(
+        select(User).where(User.firebase_uid == user_data["uid"])
+    )
     user = user_result.scalar_one()
 
     if user.role != UserRole.ADMIN:

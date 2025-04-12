@@ -6,6 +6,7 @@ export interface CompanyData {
   current_price?: number;
   market_cap?: number;
   summary?: string;
+  insights?: string;
   image?: string;
   sector?: string;
   industry?: string;
