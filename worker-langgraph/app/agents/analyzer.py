@@ -9,7 +9,7 @@ from app.models import JobStatus, StockEntry
 from app.schemas.company import AnalyzeRequest
 from app.agents.analyzer_agent import run_analysis_graph
 from app.utils.redis import redis_client
-from app.utils.message_queue import poll_next, commit
+from app.utils.message_queue import commit_kafka
 from asyncio import sleep
 
 
@@ -25,7 +25,7 @@ async def wait_for_job(
     return None
 
 
-async def handle_analysis_job(data: dict, msg):
+async def handle_analysis_job(data: dict, msg, consumer=None):
     async with AsyncSessionLocal() as db:
         try:
             job_id = data["job_id"]
@@ -34,8 +34,8 @@ async def handle_analysis_job(data: dict, msg):
             job = await wait_for_job(db, job_id)
             if not job:
                 print(f"❌ Job {job_id} not found after retries")
-                commit(msg)
                 return
+
             job.status = "processing"
             await db.commit()
             await db.flush()
@@ -77,7 +77,7 @@ async def handle_analysis_job(data: dict, msg):
                 )
             )
             await db.commit()
-            commit(msg)
+
             await redis_client.set(
                 f"job:{job_id}:status", json.dumps(job_status_data), ex=3600
             )
@@ -87,5 +87,5 @@ async def handle_analysis_job(data: dict, msg):
             await db.rollback()
             print(f"❌ Error processing job {data.get('job_id')}: {e}")
         finally:
-            if msg:
-                commit(msg)
+            if consumer and msg:
+                commit_kafka(consumer, msg)

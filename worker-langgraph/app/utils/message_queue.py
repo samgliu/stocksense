@@ -12,49 +12,35 @@ KAFKA_TOPIC = "analysis-queue"
 DB_POLL_INTERVAL_SECONDS = 5
 
 
-_kafka_consumer = None  # internal cache
-
-
-def get_consumer():
-    global _kafka_consumer
-
-    if _kafka_consumer is not None:
-        return _kafka_consumer
-
+def create_kafka_consumer():
     if not (USE_KAFKA and KAFKA_BROKER):
-        print("📦 Kafka disabled; using DB fallback polling")
         return None
 
+    consumer = KafkaConsumer(
+        {
+            "bootstrap.servers": KAFKA_BROKER,
+            "group.id": "langgraph-consumer",
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": False,
+        }
+    )
+    consumer.subscribe([KAFKA_TOPIC])
+    return consumer
+
+
+async def poll_from_kafka(consumer):
     try:
-        _kafka_consumer = KafkaConsumer(
-            {
-                "bootstrap.servers": KAFKA_BROKER,
-                "group.id": "langgraph-consumer",
-                "auto.offset.reset": "earliest",
-                "enable.auto.commit": False,
-            }
-        )
-        _kafka_consumer.subscribe([KAFKA_TOPIC])
-        return _kafka_consumer
+        msg = consumer.poll(5.0)
+        if msg and not msg.error():
+            return json.loads(msg.value()), msg
+        elif msg and msg.error():
+            print(f"❌ Kafka poll error: {msg.error()}")
     except Exception as e:
-        print(f"⚠️ Kafka consumer failed: {e}")
-        return None
+        print(f"❌ Kafka poll exception: {e}")
+    return None, None
 
 
-# POLL MESSAGE
-async def poll_next(consumer=None):
-    if consumer:
-        try:
-            msg = consumer.poll(5.0)
-            if msg and not msg.error():
-                return json.loads(msg.value()), msg
-            elif msg and msg.error():
-                print(f"❌ Kafka poll error: {msg.error()}")
-        except Exception as e:
-            print(f"❌ Kafka poll exception: {e}")
-        return None, None
-
-    # DB fallback using FOR UPDATE SKIP LOCKED
+async def poll_from_db():
     await asyncio.sleep(DB_POLL_INTERVAL_SECONDS)
     try:
         async with AsyncSessionLocal() as db:
@@ -70,18 +56,16 @@ async def poll_next(consumer=None):
                 )
             )
             row = result.mappings().fetchone()
-
             if row is None:
                 return None, None
 
-            # Mark as processing
             await db.execute(
                 text(
                     """
                     UPDATE job_status
                     SET status = 'processing', updated_at = NOW()
                     WHERE id = :id
-                    """
+                """
                 ),
                 {"id": row.id},
             )
@@ -98,8 +82,6 @@ async def poll_next(consumer=None):
         return None, None
 
 
-# COMMIT OFFSET
-def commit(msg):
-    consumer = get_consumer()
+def commit_kafka(consumer, msg):
     if consumer and msg:
         consumer.commit(msg)
