@@ -14,6 +14,7 @@ class CompanyBase(BaseModel):
     country: Optional[str] = "USA"
     website: Optional[str] = None
     summary: Optional[str] = None
+    insights: Optional[str] = None
 
     current_price: Optional[float] = None
     market_cap: Optional[float] = None
