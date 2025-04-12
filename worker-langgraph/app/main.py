@@ -1,26 +1,34 @@
-import asyncio
-from app.utils.message_queue import get_consumer, poll_next, commit
+from app.utils.message_queue import (
+    create_kafka_consumer,
+    poll_from_kafka,
+    poll_from_db,
+    commit_kafka,
+)
 from app.agents.analyzer import handle_analysis_job
 
 
 async def main():
     print("🚀 Worker started", flush=True)
 
-    consumer = get_consumer()
-    if not consumer:
-        print("❌ Kafka consumer not initialized. Exiting.")
-        return
+    consumer = create_kafka_consumer()
 
     while True:
-        data, msg = await poll_next(consumer)
+        data, msg = None, None
+
+        if consumer:
+            data, msg = await poll_from_kafka(consumer)
+        else:
+            data, msg = await poll_from_db()
 
         if not data:
-            await asyncio.sleep(0.5)
-            continue
+            continue  # No job
 
         print(f"📥 Received job: {data.get('job_id')}", flush=True)
 
-        await handle_analysis_job(data, msg)
+        await handle_analysis_job(data, msg, consumer)
+
+        if msg and consumer:
+            commit_kafka(consumer, msg)
 
 
 if __name__ == "__main__":
