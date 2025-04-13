@@ -1,4 +1,4 @@
-from app.api.v1.routers import health, stock, auth, dashboard, search, companies, worker
+from app.api.v1.routers import health, stock, auth, dashboard, search, companies, worker,auto_trade
 from app.middleware.cors import add_cors_middleware
 from fastapi import FastAPI
 from app.middleware.cors import add_cors_middleware
@@ -24,3 +24,4 @@ app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboar
 app.include_router(search.router, prefix="/api/v1/search", tags=["Search"])
 app.include_router(companies.router, prefix="/api/v1/companies", tags=["Companies"])
 app.include_router(worker.router, prefix="/api/v1/worker", tags=["Worker"])
+app.include_router(auto_trade.router, prefix="/api/v1/auto-trade", tags=["Auto Trade"])

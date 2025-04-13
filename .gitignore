@@ -33,6 +33,7 @@ airflow/data/
 # --------------------------
 pgdata/
 *.pid
+*.dump
 
 # --------------------------
 # Frontend (Node/React)

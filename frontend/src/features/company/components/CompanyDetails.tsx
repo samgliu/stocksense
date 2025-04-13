@@ -5,14 +5,17 @@ import {
   useGetCompanyNewsQuery,
   useGetJobStatusQuery,
 } from '../api';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { CompanyData } from '../api/types';
 import { CompanyNewsComponent } from './CompanyNews';
 import { CompanyPredictionHistoryChart } from './CompanyPredictionHistoryChart';
+import { CompanySubscriptionModal } from './CompanySubscriptionModal';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
+import { selectAuth } from '@/features/auth/store/selectors';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { useToast } from '@/hooks/useToast';
 
 export const CompanyDetails = ({
@@ -23,6 +26,8 @@ export const CompanyDetails = ({
   company: CompanyData;
 }) => {
   const [analyzeCompany, { data: jobData }] = useAnalyzeCompanyMutation();
+  const [showAutoTradeModal, setShowAutoTradeModal] = useState(false);
+  const userId = useAppSelector(selectAuth)?.id;
   const resultRef = useRef<HTMLDivElement | null>(null);
   const toast = useToast();
 
@@ -193,20 +198,32 @@ export const CompanyDetails = ({
         )}
       </div>
 
-      {/* Analyze Button + Status */}
-      <div className="flex items-center space-x-4">
+      {/* Analyze Button + Auto-Trade + Status */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Left side: Analyze button + status */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleAnalyze}
+            disabled={isLoading || isAnalyzing}
+            className={`rounded px-4 py-2 text-white ${
+              isLoading || isAnalyzing
+                ? 'cursor-not-allowed bg-gray-400'
+                : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {isLoading || isAnalyzing ? 'Analyzing...' : '🔍 Analyze Company'}
+          </button>
+          {jobStatusText && <span className="text-sm text-gray-500">{jobStatusText}</span>}
+        </div>
+
+        {/* Right side: Auto-Trade button */}
         <button
-          onClick={handleAnalyze}
-          disabled={isLoading || isAnalyzing}
-          className={`rounded px-4 py-2 text-white ${
-            isLoading || isAnalyzing
-              ? 'cursor-not-allowed bg-gray-400'
-              : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
-          }`}
+          onClick={() => setShowAutoTradeModal(true)}
+          className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+          disabled={!userId || !company}
         >
-          {isLoading || isAnalyzing ? 'Analyzing...' : '🔍 Analyze Company'}
+          📈 Auto-Trade
         </button>
-        {jobStatusText && <span className="text-sm text-gray-500">{jobStatusText}</span>}
       </div>
 
       {/* Historical Report Chart */}
@@ -223,6 +240,14 @@ export const CompanyDetails = ({
           <h3 className="mb-2 text-lg font-semibold">AI Analysis Result</h3>
           <Markdown result={insights} />
         </div>
+      )}
+      {showAutoTradeModal && userId && (
+        <CompanySubscriptionModal
+          company_id={company_id}
+          ticker={company.ticker}
+          onClose={() => setShowAutoTradeModal(false)}
+          user_id={userId}
+        />
       )}
     </div>
   );

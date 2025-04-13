@@ -1,6 +1,7 @@
 import { Navigate, createHashRouter } from 'react-router-dom';
 
 import AccountRoute from '@/routes/AccountRoute';
+import AutoTraderRoute from '@/routes/AutoTraderRoute';
 import { CompanyProfile } from '@/features/company/components/CompanyProfile';
 import { ErrorElement } from '@/features/shared/ErrorElement';
 import HomeRoute from '@/routes/HomeRoute';
@@ -28,6 +29,7 @@ export const routers = createHashRouter([
           { path: 'home', element: <HomeRoute /> },
           { path: 'semantic-search', element: <SemanticSearch /> },
           { path: 'company/profile/:id/:ticker', element: <CompanyProfile /> },
+          { path: 'auto-trade', element: <AutoTraderRoute /> },
           { path: 'analyze', element: <StockAnalyzePage /> },
           { path: 'history', element: <StockHistory /> },
           { path: 'account', element: <AccountRoute /> },

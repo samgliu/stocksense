@@ -20,6 +20,7 @@ export const Account = () => {
     if (isSuccess && data) {
       dispatch(
         setAuth({
+          id: data.id,
           isAuthenticated: true,
           name: data.name,
           email: data.email ?? email,
