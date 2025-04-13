@@ -37,10 +37,10 @@ jobs:
       #       python-version: '3.11'
 
       - name: Build Lambda
-        working-directory: terraform
+        working-directory: terraform/lambda/${{ matrix.function.name }}
         run: |
-          chmod +x lambda/${{ matrix.function.name }}/build.sh
-          lambda/${{ matrix.function.name }}/build.sh
+          chmod +x build.sh
+          ./build.sh
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
