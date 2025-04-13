@@ -1,0 +1,57 @@
+name: Deploy Lambda Functions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/lambda/**'
+      - 'terraform/*.tf'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        function:
+          - name: scraper
+            runtime: node
+        #   - name: sentiment
+        #     runtime: python
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Runtime
+        if: matrix.function.runtime == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      #   - name: Setup Python
+      #     if: matrix.function.runtime == 'python'
+      #     uses: actions/setup-python@v5
+      #     with:
+      #       python-version: '3.11'
+
+      - name: Build Lambda
+        run: |
+          chmod +x terraform/lambda/${{ matrix.function.name }}/build.sh
+          terraform/lambda/${{ matrix.function.name }}/build.sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply -auto-approve
