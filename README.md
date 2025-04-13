@@ -22,6 +22,7 @@ You can try the live demo of **StockSense** here:
 - **Forecast Chart** with 30-day prediction and confidence intervals
 - **Kafka-Based Job Queue on Kubernetes** for decoupled analysis processing
 - **LangGraph Worker** consuming from Kafka topics for AI-driven analysis
+- **Serverless Cloud Functions** for modular, scalable data enrichment (AWS Lambda for web scraping and sentiment analysis)
 - **Redis Caching** for job tracking and faster async UX
 - **Frontend Job Status Polling** with seamless experience
 - **Airflow DAGs** for automated ETL pipelines
@@ -34,6 +35,7 @@ You can try the live demo of **StockSense** here:
   Deployed on [GitHub Pages](https://samgliu.github.io/stocksense) and [Cloudflare Pages](https://stocksense.pages.dev)
 - **Backend**: FastAPI (Python), deployed on Oracle Cloud Kubernetes
 - **Worker**: LangGraph consumer service on Kubernetes, utilizing Kafka, Redis, and LangGraph
+- **Serverless Functions**: AWS Lambda
 - **Vector Search**: SentenceTransformers + Qdrant Cloud
 - **Authentication**: Firebase (Google SSO, Anonymous)
 - **Database**: PostgreSQL (Supabase)
@@ -41,7 +43,7 @@ You can try the live demo of **StockSense** here:
 - **Caching**: Redis (using Redis [async] on Oracle Cloud Kubernetes, or Upstash, or containerized locally)
 - **Orchestration**: Apache Airflow (local setup)
 - **Containerization**: Docker + docker-compose
-- **Infrastructure**: K8s on Oracle Cloud
+- **Infrastructure**: K8s on Oracle Cloud, Terraform (used to provision Lambda functions, IAM roles, and budgets)
 
 ## Getting Started
 
@@ -95,7 +97,8 @@ Use Airflow DAGs or manual scripts to:
 ## Future Improvements
 
 StockSense is an ongoing project with several enhancements planned:
-- **Auto-Trader (Simulated)**: Build an AI-powered auto-trading system where users subscribe to tickers with configurable rules (e.g. wash sale settings). Periodic analysis is triggered via Kubernetes CronJobs, publishing jobs to Kafka. A LangGraph-based agent running in the worker processes each job by aggregating real-time signals—price trends, Gemini insights, and sentiment from Reddit/X (via serverless cloud functions). Trade decisions are simulated and logged, with notifications and analysis delivered via email or dashboard.
+
+- **Auto-Trader (Simulated)**: Build an AI-powered auto-trading system where users subscribe to tickers with configurable rules (e.g. wash sale settings). Periodic analysis is triggered via Kubernetes CronJobs, publishing jobs to Kafka. A LangGraph-based agent running in the worker processes each job by aggregating real-time signals—price trends, Gemini insights, and live sentiment from Reddit/X (via deployed AWS Lambda functions). Trade decisions are simulated and logged, with notifications and analysis delivered via email or dashboard.
 - **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest), and monitoring tools like Sentry or Prometheus.
 - **Historical Data & ML**: Enable CSV uploads for historical stock data, integrate trend forecasting models, and build rich visualizations.
 - **Streaming LLM Responses**: Implement token-by-token streaming of AI outputs for real-time feedback.
