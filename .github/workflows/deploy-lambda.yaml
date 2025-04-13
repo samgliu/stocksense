@@ -37,6 +37,7 @@ jobs:
       #       python-version: '3.11'
 
       - name: Build Lambda
+        working-directory: terraform/lambda/${{ matrix.function.name }}
         run: |
           chmod +x terraform/lambda/${{ matrix.function.name }}/build.sh
           terraform/lambda/${{ matrix.function.name }}/build.sh
