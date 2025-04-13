@@ -14,6 +14,7 @@ def build_analysis_prompt(
     history: Optional[List[Dict]],
     news: Optional[List[Dict]],
     scraped_text: Optional[str] = None,
+    sentiment_analysis: Optional[Dict] = None,
 ) -> str:
     insight_section = ""
     if company.get("insights"):
@@ -40,6 +41,7 @@ def build_analysis_prompt(
             for item in news
         )
         news_section = f"\n📰 Recent News Headlines:\n{news_str}"
+
     scraped_section = ""
     if scraped_text:
         scraped_section = f"""
@@ -47,6 +49,24 @@ def build_analysis_prompt(
     \"\"\"
     {scraped_text.strip()[:1000]}
     \"\"\""""
+
+    sentiment_analysis_section = ""
+    if sentiment_analysis and isinstance(sentiment_analysis, dict):
+        sentiment_score = sentiment_analysis.get("score", 0.0)
+        sentiment_label = sentiment_analysis.get("sentiment", "unknown")
+        summary_text = sentiment_analysis.get("summary", "").strip()
+
+        sentiment_analysis_section = f"""
+        🧠 Market Sentiment Summary (Generated via Google Custom Search + Claude AI):
+
+        Sentiment Score: {sentiment_score}
+        Sentiment: {sentiment_label}
+        Summary:
+        \"\"\"
+        {summary_text}
+        \"\"\"
+        """
+
     prompt = f"""
     You are a financial analyst AI. Analyze the investment potential of the following company using its profile and recent stock performance data.
 
@@ -111,6 +131,8 @@ def build_analysis_prompt(
     {scraped_section}
     
     {insight_section}
+    
+    {sentiment_analysis_section}
     """
     return prompt.strip()
 
@@ -121,8 +143,11 @@ async def analyze_company_payload(
     history: Optional[List[Dict]],
     news: Optional[List[Dict]],
     scraped_text: Optional[str] = None,
+    sentiment_analysis: Optional[Dict] = None,
 ) -> str:
-    prompt = build_analysis_prompt(company, history, news, scraped_text)
+    prompt = build_analysis_prompt(
+        company, history, news, scraped_text, sentiment_analysis
+    )
 
     response = await asyncio.to_thread(
         client.models.generate_content,
