@@ -64,3 +64,19 @@ config*
 # Misc
 # --------------------------
 ROADMAP.md
+
+# --------------------------
+# Terraform
+# --------------------------
+*.tfstate
+*.tfstate.*
+.crash
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.secret.auto.tfvars
+*.auto.tfvars
