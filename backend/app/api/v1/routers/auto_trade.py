@@ -1,6 +1,8 @@
 from uuid import UUID
 from app.models.company import Company
-from fastapi import APIRouter, Depends, Query, HTTPException
+from app.cron.runner import run_autotrade_cron
+from app.models.user import User, UserRole
+from fastapi import APIRouter, Depends, Query, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_async_db
 from app.schemas.auto_trade import AutoTradeSubscriptionCreate, AutoTradeSubscriptionOut
@@ -109,3 +111,23 @@ async def get_user_subscriptions(
     return [
         {**sub.__dict__, "company_name": company_name} for sub, company_name in rows
     ]
+
+
+@router.post("/force-run")
+async def force_run_autotrade_cron(
+    request: Request, db: AsyncSession = Depends(get_async_db)
+):
+    """Force trigger the AutoTrader cron logic manually."""
+    user_data = request.state.user
+    user_result = await db.execute(
+        select(User).where(User.firebase_uid == user_data["uid"])
+    )
+    user = user_result.scalar_one()
+    if user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can force run the AutoTrader job.",
+        )
+
+    await run_autotrade_cron()
+    return {"detail": "AutoTrader cron job executed manually"}

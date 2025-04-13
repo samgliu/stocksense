@@ -31,3 +31,7 @@ async def send_analysis_job(data: dict, stream: str = "analysis-queue"):
         await send_analysis_job_kafka(data, topic=stream)
     else:
         print("📝 Kafka disabled; job already inserted in DB.")
+
+
+async def send_autotrade_job(data: dict):
+    await send_analysis_job(data, stream="autotrade.jobs")

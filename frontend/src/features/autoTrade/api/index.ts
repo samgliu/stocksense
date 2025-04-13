@@ -46,6 +46,12 @@ export const autoTradeApi = createApi({
     getUserAutoTradeSubscriptions: builder.query<AutoTradeSubscription[], string>({
       query: (user_id) => `/auto-trade/subscribe?user_id=${user_id}`,
     }),
+    forceRunAutoTradeJob: builder.mutation<{ detail: string }, void>({
+      query: () => ({
+        url: `/auto-trade/force-run`,
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -54,4 +60,5 @@ export const {
   useUpdateAutoTradeSubscriptionMutation,
   useDeleteAutoTradeSubscriptionMutation,
   useGetUserAutoTradeSubscriptionsQuery,
+  useForceRunAutoTradeJobMutation,
 } = autoTradeApi;
