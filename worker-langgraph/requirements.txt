@@ -6,3 +6,4 @@ langgraph
 google-genai
 pydantic
 redis[async]
+boto3

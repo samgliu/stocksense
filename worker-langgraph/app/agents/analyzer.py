@@ -1,3 +1,4 @@
+import asyncio
 import json
 from datetime import datetime, timezone
 
@@ -10,6 +11,7 @@ from app.schemas.company import AnalyzeRequest
 from app.agents.analyzer_agent import run_analysis_graph
 from app.utils.redis import redis_client
 from app.utils.message_queue import commit_kafka
+from app.utils.aws_lambda import invoke_scraper_lambda
 from asyncio import sleep
 
 
@@ -49,7 +51,25 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
                     return
 
             payload = AnalyzeRequest(**raw_input)
-            result = await run_analysis_graph(payload.model_dump())
+            # Scrape domain if available
+            domain = payload.company.website
+            scraped_text = ""
+            if domain:
+                try:
+                    cleaned_domain = (
+                        domain.replace("https://", "")
+                        .replace("http://", "")
+                        .split("/")[0]
+                    )
+                    scraped_text = await asyncio.to_thread(invoke_scraper_lambda, cleaned_domain)
+                    print(
+                        f"✅ Scraped content for {cleaned_domain} (length: {len(scraped_text)} chars)"
+                    )
+                except Exception as e:
+                    print(f"⚠️ Failed to scrape website {domain}: {e}")
+            result = await run_analysis_graph(
+                {**payload.model_dump(), "scraped_text": scraped_text}
+            )
             summary = result["result"]
 
             job.status = "done"

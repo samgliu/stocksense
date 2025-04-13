@@ -13,6 +13,7 @@ async def analyze_node(state: AnalysisState) -> dict:
         state["payload"].get("company"),
         state["payload"].get("history"),
         state["payload"].get("news"),
+        state["payload"].get("scraped_text"),
     )
     return {"result": result}
 
