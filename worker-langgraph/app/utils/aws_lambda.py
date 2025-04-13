@@ -16,3 +16,16 @@ def invoke_scraper_lambda(domain: str) -> str:
     )
     result = json.loads(response["Payload"].read().decode("utf-8"))
     return result.get("text", "")
+
+
+def invoke_gcs_lambda(query: str) -> list[str]:
+    payload = {"query": query}
+    response = lambda_client.invoke(
+        FunctionName=os.getenv("GCS_LAMBDA_NAME", "gcs-lambda"),
+        InvocationType="RequestResponse",
+        Payload=json.dumps(payload),
+    )
+    raw = response["Payload"].read().decode("utf-8")
+    body = json.loads(raw)
+    data = json.loads(body["body"])
+    return [f"{item['title']} {item['snippet']}" for item in data.get("results", [])]

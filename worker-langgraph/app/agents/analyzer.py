@@ -11,7 +11,8 @@ from app.schemas.company import AnalyzeRequest
 from app.agents.analyzer_agent import run_analysis_graph
 from app.utils.redis import redis_client
 from app.utils.message_queue import commit_kafka
-from app.utils.aws_lambda import invoke_scraper_lambda
+from app.utils.aws_lambda import invoke_gcs_lambda, invoke_scraper_lambda
+from app.utils.sentiment_analysis import analyze_sentiment_with_cf
 from asyncio import sleep
 
 
@@ -61,14 +62,35 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
                         .replace("http://", "")
                         .split("/")[0]
                     )
-                    scraped_text = await asyncio.to_thread(invoke_scraper_lambda, cleaned_domain)
-                    print(
-                        f"✅ Scraped content for {cleaned_domain} (length: {len(scraped_text)} chars)"
-                    )
+                    scraped_text = invoke_scraper_lambda(cleaned_domain)
                 except Exception as e:
                     print(f"⚠️ Failed to scrape website {domain}: {e}")
+            # Get GCS data
+            gcs_snippets = []
+            try:
+                gcs_snippets = invoke_gcs_lambda(payload.company.name)
+                print(
+                    f"✅ GCS results for {payload.company.name}: {len(gcs_snippets)} items"
+                )
+            except Exception as e:
+                print(
+                    f"⚠️ Failed to retrieve GCS sentiment for {payload.company.name}: {e}"
+                )
+            sentiment_analysis = None
+            if gcs_snippets:
+                try:
+                    sentiment_analysis = await analyze_sentiment_with_cf(gcs_snippets)
+                    print(
+                        f"✅ Claude sentiment analysis generated (length: {len(sentiment_analysis)} chars)"
+                    )
+                except Exception as e:
+                    print(f"⚠️ Failed to generate sentiment analysis: {e}")
             result = await run_analysis_graph(
-                {**payload.model_dump(), "scraped_text": scraped_text}
+                {
+                    **payload.model_dump(),
+                    "scraped_text": scraped_text,
+                    "sentiment_analysis": sentiment_analysis,
+                }
             )
             summary = result["result"]
 

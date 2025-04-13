@@ -10,45 +10,40 @@ on:
       - 'terraform/*.tf'
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    env:
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
     strategy:
       matrix:
         function:
           - name: scraper
             runtime: node
-        #   - name: sentiment
-        #     runtime: python
+          - name: gcs
+            runtime: python
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Runtime
+      - name: Setup Node
         if: matrix.function.runtime == 'node'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      #   - name: Setup Python
-      #     if: matrix.function.runtime == 'python'
-      #     uses: actions/setup-python@v5
-      #     with:
-      #       python-version: '3.11'
-      - name: Cache Terraform
-        uses: actions/cache@v3
+      - name: Setup Python
+        if: matrix.function.runtime == 'python'
+        uses: actions/setup-python@v5
         with:
-          path: |
-            terraform/.terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('terraform/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
+          python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         working-directory: terraform/lambda/${{ matrix.function.name }}
-        run: npm install
+        run: |
+          if [[ "${{ matrix.function.runtime }}" == "node" ]]; then
+            npm install
+          elif [[ "${{ matrix.function.runtime }}" == "python" ]]; then
+            pip install -r requirements.txt -t dist/
+          fi
 
       - name: Build Lambda
         working-directory: terraform/lambda/${{ matrix.function.name }}
@@ -56,13 +51,47 @@ jobs:
           chmod +x build.sh
           ./build.sh
 
+      - name: Upload Lambda zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.function.name }}-zip
+          path: terraform/lambda/${{ matrix.function.name }}/dist/index.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download scraper artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: scraper-zip
+          path: terraform/lambda/scraper/dist
+
+      - name: Download gcs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gcs-zip
+          path: terraform/lambda/gcs/dist
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Configure Terraform credentials for Terraform Cloud
+      - name: Configure Terraform credentials
         run: |
           mkdir -p ~/.terraform.d
-          echo '{ "credentials": { "app.terraform.io": { "token": "${{ secrets.TF_API_TOKEN }}" } } }' > ~/.terraform.d/credentials.tfrc.json
+          echo '{"credentials": {"app.terraform.io": {"token": "${{ secrets.TF_API_TOKEN }}"}}}' > ~/.terraform.d/credentials.tfrc.json
+
+      - name: Set Terraform Variables
+        working-directory: terraform
+        run: |
+          echo 'google_api_key = "${{ secrets.GOOGLE_API_KEY }}"' > lambda.auto.tfvars
+          echo 'google_cx_id = "${{ secrets.GOOGLE_CX_ID }}"' >> lambda.auto.tfvars
 
       - name: Terraform Init
         working-directory: terraform
