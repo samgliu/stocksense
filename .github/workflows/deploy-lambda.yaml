@@ -10,10 +10,8 @@ on:
       - 'terraform/*.tf'
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    env:
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
     strategy:
       matrix:
         function:
@@ -21,12 +19,11 @@ jobs:
             runtime: node
           - name: gcs
             runtime: python
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Runtime
+      - name: Setup Node
         if: matrix.function.runtime == 'node'
         uses: actions/setup-node@v4
         with:
@@ -37,15 +34,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Cache Terraform
-        uses: actions/cache@v3
-        with:
-          path: |
-            terraform/.terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('terraform/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
 
       - name: Install Dependencies
         working-directory: terraform/lambda/${{ matrix.function.name }}
@@ -62,19 +50,44 @@ jobs:
           chmod +x build.sh
           ./build.sh
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-${{ matrix.function.name }}
+          path: terraform/lambda/${{ matrix.function.name }}/dist/index.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: terraform/lambda/
+
+      - name: Move Artifacts
+        run: |
+          mv terraform/lambda/lambda-scraper/index.zip terraform/lambda/scraper/dist/index.zip
+          mv terraform/lambda/lambda-gcs/index.zip terraform/lambda/gcs/dist/index.zip
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Configure Terraform credentials for Terraform Cloud
+      - name: Configure Terraform credentials
         run: |
           mkdir -p ~/.terraform.d
-          echo '{ "credentials": { "app.terraform.io": { "token": "${{ secrets.TF_API_TOKEN }}" } } }' > ~/.terraform.d/credentials.tfrc.json
+          echo '{"credentials": {"app.terraform.io": {"token": "${{ secrets.TF_API_TOKEN }}"}}}' > ~/.terraform.d/credentials.tfrc.json
 
-      - name: Set Terraform Variables for Lambda Env
+      - name: Set Terraform Variables
         working-directory: terraform
         run: |
-          echo "google_api_key = \"${{ secrets.GOOGLE_API_KEY }}\"" >> lambda.auto.tfvars
-          echo "google_cx_id = \"${{ secrets.GOOGLE_CX_ID }}\"" >> lambda.auto.tfvars
+          echo 'google_api_key = "${{ secrets.GOOGLE_API_KEY }}"' > lambda.auto.tfvars
+          echo 'google_cx_id = "${{ secrets.GOOGLE_CX_ID }}"' >> lambda.auto.tfvars
 
       - name: Terraform Init
         working-directory: terraform
