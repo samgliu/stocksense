@@ -51,7 +51,13 @@ def main():
 
     print("🚀 Starting FastAPI server...")
     port = os.environ.get("PORT", "8000")
-    subprocess.run(["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", port])
+    reload_flag = os.getenv("ENV", "production") == "local"
+
+    uvicorn_cmd = ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", port]
+    if reload_flag:
+        uvicorn_cmd.append("--reload")
+
+    subprocess.run(uvicorn_cmd)
 
 
 if __name__ == "__main__":

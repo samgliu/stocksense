@@ -42,6 +42,7 @@ export const Navbar: React.FC = () => {
             {isAuthenticated && (
               <>
                 <NavItem to="/semantic-search" label="Search" />
+                <NavItem to="/auto-trade" label="AutoTrader" />
                 <NavItem to="/analyze" label="Analyze" />
                 <NavItem to="/history" label="History" />
               </>

@@ -25,6 +25,7 @@ export const SignIn: React.FC = () => {
 
       dispatch(
         setAuth({
+          id: backendUser.id,
           isAuthenticated: true,
           name: backendUser.name,
           email: backendUser.email,
@@ -58,6 +59,7 @@ export const SignIn: React.FC = () => {
 
       dispatch(
         setAuth({
+          id: backendUser.id,
           isAuthenticated: true,
           name: backendUser.name ?? 'Anonymous',
           email: backendUser.email ?? '',
