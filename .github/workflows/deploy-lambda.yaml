@@ -12,6 +12,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
     strategy:
       matrix:
         function:
@@ -35,14 +37,32 @@ jobs:
       #     uses: actions/setup-python@v5
       #     with:
       #       python-version: '3.11'
+      - name: Cache Terraform
+        uses: actions/cache@v3
+        with:
+          path: |
+            terraform/.terraform
+          key: ${{ runner.os }}-terraform-${{ hashFiles('terraform/*.tf') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+
+      - name: Install dependencies
+        working-directory: terraform/lambda/${{ matrix.function.name }}
+        run: npm install
 
       - name: Build Lambda
+        working-directory: terraform/lambda/${{ matrix.function.name }}
         run: |
-          chmod +x terraform/lambda/${{ matrix.function.name }}/build.sh
-          terraform/lambda/${{ matrix.function.name }}/build.sh
+          chmod +x build.sh
+          ./build.sh
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Configure Terraform credentials for Terraform Cloud
+        run: |
+          mkdir -p ~/.terraform.d
+          echo '{ "credentials": { "app.terraform.io": { "token": "${{ secrets.TF_API_TOKEN }}" } } }' > ~/.terraform.d/credentials.tfrc.json
 
       - name: Terraform Init
         working-directory: terraform

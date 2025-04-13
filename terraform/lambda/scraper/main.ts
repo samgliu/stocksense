@@ -6,7 +6,22 @@ import fetch from 'node-fetch';
 export const handler: APIGatewayProxyHandler = async (event) => {
   try {
     const parsed = JSON.parse(event.body || '{}');
-    let url = parsed.url;
+    let url: string | undefined;
+    if ((event as any).url) {
+      url = (event as any).url;
+    } else if (event.body) {
+      try {
+        const body = JSON.parse(event.body);
+        url = body.url;
+      } catch {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Invalid JSON body' }),
+        };
+      }
+    } else if ((event as any).url) {
+      url = (event as any).url;
+    }
     if (!url) {
       return {
         statusCode: 400,
