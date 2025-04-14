@@ -1,3 +1,11 @@
+export interface AutoTradeTransaction {
+  id: string;
+  action: 'buy' | 'sell';
+  amount: number;
+  price: number;
+  timestamp: string;
+}
+
 export interface AutoTradeSubscription {
   id: string;
   user_id: string;
@@ -10,4 +18,5 @@ export interface AutoTradeSubscription {
   last_run_at: string | null;
   active: boolean;
   company_name?: string | null;
+  transactions?: AutoTradeTransaction[];
 }

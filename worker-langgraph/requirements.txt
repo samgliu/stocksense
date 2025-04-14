@@ -7,3 +7,4 @@ google-genai
 pydantic
 redis[async]
 boto3
+yfinance
