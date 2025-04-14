@@ -1,3 +1,4 @@
+from app.models.mock_account import MockAccount
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -45,8 +46,16 @@ async def auth_verify(request: Request, db: AsyncSession = Depends(get_async_db)
             last_login=now,
         )
         db.add(user)
+        await db.flush()  # ensure user.id is generated before next step
     else:
         user.last_login = now
+
+    # Ensure mock account exists
+    existing_account = await db.execute(
+        select(MockAccount).where(MockAccount.user_id == str(user.id))
+    )
+    if not existing_account.scalar_one_or_none():
+        db.add(MockAccount(user_id=str(user.id), balance=1_000_000.0))
 
     await db.commit()
     await db.refresh(user)

@@ -3,32 +3,30 @@ import os
 import json
 from sqlalchemy import text
 from app.database import AsyncSessionLocal
-from app.models import JobStatus
 from confluent_kafka import Consumer as KafkaConsumer
 
 USE_KAFKA = os.getenv("KAFKA_ENABLED", "").lower() == "true"
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "")
-KAFKA_TOPIC = "analysis-queue"
 DB_POLL_INTERVAL_SECONDS = 5
 
 
-def create_kafka_consumer():
+def create_kafka_consumer(topic: str, group_id: str):
     if not (USE_KAFKA and KAFKA_BROKER):
         return None
 
     consumer = KafkaConsumer(
         {
             "bootstrap.servers": KAFKA_BROKER,
-            "group.id": "langgraph-consumer",
+            "group.id": group_id,
             "auto.offset.reset": "earliest",
             "enable.auto.commit": False,
         }
     )
-    consumer.subscribe([KAFKA_TOPIC])
+    consumer.subscribe([topic])
     return consumer
 
 
-async def poll_from_kafka(consumer):
+async def poll_kafka_msg(consumer):
     try:
         msg = consumer.poll(5.0)
         if msg and not msg.error():
@@ -40,7 +38,8 @@ async def poll_from_kafka(consumer):
     return None, None
 
 
-async def poll_from_db():
+async def poll_analysis_job_from_db():
+    """Fallback for analysis jobs only."""
     await asyncio.sleep(DB_POLL_INTERVAL_SECONDS)
     try:
         async with AsyncSessionLocal() as db:

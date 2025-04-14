@@ -81,7 +81,7 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
                 try:
                     sentiment_analysis = await analyze_sentiment_with_cf(gcs_snippets)
                     print(
-                        f"✅ Claude sentiment analysis generated (length: {len(sentiment_analysis)} chars)"
+                        f"✅ sentiment analysis generated (length: {len(sentiment_analysis)} chars)"
                     )
                 except Exception as e:
                     print(f"⚠️ Failed to generate sentiment analysis: {e}")

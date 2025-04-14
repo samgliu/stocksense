@@ -1,37 +1,22 @@
-from app.utils.message_queue import (
-    create_kafka_consumer,
-    poll_from_kafka,
-    poll_from_db,
-    commit_kafka,
-)
-from app.agents.analyzer import handle_analysis_job
+import asyncio
+from app.consumers.analysis_consumer import run_analysis_consumer
+from app.consumers.autotrade_consumer import run_autotrade_consumer
 
 
 async def main():
-    print("🚀 Worker started", flush=True)
+    print("🚀 Worker starting up", flush=True)
 
-    consumer = create_kafka_consumer()
+    tasks = [
+        asyncio.create_task(run_analysis_consumer()),
+        asyncio.create_task(run_autotrade_consumer()),
+    ]
 
-    while True:
-        data, msg = None, None
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        if consumer:
-            data, msg = await poll_from_kafka(consumer)
-        else:
-            data, msg = await poll_from_db()
-
-        if not data:
-            continue  # No job
-
-        print(f"📥 Received job: {data.get('job_id')}", flush=True)
-
-        await handle_analysis_job(data, msg, consumer)
-
-        if msg and consumer:
-            commit_kafka(consumer, msg)
+    for result in results:
+        if isinstance(result, Exception):
+            print(f"⚠️ Consumer task failed: {result}", flush=True)
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())

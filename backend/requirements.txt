@@ -3,6 +3,7 @@ fastapi
 uvicorn[standard]
 confluent-kafka
 redis[async]
+apscheduler
 
 # --- Data models & validation ---
 pydantic

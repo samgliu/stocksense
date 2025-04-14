@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 export interface AuthState {
+  id: string;
   isAuthenticated: boolean;
   name: string | null;
   email: string | null;
@@ -11,6 +12,7 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
+  id: '',
   isAuthenticated: false,
   name: null,
   email: null,
@@ -29,6 +31,7 @@ const authSlice = createSlice({
     },
     clearAuth: (state) => {
       Object.assign(state, {
+        id: '',
         isAuthenticated: false,
         name: null,
         email: null,
