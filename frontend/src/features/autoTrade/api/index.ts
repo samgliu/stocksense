@@ -43,8 +43,26 @@ export const autoTradeApi = createApi({
         method: 'DELETE',
       }),
     }),
-    getUserAutoTradeSubscriptions: builder.query<AutoTradeSubscription[], string>({
+    getUserAutoTradeSubscriptions: builder.query<
+      {
+        balance: number;
+        subscriptions: AutoTradeSubscription[];
+      },
+      string
+    >({
       query: (user_id) => `/auto-trade/subscribe?user_id=${user_id}`,
+    }),
+    forceRunAutoTradeJob: builder.mutation<{ detail: string }, void>({
+      query: () => ({
+        url: `/auto-trade/force-run`,
+        method: 'POST',
+      }),
+    }),
+    forceResetBalance: builder.mutation<{ detail: string }, void>({
+      query: () => ({
+        url: `/auto-trade/reset`,
+        method: 'POST',
+      }),
     }),
   }),
 });
@@ -54,4 +72,6 @@ export const {
   useUpdateAutoTradeSubscriptionMutation,
   useDeleteAutoTradeSubscriptionMutation,
   useGetUserAutoTradeSubscriptionsQuery,
+  useForceRunAutoTradeJobMutation,
+  useForceResetBalanceMutation,
 } = autoTradeApi;
