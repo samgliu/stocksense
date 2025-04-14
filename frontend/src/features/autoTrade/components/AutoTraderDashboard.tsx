@@ -24,7 +24,7 @@ export const AutoTraderDashboard = () => {
   const handleForceRun = async () => {
     try {
       const res = await forceRunAutoTradeJob().unwrap();
-      toast.success(res.detail ?? 'Triggered AutoTrader run!');
+      toast.success(res.detail ?? 'Triggered SmartTrade run!');
     } catch {
       toast.error('Failed to force run.');
     }
@@ -49,7 +49,7 @@ export const AutoTraderDashboard = () => {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">📈 AutoTrader Subscriptions</h1>
+          <h1 className="text-2xl font-bold text-gray-800">📈 SmartTrade Subscriptions</h1>
           {role === 'admin' && (
             <div className="flex gap-2">
               <button
