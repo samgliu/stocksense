@@ -96,34 +96,47 @@ async def update_subscription(
     return {**sub.__dict__, "company_name": company_name}
 
 
+@router.delete("/subscribe/{subscription_id}")
+async def deactivate_subscription(
+    subscription_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+):
+    sub = await db.get(AutoTradeSubscription, subscription_id)
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    sub.active = False
+    await db.commit()
+    return {"detail": "Subscription deactivated"}
+
+
 @router.get("/subscribe")
 async def get_user_subscriptions(
     user_id: str = Query(...),
     db: AsyncSession = Depends(get_async_db),
 ):
-    # Fetch all subscriptions (active and inactive)
+    # Fetch subscriptions
     result = await db.execute(
         select(AutoTradeSubscription, Company.name, Company.ticker)
         .join(Company, AutoTradeSubscription.company_id == Company.id)
-        .where(AutoTradeSubscription.user_id == user_id)
+        .where(
+            AutoTradeSubscription.user_id == user_id,
+        )
         .order_by(AutoTradeSubscription.created_at.desc())
     )
     rows = result.all()
 
-    # Fetch mock account
+    # Fetch user's mock account
     account_result = await db.execute(
         select(MockAccount).where(MockAccount.user_id == user_id)
     )
     account = account_result.scalar_one_or_none()
     balance = float(account.balance) if account else 0
-    account_id = account.id if account else None
 
     subscriptions = []
-    total_market_value = 0
-    total_unrealized_gain = 0
 
     for sub, company_name, ticker in rows:
-        # Current price
+        # Fetch accurate current price
         try:
             current_price_float = await fetch_current_price(ticker)
         except Exception as e:
@@ -134,7 +147,7 @@ async def get_user_subscriptions(
         tx_result = await db.execute(
             select(MockTransaction)
             .where(
-                MockTransaction.account_id == account_id,
+                MockTransaction.account_id == account.id,
                 MockTransaction.ticker == ticker,
             )
             .order_by(MockTransaction.timestamp.desc())
@@ -144,7 +157,7 @@ async def get_user_subscriptions(
         # Position summary
         position_result = await db.execute(
             select(MockPosition).where(
-                MockPosition.account_id == account_id,
+                MockPosition.account_id == account.id,
                 MockPosition.ticker == ticker,
             )
         )
@@ -158,9 +171,6 @@ async def get_user_subscriptions(
             gain_pct = (
                 (unrealized_gain / (avg_cost * shares)) * 100 if avg_cost > 0 else 0
             )
-
-            total_market_value += market_value
-            total_unrealized_gain += unrealized_gain
         else:
             shares = 0
             avg_cost = 0
@@ -172,7 +182,6 @@ async def get_user_subscriptions(
             {
                 **sub.__dict__,
                 "company_name": company_name,
-                "is_active": sub.active,
                 "transactions": transactions,
                 "holding_summary": {
                     "shares": shares,
@@ -185,13 +194,7 @@ async def get_user_subscriptions(
             }
         )
 
-    return {
-        "balance": round(balance, 2),
-        "portfolio_value": round(total_market_value, 2),
-        "total_value": round(balance + total_market_value, 2),
-        "total_return": round(total_unrealized_gain, 2),
-        "subscriptions": subscriptions,
-    }
+    return {"balance": balance, "subscriptions": subscriptions}
 
 
 @router.post("/reset")
