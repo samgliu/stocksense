@@ -17,5 +17,12 @@ async def run_cron_job_with_db():
 
 
 def start_autotrade_scheduler():
-    scheduler.add_job(run_cron_job_with_db, "cron", hour=9, minute=30)
+    # Run the job at 9:30, 10:30, ..., 15:30 ET (Mon-Fri)
+    scheduler.add_job(
+        run_cron_job_with_db,
+        "cron",
+        day_of_week="mon-fri",
+        hour="9-15",
+        minute=30,
+    )
     scheduler.start()
