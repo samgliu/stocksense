@@ -33,9 +33,8 @@ export const StockInput = () => {
     try {
       const response = await analyzeStock(content).unwrap();
       dispatch(setResult(response.summary));
-    } catch (err: any) {
+    } catch {
       dispatch(setError('Failed to analyze stock input.'));
-      console.error('Analyze failed:', err);
     } finally {
       dispatch(setLoading(false));
     }

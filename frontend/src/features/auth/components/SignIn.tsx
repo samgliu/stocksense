@@ -36,7 +36,7 @@ export const SignIn: React.FC = () => {
         }),
       );
 
-      navigate('/account');
+      navigate('/');
     } catch (err) {
       console.error('Google sign-in error:', err);
       setStatus('❌ Google sign-in failed. Please try again.');
@@ -70,7 +70,7 @@ export const SignIn: React.FC = () => {
         }),
       );
 
-      navigate('/account');
+      navigate('/');
     } catch (err) {
       console.error('Anonymous sign-in error:', err);
       setStatus('❌ Anonymous sign-in failed. Please try again.');
