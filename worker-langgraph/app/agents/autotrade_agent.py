@@ -47,8 +47,7 @@ async def fetch_price(state: AutoTraderState) -> dict:
 # Node: Fetch GCS News
 async def fetch_gcs_news(state: AutoTraderState) -> dict:
     company = state.get("company", {})
-    query = f'"{company["name"]}" {company["ticker"]} stock analysis OR forecast OR price target OR earnings OR buy OR sell OR hold'
-
+    query = f'{company["ticker"]} stock'
     try:
         results = await asyncio.to_thread(invoke_gcs_lambda, query)
         return {"gcs_results": results or []}
