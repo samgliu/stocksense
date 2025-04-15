@@ -15,4 +15,5 @@ class MockTransaction(Base):
     action = Column(Enum(TradeDecision), nullable=False)
     amount = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
+    realized_gain = Column(Float, nullable=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())

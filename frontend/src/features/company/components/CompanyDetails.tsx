@@ -14,6 +14,7 @@ import { CompanySubscriptionModal } from './CompanySubscriptionModal';
 import { ForecastChart } from './ForecastChart';
 import { Markdown } from '@/features/shared/Markdown';
 import { StockMiniChart } from './StockMiniChart';
+import { formatCurrencyCompact } from '@/utils/formatters';
 import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useToast } from '@/hooks/useToast';
@@ -165,7 +166,9 @@ export const CompanyDetails = ({
 
       {/* Financials */}
       <div className="grid grid-cols-1 gap-4 border-t pt-4 text-sm text-gray-700 sm:grid-cols-2">
-        <p>💰 Market Cap: ${company.market_cap?.toLocaleString() || 'N/A'}</p>
+        <p>
+          💰 Market Cap: {company.market_cap ? formatCurrencyCompact(company.market_cap) : 'N/A'}
+        </p>
         <p>📈 Current Price: ${company.current_price?.toFixed(2) || 'N/A'}</p>
         <p>👥 Employees: {company.fulltime_employees?.toLocaleString() || 'N/A'}</p>
       </div>

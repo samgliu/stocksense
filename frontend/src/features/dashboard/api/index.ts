@@ -37,6 +37,9 @@ export const dashboardApi = createApi({
     getTopIndustries: builder.query({
       query: () => '/top-industries',
     }),
+    getBuySellDaily: builder.query({
+      query: () => '/buy-sell-daily',
+    }),
   }),
 });
 
@@ -48,4 +51,5 @@ export const {
   useGetTopCompaniesQuery,
   useGetNewsSummaryQuery,
   useGetTopIndustriesQuery,
+  useGetBuySellDailyQuery,
 } = dashboardApi;

@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts';
 import {
+  useGetBuySellDailyQuery,
   useGetDailyAnalysisQuery,
   useGetHistorySummaryQuery,
   useGetMonthlySummaryQuery,
@@ -25,6 +26,7 @@ import {
 
 import { CustomTooltip } from './CustomTooltip';
 import { Spinner } from '@/features/shared/Spinner';
+import { formatCurrencyCompact } from '@/utils/formatters';
 
 export const Dashboard = () => {
   const { data: dailyData, isLoading: isDailyLoading } = useGetDailyAnalysisQuery({});
@@ -34,6 +36,8 @@ export const Dashboard = () => {
   const { data: topCompanies, isLoading: isTopCompaniesLoading } = useGetTopCompaniesQuery({});
   const { data: newsSummary, isLoading: isNewsSummaryLoading } = useGetNewsSummaryQuery({});
   const { data: topIndustries, isLoading: isTopIndustriesLoading } = useGetTopIndustriesQuery({});
+  const { data: buySellDaily, isLoading: isBuySellDailyLoading } = useGetBuySellDailyQuery({});
+
   if (
     isDailyLoading ||
     isMonthlyLoading ||
@@ -41,7 +45,8 @@ export const Dashboard = () => {
     isHistoryLoading ||
     isTopCompaniesLoading ||
     isNewsSummaryLoading ||
-    isTopIndustriesLoading
+    isTopIndustriesLoading ||
+    isBuySellDailyLoading
   ) {
     return <Spinner />;
   }
@@ -85,6 +90,37 @@ export const Dashboard = () => {
         <KPI title="📂 Total Records" value={historySummary.total_records} />
         <KPI title="👥 Total Users" value={historySummary.total_users} />
       </div>
+
+      <SectionCard title="📊 SmartTrade Daily Buy vs Sell">
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={buySellDaily}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+            <YAxis tickFormatter={(v) => formatCurrencyCompact(v)} />
+
+            <Tooltip formatter={(v: number) => formatCurrencyCompact(v)} />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="buy"
+              stroke="#10b981"
+              strokeWidth={2}
+              name="Buy"
+              dot={{ r: 3 }}
+              activeDot={{ r: 5 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="sell"
+              stroke="#ef4444"
+              strokeWidth={2}
+              name="Sell"
+              dot={{ r: 3 }}
+              activeDot={{ r: 5 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </SectionCard>
 
       {/* Daily Analysis Chart */}
       <SectionCard title="📈 Daily Analysis (Last 30 Days)">
