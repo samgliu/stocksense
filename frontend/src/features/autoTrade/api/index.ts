@@ -46,6 +46,9 @@ export const autoTradeApi = createApi({
     getUserAutoTradeSubscriptions: builder.query<
       {
         balance: number;
+        portfolio_value: number;
+        total_value: number;
+        total_return: number;
         subscriptions: AutoTradeSubscription[];
       },
       string

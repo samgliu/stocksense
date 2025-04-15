@@ -6,6 +6,15 @@ export interface AutoTradeTransaction {
   timestamp: string;
 }
 
+export interface HoldingSummary {
+  shares: number;
+  average_cost: number;
+  current_price: number;
+  market_value: number;
+  unrealized_gain: number;
+  gain_pct: number;
+}
+
 export interface AutoTradeSubscription {
   id: string;
   user_id: string;
@@ -19,4 +28,5 @@ export interface AutoTradeSubscription {
   active: boolean;
   company_name?: string | null;
   transactions?: AutoTradeTransaction[];
+  holding_summary?: HoldingSummary;
 }

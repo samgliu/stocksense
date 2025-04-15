@@ -4,6 +4,8 @@ from app.cron.runner import run_autotrade_cron
 from app.models.user import User, UserRole
 from app.models.mock_account import MockAccount
 from app.models.mock_transaction import MockTransaction
+from app.models.mock_position import MockPosition
+from app.services.yf_data import fetch_current_price
 from fastapi import APIRouter, Depends, Query, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_async_db
@@ -115,11 +117,10 @@ async def get_user_subscriptions(
 ):
     # Fetch subscriptions
     result = await db.execute(
-        select(AutoTradeSubscription, Company.name)
+        select(AutoTradeSubscription, Company.name, Company.ticker)
         .join(Company, AutoTradeSubscription.company_id == Company.id)
         .where(
             AutoTradeSubscription.user_id == user_id,
-            AutoTradeSubscription.active == True,
         )
         .order_by(AutoTradeSubscription.created_at.desc())
     )
@@ -133,22 +134,63 @@ async def get_user_subscriptions(
     balance = float(account.balance) if account else 0
 
     subscriptions = []
-    for sub, company_name in rows:
+
+    for sub, company_name, ticker in rows:
+        # Fetch accurate current price
+        try:
+            current_price_float = await fetch_current_price(ticker)
+        except Exception as e:
+            print(f"⚠️ Failed to fetch price for {ticker}: {e}")
+            current_price_float = 0
+
+        # Transactions
         tx_result = await db.execute(
             select(MockTransaction)
             .where(
                 MockTransaction.account_id == account.id,
-                MockTransaction.ticker == sub.ticker,
+                MockTransaction.ticker == ticker,
             )
             .order_by(MockTransaction.timestamp.desc())
         )
         transactions = [tx.__dict__ for tx in tx_result.scalars().all()]
+
+        # Position summary
+        position_result = await db.execute(
+            select(MockPosition).where(
+                MockPosition.account_id == account.id,
+                MockPosition.ticker == ticker,
+            )
+        )
+        position = position_result.scalar_one_or_none()
+
+        if position:
+            shares = position.shares
+            avg_cost = float(position.average_cost)
+            market_value = shares * current_price_float
+            unrealized_gain = (current_price_float - avg_cost) * shares
+            gain_pct = (
+                (unrealized_gain / (avg_cost * shares)) * 100 if avg_cost > 0 else 0
+            )
+        else:
+            shares = 0
+            avg_cost = 0
+            market_value = 0
+            unrealized_gain = 0
+            gain_pct = 0
 
         subscriptions.append(
             {
                 **sub.__dict__,
                 "company_name": company_name,
                 "transactions": transactions,
+                "holding_summary": {
+                    "shares": shares,
+                    "average_cost": round(avg_cost, 2),
+                    "current_price": round(current_price_float, 2),
+                    "market_value": round(market_value, 2),
+                    "unrealized_gain": round(unrealized_gain, 2),
+                    "gain_pct": round(gain_pct, 2),
+                },
             }
         )
 

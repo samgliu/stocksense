@@ -110,27 +110,11 @@ async def fetch_historical_prices(ticker: str, days: int = 90) -> List[Dict]:
 
 
 async def fetch_current_price(ticker: str) -> float:
-    end_date = datetime.today()
-    start_date = end_date - timedelta(days=5)  # buffer for weekends/holidays
-    print(
-        f"Fetching current price for {ticker} from {start_date.date()} to {end_date.date()}"
-    )
-
-    data = yf.download(
-        ticker,
-        start=start_date.strftime("%Y-%m-%d"),
-        end=end_date.strftime("%Y-%m-%d"),
-        auto_adjust=True,
-        progress=False,
-    )
-
-    if data.empty or "Close" not in data:
-        raise ValueError(f"⚠️ No recent price data found for {ticker}")
-
-    # Get the last non-NaN closing price
-    latest_price = data["Close"].dropna().iloc[-1]
-
-    return round(float(latest_price), 2)
+    stock = yf.Ticker(ticker)
+    price = stock.info.get("regularMarketPrice")
+    if not price:
+        raise ValueError(f"⚠️ No real-time price available for {ticker}")
+    return round(price, 2)
 
 
 FMP_API_KEY = os.getenv("FMP_API_KEY")
@@ -252,8 +236,6 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
             print(f"ℹ️ Decision is '{decision}', skipping transaction.")
 
         # Always record a TradeReport, regardless of action
-        print("subscription_id")
-        print(subscription_id)
         trade_report = TradeReport(
             id=uuid.uuid4(),
             subscription_id=subscription_id,

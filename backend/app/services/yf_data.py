@@ -32,3 +32,11 @@ async def fetch_historical_prices(ticker: str, days: int = 60) -> List[Dict]:
     ]
 
     return result
+
+
+async def fetch_current_price(ticker: str) -> float:
+    stock = yf.Ticker(ticker)
+    price = stock.info.get("regularMarketPrice")
+    if not price:
+        raise ValueError(f"⚠️ No real-time price available for {ticker}")
+    return round(price, 2)
