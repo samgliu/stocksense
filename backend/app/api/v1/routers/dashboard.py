@@ -1,8 +1,11 @@
 from app.models.company import Company
 from app.models.analysis_report import AnalysisReport
+from app.models.mock_position import MockPosition
+from app.models.mock_transaction import MockTransaction
+from app.models.trade_report import TradeDecision
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select
+from sqlalchemy import func, select, cast, Date
 from datetime import datetime, timedelta, timezone
 
 from app.database import get_async_db
@@ -135,3 +138,30 @@ async def get_top_sectors(db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(stmt)
     rows = result.all()
     return [{"sector": r[0], "count": r[1]} for r in rows]
+
+
+@router.get("/buy-sell-daily")
+async def get_buy_sell_daily(db: AsyncSession = Depends(get_async_db)):
+    stmt = (
+        select(
+            cast(MockTransaction.timestamp, Date).label("date"),
+            MockTransaction.action,
+            func.sum(MockTransaction.amount * MockTransaction.price).label(
+                "total_spent"
+            ),
+        )
+        .group_by("date", MockTransaction.action)
+        .order_by("date")
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    # Reformat to group by date → { date, buy: $, sell: $ }
+    daily_map = {}
+    for date, action, total in rows:
+        key = str(date)
+        if key not in daily_map:
+            daily_map[key] = {"date": key, "buy": 0, "sell": 0}
+        daily_map[key][action] = round(total, 2)
+
+    return list(daily_map.values())

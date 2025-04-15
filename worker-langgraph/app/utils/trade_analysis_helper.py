@@ -225,9 +225,11 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
 
                 position.shares -= shares_to_trade
                 account.balance += shares_to_trade * price
-
+                sell_amount = shares_to_trade
+                gain_per_share = price - position.average_cost
+                realized_gain = gain_per_share * sell_amount
                 if position.shares == 0:
-                    await db.delete(position)
+                    position.average_cost = 0
 
             print(
                 f"✅ Trade persisted: {decision.upper()} {shares_to_trade} {ticker} @ ${price:.2f}"
