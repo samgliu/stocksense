@@ -115,18 +115,14 @@ async def get_user_subscriptions(
     user_id: str = Query(...),
     db: AsyncSession = Depends(get_async_db),
 ):
-    # Fetch subscriptions
     result = await db.execute(
         select(AutoTradeSubscription, Company.name, Company.ticker)
         .join(Company, AutoTradeSubscription.company_id == Company.id)
-        .where(
-            AutoTradeSubscription.user_id == user_id,
-        )
+        .where(AutoTradeSubscription.user_id == user_id)
         .order_by(AutoTradeSubscription.created_at.desc())
     )
     rows = result.all()
 
-    # Fetch user's mock account
     account_result = await db.execute(
         select(MockAccount).where(MockAccount.user_id == user_id)
     )
@@ -134,16 +130,16 @@ async def get_user_subscriptions(
     balance = float(account.balance) if account else 0
 
     subscriptions = []
+    total_invested = 0
+    total_unrealized_gain = 0
 
     for sub, company_name, ticker in rows:
-        # Fetch accurate current price
         try:
             current_price_float = await fetch_current_price(ticker)
         except Exception as e:
             print(f"⚠️ Failed to fetch price for {ticker}: {e}")
             current_price_float = 0
 
-        # Transactions
         tx_result = await db.execute(
             select(MockTransaction)
             .where(
@@ -154,7 +150,6 @@ async def get_user_subscriptions(
         )
         transactions = [tx.__dict__ for tx in tx_result.scalars().all()]
 
-        # Position summary
         position_result = await db.execute(
             select(MockPosition).where(
                 MockPosition.account_id == account.id,
@@ -171,6 +166,9 @@ async def get_user_subscriptions(
             gain_pct = (
                 (unrealized_gain / (avg_cost * shares)) * 100 if avg_cost > 0 else 0
             )
+
+            total_invested += market_value
+            total_unrealized_gain += unrealized_gain
         else:
             shares = 0
             avg_cost = 0
@@ -194,7 +192,13 @@ async def get_user_subscriptions(
             }
         )
 
-    return {"balance": balance, "subscriptions": subscriptions}
+    return {
+        "balance": round(balance, 2),
+        "portfolio_value": round(total_invested, 2),
+        "total_value": round(balance + total_invested, 2),
+        "total_return": round(total_unrealized_gain, 2),
+        "subscriptions": subscriptions,
+    }
 
 
 @router.post("/reset")

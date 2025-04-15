@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   useForceResetBalanceMutation,
   useForceRunAutoTradeJobMutation,
@@ -5,9 +6,9 @@ import {
 } from '../api';
 
 import { AutoTraderCard } from './AutoTraderCard';
+import { ConfirmationDialog } from '@/features/shared/ConfirmationDialog';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { useEffect } from 'react';
 
 export const AutoTraderDashboard = () => {
   const { id: user_id, role } = useAppSelector((state) => state.auth);
@@ -20,7 +21,8 @@ export const AutoTraderDashboard = () => {
   const portfolioValue = data?.portfolio_value ?? 0;
   const totalValue = data?.total_value ?? 0;
   const totalReturn = data?.total_return ?? 0;
-
+  const [confirmAction, setConfirmAction] = useState<null | (() => void)>(null);
+  const [modalContent, setModalContent] = useState({ title: '', description: '' });
   const [forceRunAutoTradeJob, { isLoading: isRunningRun }] = useForceRunAutoTradeJobMutation();
   const [forceResetBalance, { isLoading: isResetting }] = useForceResetBalanceMutation();
 
@@ -48,38 +50,55 @@ export const AutoTraderDashboard = () => {
       {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">📈 SmartTrade</h1>
-        {role === 'admin' && (
-          <div className="mt-3 flex gap-2 sm:mt-0">
-            <button
-              onClick={async () => {
+
+        <div className="mt-3 flex gap-2 sm:mt-0">
+          <button
+            onClick={() => {
+              setModalContent({
+                title: 'Reset Balance',
+                description: 'Are you sure you want to reset the balance for this account?',
+              });
+              setConfirmAction(() => async () => {
                 try {
                   const res = await forceResetBalance().unwrap();
                   toast.success(res.detail ?? 'Balance reset.');
                 } catch {
                   toast.error('Reset failed.');
+                } finally {
+                  setConfirmAction(null);
                 }
-              }}
-              disabled={isResetting}
-              className="rounded bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60"
-            >
-              {isResetting ? 'Resetting...' : 'Reset Balance'}
-            </button>
+              });
+            }}
+            disabled={isResetting}
+            className="cursor-pointer rounded bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60"
+          >
+            {isResetting ? 'Resetting...' : 'Reset Balance'}
+          </button>
+          {role === 'admin' && (
             <button
-              onClick={async () => {
-                try {
-                  const res = await forceRunAutoTradeJob().unwrap();
-                  toast.success(res.detail ?? 'SmartTrade triggered!');
-                } catch {
-                  toast.error('Force run failed.');
-                }
+              onClick={() => {
+                setModalContent({
+                  title: 'Trigger SmartTrade',
+                  description: 'Do you want to force a SmartTrade job run now?',
+                });
+                setConfirmAction(() => async () => {
+                  try {
+                    const res = await forceRunAutoTradeJob().unwrap();
+                    toast.success(res.detail ?? 'SmartTrade triggered!');
+                  } catch {
+                    toast.error('Force run failed.');
+                  } finally {
+                    setConfirmAction(null);
+                  }
+                });
               }}
               disabled={isRunningRun}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="cursor-pointer rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
             >
               {isRunningRun ? 'Running...' : 'Force Run'}
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Summary Card */}
@@ -151,6 +170,15 @@ export const AutoTraderDashboard = () => {
         {!isLoading && subscriptions.length === 0 && (
           <p className="text-gray-500">You have no SmartTrade subscriptions yet.</p>
         )}
+        <ConfirmationDialog
+          open={!!confirmAction}
+          title={modalContent.title}
+          description={modalContent.description}
+          onConfirm={() => {
+            if (confirmAction) confirmAction();
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
       </div>
     </div>
   );
