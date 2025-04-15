@@ -7,6 +7,7 @@ from app.models.mock_transaction import MockTransaction
 from app.models.mock_position import MockPosition
 from app.services.yf_data import fetch_current_price
 from fastapi import APIRouter, Depends, Query, HTTPException, Request, status
+from app.dependencies.user_validation import get_current_user, verify_user_ownership
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_async_db
 from app.schemas.auto_trade import AutoTradeSubscriptionCreate, AutoTradeSubscriptionOut
@@ -21,7 +22,11 @@ router = APIRouter()
 async def subscribe_to_auto_trade(
     subscription: AutoTradeSubscriptionCreate,
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
 ):
+    # Enforce user ownership
+    if str(subscription.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Forbidden: Not your resource")
     # Check for existing subscription
     result = await db.execute(
         select(AutoTradeSubscription).where(
@@ -78,10 +83,13 @@ async def update_subscription(
     subscription_id: UUID,
     update_data: AutoTradeSubscriptionCreate,
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
 ):
     sub = await db.get(AutoTradeSubscription, subscription_id)
     if not sub:
         raise HTTPException(status_code=404, detail="Subscription not found")
+    if str(sub.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Forbidden: Not your resource")
 
     for field, value in update_data.dict().items():
         setattr(sub, field, value)
@@ -100,10 +108,13 @@ async def update_subscription(
 async def deactivate_subscription(
     subscription_id: UUID,
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
 ):
     sub = await db.get(AutoTradeSubscription, subscription_id)
     if not sub:
         raise HTTPException(status_code=404, detail="Subscription not found")
+    if str(sub.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Forbidden: Not your resource")
 
     sub.active = False
     await db.commit()
@@ -112,9 +123,10 @@ async def deactivate_subscription(
 
 @router.get("/subscribe")
 async def get_user_subscriptions(
-    user_id: str = Query(...),
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
 ):
+    user_id = str(current_user.id)
     result = await db.execute(
         select(AutoTradeSubscription, Company.name, Company.ticker)
         .join(Company, AutoTradeSubscription.company_id == Company.id)
@@ -203,22 +215,11 @@ async def get_user_subscriptions(
 
 @router.post("/reset")
 async def reset_balance(
-    request: Request,
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
 ):
-    user_data = request.state.user
-    if not user_data or "uid" not in user_data:
-        raise HTTPException(status_code=400, detail="User not authenticated")
-
-    user_result = await db.execute(
-        select(User).where(User.firebase_uid == user_data["uid"])
-    )
-    user = user_result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
     account_result = await db.execute(
-        select(MockAccount).where(MockAccount.user_id == str(user.id))
+        select(MockAccount).where(MockAccount.user_id == str(current_user.id))
     )
     account = account_result.scalar_one_or_none()
 

@@ -12,9 +12,12 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 
 export const AutoTraderDashboard = () => {
   const { id: user_id, role } = useAppSelector((state) => state.auth);
-  const { data, isLoading, isFetching, refetch } = useGetUserAutoTradeSubscriptionsQuery(user_id, {
-    skip: !user_id,
-  });
+  const { data, isLoading, isFetching, refetch } = useGetUserAutoTradeSubscriptionsQuery(
+    undefined,
+    {
+      skip: !user_id,
+    },
+  );
 
   const subscriptions = data?.subscriptions ?? [];
   const balance = data?.balance ?? 0;

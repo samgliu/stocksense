@@ -51,9 +51,9 @@ export const autoTradeApi = createApi({
         total_return: number;
         subscriptions: AutoTradeSubscription[];
       },
-      string
+      void
     >({
-      query: (user_id) => `/auto-trade/subscribe?user_id=${user_id}`,
+      query: () => `/auto-trade/subscribe`,
     }),
     forceRunAutoTradeJob: builder.mutation<{ detail: string }, void>({
       query: () => ({
