@@ -1,6 +1,6 @@
 # StockSense
 
-StockSense is an AI-powered stock analysis and semantic search platform. It combines structured financial data with natural language understanding to enable deeper exploration of public companies through intelligent search and analysis.
+StockSense is an AI-powered stock analysis and semantic search platform. It combines structured financial data with natural language understanding to enable deeper exploration of public companies through intelligent search, automated insights, and simulated trading.
 
 ## Demo
 
@@ -16,7 +16,7 @@ You can try the live demo of **StockSense** here:
 - **Company Summaries** integrated from SP500 datasets
 - **SP500 Enrichment** with sector, industry, and financials
 - **LLM-Generated Insights** enriched using a local Ollama-hosted model
-- **SmartTrade** AI-powered auto-trading recommendations based on risk, fundamentals, news, and sentiment
+- **SmartTrade** Simulated auto-trading agent driven by LLMs
 - **Firebase-Authenticated API** with RTK Query support
 - **Frontend State Managed**o with Redux Toolkit
 - **Company Profile View** with LLM-generated insights and price forecast
@@ -42,10 +42,10 @@ You can try the live demo of **StockSense** here:
 - **Authentication**: Firebase (Google SSO, Anonymous)
 - **Database**: PostgreSQL (Supabase)
 - **Job Queue**: Kafka (KRaft mode, Bitnami Helm) on Kubernetes
-- **Caching**: Redis (using Redis [async] on Oracle Cloud Kubernetes, or Upstash, or containerized locally)
+- **Caching**: Redis (using Redis on Oracle Cloud Kubernetes, or Upstash, or containerized locally)
 - **Orchestration**: Apache Airflow (local setup)
 - **Containerization**: Docker + docker-compose
-- **Infrastructure**: K8s on Oracle Cloud, Terraform (used to provision Lambda functions, IAM roles, and budgets)
+- **Infrastructure**: k3s on Oracle Cloud, Terraform (used to provision Lambda functions, IAM roles, and budgets)
 
 ## Getting Started
 
@@ -100,7 +100,7 @@ Use Airflow DAGs or manual scripts to:
 
 StockSense is an ongoing project with several enhancements planned:
 
-- **SmartTrade (Simulated)**: Build an AI-powered auto-trading system where users subscribe to tickers with configurable rules (e.g. wash sale settings). Periodic analysis is triggered via Kubernetes CronJobs, publishing jobs to Kafka. A LangGraph-based agent running in the worker processes each job by aggregating real-time signals—price trends, Gemini insights, and live sentiment from Reddit/X (via deployed AWS Lambda functions). Trade decisions are simulated and logged, with notifications and analysis delivered via email or dashboard.
+- **SmartTrade Optimization**: Improve the AI trading agent with diversification rules, economic signals, and performance tracking (e.g. return, accuracy). Add email notifications for trade decisions and summaries.
 - **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest), and monitoring tools like Sentry or Prometheus.
 - **Historical Data & ML**: Enable CSV uploads for historical stock data, integrate trend forecasting models, and build rich visualizations.
 - **Streaming LLM Responses**: Implement token-by-token streaming of AI outputs for real-time feedback.
