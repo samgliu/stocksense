@@ -7,7 +7,7 @@ export const Home = () => {
       <div className="text-center">
         <h1 className="mb-4 text-5xl font-extrabold text-blue-600">StockSense</h1>
         <p className="mb-8 text-xl text-gray-600">
-          AI-powered stock analysis and document summarizer
+          Semantic Stock Search, Trading Agents, and AI Summaries
         </p>
       </div>
 
