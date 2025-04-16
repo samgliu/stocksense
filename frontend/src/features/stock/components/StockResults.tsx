@@ -27,7 +27,7 @@ export const StockResult = () => {
   if (!result) return null;
 
   return (
-    <div className="mt-4 rounded-md border border-gray-200 bg-white p-2 sm:p-4 shadow-sm">
+    <div className="mt-4 rounded-md border border-gray-200 bg-white p-2 shadow-sm sm:p-4">
       <h2 className="mb-2 text-lg font-semibold text-gray-800">AI Analysis</h2>
       <Markdown result={result} />
     </div>
