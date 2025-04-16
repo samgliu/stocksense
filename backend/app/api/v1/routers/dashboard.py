@@ -12,8 +12,36 @@ from app.database import get_async_db
 from app.models.stock_entry import StockEntry
 from app.models.user import User
 from app.models.usage_log import UsageLog
+from app.models.mock_account_snapshot import MockAccountSnapshot
+from app.dependencies.user_validation import get_current_user
 
 router = APIRouter()
+
+
+@router.get("/snapshots/daily")
+async def get_snapshots_daily(
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_id = str(current_user.id)
+    stmt = select(
+        MockAccountSnapshot.date,
+        MockAccountSnapshot.total_value,
+        MockAccountSnapshot.account_id,
+        MockAccountSnapshot.user_id,
+    ).where(MockAccountSnapshot.user_id == user_id)
+    stmt = stmt.order_by(MockAccountSnapshot.date)
+    result = await db.execute(stmt)
+    rows = result.all()
+    return [
+        {
+            "date": str(r.date),
+            "total_value": r.total_value,
+            "account_id": str(r.account_id),
+            "user_id": r.user_id,
+        }
+        for r in rows
+    ]
 
 
 @router.get("/daily-analysis")

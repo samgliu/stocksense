@@ -5,12 +5,57 @@ from datetime import datetime, timezone, timedelta
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.mock_account import MockAccount
+from app.models.mock_account_snapshot import MockAccountSnapshot
+from app.models.mock_position import MockPosition
+from sqlalchemy.future import select
+from datetime import datetime
+from app.services.yf_data import fetch_current_price
+
 # Frequency mapping
 FREQUENCY_INTERVALS = {
     "hourly": timedelta(hours=1),
     "daily": timedelta(days=1),
     "weekly": timedelta(weeks=1),
 }
+
+
+async def run_snapshot_cron(db):
+    print("📸 Running Account Snapshot Cron", flush=True)
+    try:
+        accounts = await db.execute(select(MockAccount))
+        accounts = accounts.scalars().all()
+        for account in accounts:
+            positions = await db.execute(
+                select(MockPosition).where(MockPosition.account_id == account.id)
+            )
+            positions = positions.scalars().all()
+            portfolio_value = 0.0
+            for pos in positions:
+                try:
+                    price = await fetch_current_price(pos.ticker)
+                except Exception as e:
+                    print(f"⚠️ Could not fetch price for {pos.ticker}: {e}", flush=True)
+                    price = 0.0
+                portfolio_value += price * (pos.shares or 0)
+            balance = account.balance or 0.0
+            total_value = portfolio_value + balance
+            initial_balance = 1000000.0
+            return_pct = (total_value / initial_balance) - 1
+            snapshot = MockAccountSnapshot(
+                account_id=account.id,
+                user_id=account.user_id,
+                date=datetime.now().date(),
+                balance=balance,
+                portfolio_value=portfolio_value,
+                total_value=total_value,
+                return_pct=return_pct,
+            )
+            db.add(snapshot)
+        await db.commit()
+        print("✅ Snapshots taken for all accounts.", flush=True)
+    except Exception as e:
+        print(f"❌ Error in snapshot cron: {e}", flush=True)
 
 
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):

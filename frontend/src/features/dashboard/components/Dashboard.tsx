@@ -22,11 +22,42 @@ import {
   useGetTopCompaniesQuery,
   useGetTopIndustriesQuery,
   useGetUsageCountQuery,
+  useGetSnapshotsDailyQuery,
 } from '../api';
 
 import { CustomTooltip } from './CustomTooltip';
 import { Spinner } from '@/features/shared/Spinner';
 import { formatCurrencyCompact } from '@/utils/formatters';
+
+const SnapshotLineChart = () => {
+  const { data: snapshotData, isLoading } = useGetSnapshotsDailyQuery({});
+  return (
+    <SectionCard title="💹 Account Value Over Time">
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <ResponsiveContainer width="100%" height={320}>
+          <LineChart data={snapshotData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+            <YAxis tickFormatter={(v) => formatCurrencyCompact(v)} />
+            <Tooltip formatter={(v: number) => formatCurrencyCompact(v)} />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="total_value"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              activeDot={{ r: 6 }}
+              name="Total Value"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+    </SectionCard>
+  );
+};
 
 export const Dashboard = () => {
   const { data: dailyData, isLoading: isDailyLoading } = useGetDailyAnalysisQuery({});
@@ -85,6 +116,9 @@ export const Dashboard = () => {
           isLoading={isHistoryLoading}
         />
       </div>
+
+      {/* Account Value Over Time */}
+      <SnapshotLineChart />
 
       {/* SmartTrade Buy/Sell */}
       <SectionCard title="📊 SmartTrade Daily Buy vs Sell">
