@@ -33,7 +33,7 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
   const labelMap = new Map<number, string>(ticks.map((value) => [value, `$${value.toFixed(2)}`]));
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
+    <div className="rounded-2xl border border-gray-200 bg-white p-2 sm:p-4 md:p-6 shadow-md">
       <h3 className="mb-4 text-lg font-semibold text-gray-800">📈 30-Day Price Forecast</h3>
       {/* Band Legends */}
       <div className="mt-2 mr-4 flex justify-center gap-4 text-sm text-gray-500">

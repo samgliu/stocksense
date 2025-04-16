@@ -92,9 +92,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-12 px-6 py-10 sm:px-10 lg:px-16">
+    <div className="space-y-4 sm:space-y-8 md:space-y-12 px-2 py-6 sm:px-6 lg:px-16">
       {/* KPI Cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <KPI
           title="📅 This Month"
           value={monthlySummary?.current_month_count}
@@ -181,7 +181,7 @@ export const Dashboard = () => {
       </SectionCard>
 
       {/* Usage Count */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:gap-4 sm:grid-cols-2">
         <KPI title="👩‍💼 Admin Usage" value={usageCount?.admin} isLoading={isUsageLoading} />
         <KPI
           title="🧑‍💻 User Usage"

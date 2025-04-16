@@ -34,7 +34,7 @@ export const CompanyPredictionHistoryChart = ({ data }: { data: Report[] }) => {
   });
 
   return (
-    <div className="rounded-md border border-gray-200 bg-white p-4">
+    <div className="rounded-md border border-gray-200 bg-white p-2 sm:p-4">
       <h3 className="mb-3 text-sm font-medium text-gray-900">Historical Forecast Overview</h3>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={chartData}>
