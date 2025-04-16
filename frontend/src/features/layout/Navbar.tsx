@@ -51,7 +51,7 @@ export const Navbar: React.FC = () => {
           </Link>
           {/* Hamburger Button (Mobile) */}
           <button
-            className="md:hidden flex items-center justify-center p-2 rounded hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white ml-auto"
+            className="ml-auto flex items-center justify-center rounded p-2 hover:bg-white/10 focus:ring-2 focus:ring-white focus:outline-none md:hidden"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((open) => !open)}
@@ -83,7 +83,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Right: Nav + User (Desktop) */}
-        <div className="hidden md:flex items-center gap-4 ml-auto">
+        <div className="ml-auto hidden items-center gap-4 md:flex">
           <nav className="flex items-center gap-1">
             {navLinks.map((link) => (
               <NavItem key={link.to} to={link.to} label={link.label} />
@@ -113,10 +113,10 @@ export const Navbar: React.FC = () => {
       {/* Mobile Menu */}
       {mobileOpen && (
         <nav
-          className="md:hidden bg-blue-600 px-2 pb-2 pt-1 shadow-lg animate-fade-in"
+          className="animate-fade-in bg-blue-600 px-2 pt-1 pb-2 shadow-lg md:hidden"
           aria-label="Mobile navigation"
         >
-          <div className="flex flex-col gap-0.5 items-end text-right">
+          <div className="flex flex-col items-end gap-0.5 text-right">
             {navLinks.map((link) => (
               <NavItem
                 key={link.to}
@@ -126,7 +126,7 @@ export const Navbar: React.FC = () => {
               />
             ))}
           </div>
-          <div className="mt-2 flex flex-col gap-1 items-end text-right">
+          <div className="mt-2 flex flex-col items-end gap-1 text-right">
             {loading ? (
               <div className="h-8 w-8 animate-pulse rounded-full bg-blue-300 opacity-60" />
             ) : isAuthenticated ? (
