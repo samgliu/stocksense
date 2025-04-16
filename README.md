@@ -64,7 +64,7 @@ Copy the `.env.sample` file to `.env` and fill in the required values:
 cp .env.sample .env
 ```
 
-### 3. Start the application stack
+### 3. Start the Application Stack
 
 ```bash
 docker-compose up --build
@@ -74,11 +74,11 @@ docker-compose up --build
 - Backend API: http://localhost:8000
 - Airflow UI: http://localhost:8080
 
-### 4. Load data
+### 4. Load Data
 
 Use Airflow DAGs or manual scripts to:
 
-- Load SP500 CSV data into PostgreSQL
+- Load S&P 500 CSV data into PostgreSQL
 - Generate embeddings from summaries
 - Upload embeddings and metadata to Qdrant
 
@@ -87,7 +87,8 @@ Use Airflow DAGs or manual scripts to:
 - **Frontend**:
   - GitHub Pages: https://samgliu.github.io/stocksense
   - Cloudflare Pages: https://stocksense.pages.dev
-- **Backend API**: Deployed on Oracle Cloud K8s
+- **Backend API**: Deployed on Oracle Cloud Kubernetes
+
 - **Kafka**: K8s on Oracle Cloud
 - **LangGraph Worker**: K8s on Oracle Cloud
 - **Vector Search**: Qdrant Cloud
