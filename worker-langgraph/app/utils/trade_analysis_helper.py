@@ -145,7 +145,8 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
     company_id = payload.get("company_id")
     subscription_id = payload.get("subscription_id")
     ticker = payload.get("ticker")
-    decision = result.get("decision")
+    decision_raw = result.get("decision")
+    decision = decision_raw.lower() if isinstance(decision_raw, str) else None
     try:
         price = current_price or result.get("price")
     except Exception:
@@ -180,12 +181,12 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
         position = position_result.scalar_one_or_none()
 
         # Only persist transaction if it's buy/sell and amount > 0
-        if decision in ("buy", "sell") and shares_to_trade > 0:
+        if decision in ("buy", "sell") and shares_to_trade and shares_to_trade > 0:
             tx = MockTransaction(
                 id=uuid.uuid4(),
                 account_id=account_id,
                 ticker=ticker,
-                action=TradeDecision(decision.lower()),
+                action=TradeDecision(decision),
                 amount=shares_to_trade,
                 price=price,
             )
@@ -235,7 +236,7 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
                 f"✅ Trade persisted: {decision.upper()} {shares_to_trade} {ticker} @ ${price:.2f}"
             )
         else:
-            print(f"ℹ️ Decision is '{decision}', skipping transaction.")
+            print(f"ℹ️ Decision is '{decision_raw}', skipping transaction.")
 
         # Always record a TradeReport, regardless of action
         trade_report = TradeReport(
@@ -244,7 +245,7 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
             user_id=user_id,
             company_id=company_id,
             ticker=ticker,
-            decision=TradeDecision(decision.lower()),
+            decision=TradeDecision(decision) if decision else None,
             reason=result.get("reason", "No reason provided."),
             payload=payload,
         )
