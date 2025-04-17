@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { HistoryItem } from '../api/types';
+import { titleCase } from '@/features/autoTrade/components/helpers';
 
 export const StockAccordion = ({ item }: { item: HistoryItem }) => {
   const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ export const StockAccordion = ({ item }: { item: HistoryItem }) => {
         <div className="flex flex-col">
           <span className="text-xs text-gray-500">
             {new Date(item.created_at).toLocaleString()} •{' '}
-            <span className="uppercase">{item.model_used}</span> • {item.source_type}
+            <span className="uppercase">{item.model_used}</span> • {titleCase(item.source_type)}
           </span>
           <span className="mt-1 truncate text-sm font-medium text-blue-700">{inputPreview}</span>
         </div>
