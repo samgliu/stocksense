@@ -6,6 +6,8 @@ from app.utils.message_queue import (
 )
 from app.handlers.handle_analysis_job import handle_analysis_job
 import asyncio
+import sentry_sdk
+import time
 
 
 async def run_analysis_consumer():
@@ -20,6 +22,9 @@ async def run_analysis_consumer():
             "⚠️ Kafka disabled or failed to initialize — falling back to DB polling",
             flush=True,
         )
+
+    last_sentry_report = 0
+    SENTRY_THROTTLE_SECONDS = 300
 
     while True:
         try:
@@ -42,4 +47,8 @@ async def run_analysis_consumer():
 
         except Exception as e:
             print(f"❌ Error in analysis consumer loop: {e}", flush=True)
+            now = time.time()
+            if now - last_sentry_report > SENTRY_THROTTLE_SECONDS:
+                sentry_sdk.capture_exception(e)
+                last_sentry_report = now
             await asyncio.sleep(1)
