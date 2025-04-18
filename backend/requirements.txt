@@ -8,7 +8,6 @@ apscheduler
 # --- Data models & validation ---
 pydantic
 pydantic[email]
-sentence_transformers
 accelerate
 
 # --- File upload & parsing ---
@@ -31,9 +30,11 @@ langgraph
 openai
 google-genai
 yfinance
+sentence_transformers
 
 # --- Security ---
 slowapi
 
 # --- Env vars ---
 python-dotenv
+sentry-sdk[fastapi]

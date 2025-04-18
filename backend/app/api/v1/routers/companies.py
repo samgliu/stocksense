@@ -105,28 +105,23 @@ async def get_historical_prices(request: Request, exchange: str, ticker: str):
     full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
     cache_key = f"stock:historical:{full_ticker}"
 
-    try:
-        # Try Redis first
-        cached = await redis_client.get(cache_key)
-        if cached:
-            try:
-                return json.loads(cached)
-            except Exception as e:
-                print(f"⚠️ Redis parse failed for {cache_key}: {e}")
+    # Try Redis first
+    cached = await redis_client.get(cache_key)
+    if cached:
+        try:
+            return json.loads(cached)
+        except Exception as e:
+            print(f"⚠️ Redis parse failed for {cache_key}: {e}")
 
-        # Fetch from external source
-        prices = await fetch_historical_prices(full_ticker)
-        if not prices:
-            raise HTTPException(status_code=404, detail="No historical data found")
+    # Fetch from external source
+    prices = await fetch_historical_prices(full_ticker)
+    if not prices:
+        raise HTTPException(status_code=404, detail="No historical data found")
 
-        await redis_client.set(
-            cache_key, json.dumps(prices), ex=60 * 60 * 6
-        )  # 6 hours TTL
-        return prices
-
-    except Exception as e:
-        print(f"❌ Error fetching historical data for {full_ticker}: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching data")
+    await redis_client.set(
+        cache_key, json.dumps(prices), ex=60 * 60 * 6
+    )  # 6 hours TTL
+    return prices
 
 
 class HistoryPoint(BaseModel):
@@ -283,21 +278,18 @@ async def get_company_news(
         return existing_news
 
     # 2. Fetch fresh news
-    try:
-        fetched_news = await fetch_company_news(company_name, company_id)
-        new_records = [
-            CompanyNews(
-                **{
-                    **news.dict(),
-                    "url": str(news.url),
-                    "image_url": str(news.image_url) if news.image_url else None,
-                }
-            )
-            for news in fetched_news
-        ]
+    fetched_news = await fetch_company_news(company_name, company_id)
+    new_records = [
+        CompanyNews(
+            **{
+                **news.dict(),
+                "url": str(news.url),
+                "image_url": str(news.image_url) if news.image_url else None,
+            }
+        )
+        for news in fetched_news
+    ]
 
-        db.add_all(new_records)
-        await db.commit()
-        return new_records
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"News fetch failed: {e}")
+    db.add_all(new_records)
+    await db.commit()
+    return new_records

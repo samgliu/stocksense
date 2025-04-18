@@ -1,21 +1,11 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryWithErrorHandling } from '@/features/helpers';
 
 import { AutoTradeSubscription } from './types';
-import { auth } from '@/features/auth/firebase';
 
 export const autoTradeApi = createApi({
   reducerPath: 'autoTradeApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api/v1`,
-    prepareHeaders: async (headers) => {
-      const user = auth.currentUser;
-      if (user) {
-        const token = await user.getIdToken();
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithErrorHandling(`${import.meta.env.VITE_BACKEND_URL}/api/v1`),
   endpoints: (builder) => ({
     subscribeToAutoTrade: builder.mutation<
       AutoTradeSubscription,
