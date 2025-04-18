@@ -30,6 +30,16 @@ def build_trading_prompt(context: Dict[str, Any]) -> str:
     summary = company.get("summary") or "N/A"
     insights = company.get("insights") or "No prior insights available"
 
+    trading_instructions = f"""
+--- Trading Instructions ---
+- Consider the user's trade frequency:
+    - If "hourly", optimize for profit opportunities that may occur within hours.
+    - If "daily", optimize for trades that may play out over a day.
+    - If "weekly", optimize for trades that may play out over a week.
+- {('Do NOT sell at a loss if the wash sale rule is enabled.' if wash_sale else 'You may sell at a loss; ignore the wash sale rule.')}
+- Always explain your reasoning in the 'reason' field.
+""".strip()
+
     return f"""
 You are a wise, thoughtful trading advisor AI. Your mission is to recommend a trade action (buy, sell, or hold) for the user, including the number of shares to trade, with a focus on long-term financial health, prudent risk management, and portfolio growth.
 
@@ -65,6 +75,8 @@ You are a wise, thoughtful trading advisor AI. Your mission is to recommend a tr
 
 💬 **Relevant Insights**
 {insights}
+
+{trading_instructions}
 
 ---
 
@@ -108,6 +120,7 @@ You are a wise, thoughtful trading advisor AI. Your mission is to recommend a tr
   "reason": string explanation
 }}
 """.strip()
+
 
 
 # Agent Runner

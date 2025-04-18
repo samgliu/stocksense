@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 import uuid
+from app.models.auto_trade_subscription import AutoTradeSubscription
 from app.models.mock_account import MockAccount
 from app.models.mock_transaction import MockTransaction
 from app.models.trade_report import TradeDecision, TradeReport
@@ -251,4 +252,12 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
         )
         db.add(trade_report)
 
+        sub_result = await db.execute(
+            select(AutoTradeSubscription).where(
+                AutoTradeSubscription.id == subscription_id
+            )
+        )
+        sub = sub_result.scalar_one_or_none()
+        if sub:
+            sub.last_run_at = datetime.now(timezone.utc)
         await db.commit()

@@ -58,8 +58,24 @@ async def run_snapshot_cron(db):
         print(f"❌ Error in snapshot cron: {e}", flush=True)
 
 
+def is_market_open(now_eastern):
+    # Market open: 9:30 to 16:00 ET, Mon-Fri
+    if now_eastern.weekday() >= 5:
+        return False
+    open_time = now_eastern.replace(hour=9, minute=30, second=0, microsecond=0)
+    close_time = now_eastern.replace(hour=16, minute=0, second=0, microsecond=0)
+    return open_time <= now_eastern < close_time
+
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):
     print("🚀 Running AutoTrader Cron", flush=True)
+
+    from pytz import timezone
+    eastern = timezone("US/Eastern")
+    now_utc = datetime.now(timezone.utc)
+    now_eastern = now_utc.astimezone(eastern)
+    if not force and not is_market_open(now_eastern):
+        print(f"⏰ Market is closed at {now_eastern.strftime('%Y-%m-%d %H:%M:%S %Z')} — Skipping all jobs", flush=True)
+        return
 
     try:
         result = await db.execute(
@@ -69,18 +85,31 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
         now = datetime.now(timezone.utc)
 
         for sub in subs:
-            interval = FREQUENCY_INTERVALS.get(sub.frequency)
-            if not interval and not force:
+            last_run = sub.last_run_at or datetime.min.replace(tzinfo=timezone.utc)
+            last_run_eastern = last_run.astimezone(eastern)
+
+            should_run = False
+            if sub.frequency == "hourly":
+                should_run = (now_utc - last_run) >= timedelta(hours=1)
+            elif sub.frequency == "daily":
+                # Only run if last_run is not today (Eastern)
+                should_run = last_run_eastern.date() != now_eastern.date()
+            elif sub.frequency == "weekly":
+                # Only run if last_run is not this week (Eastern)
+                should_run = not (
+                    last_run_eastern.isocalendar()[1] == now_eastern.isocalendar()[1]
+                    and last_run_eastern.year == now_eastern.year
+                )
+            else:
                 print(
                     f"⚠️ Unknown frequency: {sub.frequency} — Skipping {sub.ticker}",
                     flush=True,
                 )
                 continue
 
-            last_run = sub.last_run_at or datetime.min.replace(tzinfo=timezone.utc)
-            if not force and (now - last_run < interval):
+            if not force and not should_run:
                 print(
-                    f"⏳ Skipping {sub.ticker} — Not enough time since last run ({sub.frequency})",
+                    f"⏳ Skipping {sub.ticker} — Not time to run yet (frequency: {sub.frequency})",
                     flush=True,
                 )
                 continue
