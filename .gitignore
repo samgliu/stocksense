@@ -60,6 +60,7 @@ credentials/
 *.crt
 secrets*
 config*
+.env.sentry-build-plugin
 
 # --------------------------
 # Misc
