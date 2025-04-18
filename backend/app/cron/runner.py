@@ -9,7 +9,6 @@ from app.models.mock_account import MockAccount
 from app.models.mock_account_snapshot import MockAccountSnapshot
 from app.models.mock_position import MockPosition
 from sqlalchemy.future import select
-from datetime import datetime
 from app.services.yf_data import fetch_current_price
 
 # Frequency mapping
@@ -68,8 +67,6 @@ def is_market_open(now_eastern):
 
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):
     print("🚀 Running AutoTrader Cron", flush=True)
-
-    from pytz import timezone
     eastern = timezone("US/Eastern")
     now_utc = datetime.now(timezone.utc)
     now_eastern = now_utc.astimezone(eastern)
