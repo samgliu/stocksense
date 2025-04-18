@@ -29,6 +29,9 @@ crds:
 ## chart, this field may also be called "agent". Naming this field "agent" is
 ## deprecated and will be removed in a future release.
 alloy:
+  envFrom:
+    - secretRef:
+        name: grafana-cloud
   configMap:
     # -- Create a new ConfigMap for the config file.
     create: true
@@ -87,8 +90,8 @@ alloy:
         endpoint {
           url = "https://logs-prod-036.grafana.net/loki/api/v1/push"
           basic_auth {
-            username = "${GRAFANA_USERNAME}"
-            password = "${GRAFANA_PASSWORD}"
+            username = "<GRAFANA_LOKI_USERNAME>"
+            password = "<GRAFANA_LOKI_PASSWORD>"
           }
         }
         external_labels = {
@@ -102,11 +105,67 @@ alloy:
         endpoint {
           url = "https://prometheus-prod-56-prod-us-east-2.grafana.net/api/prom/push"
           basic_auth {
-            username = "${GRAFANA_USERNAME}"
-            password = "${GRAFANA_PASSWORD}"
+            username = "<GRAFANA_PROM_USERNAME>"
+            password = "<GRAFANA_PROM_PASSWORD>"
           }
         }
       }
+
+      prometheus.scrape "alloy_metrics" {
+        targets = [
+          {
+            __address__ = "localhost:12345",
+          },
+        ]
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.scrape "node_exporter" {
+        targets = [
+          {
+            __address__ = "node-exporter.default.svc.cluster.local:9100",
+          },
+        ]
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.scrape "redis" {
+        targets = [
+          {
+            __address__ = "redis.default.svc.cluster.local:9121",
+          },
+        ]
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.scrape "kafka" {
+        targets = [
+          { __address__ = "kafka-controller-0.kafka-headless.default.svc.cluster.local:5556" },
+          { __address__ = "kafka-controller-1.kafka-headless.default.svc.cluster.local:5556" },
+          { __address__ = "kafka-controller-2.kafka-headless.default.svc.cluster.local:5556" },
+        ]
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.scrape "backend" {
+        targets = [
+          {
+            __address__ = "backend.default.svc.cluster.local:8000",
+          },
+        ]
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.scrape "worker" {
+        targets = [
+          {
+            __address__ = "worker-langgraph.default.svc.cluster.local:8000",
+          },
+        ]
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      
   resources:
     requests:
       cpu: 25m
@@ -159,7 +218,7 @@ alloy:
   extraEnv: []
 
   # -- Maps all the keys on a ConfigMap or Secret as environment variables. https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envfromsource-v1-core
-  envFrom: []
+  # envFrom: []
 
   # -- Extra args to pass to `alloy run`: https://grafana.com/docs/alloy/latest/reference/cli/run/
   extraArgs: []
@@ -193,7 +252,7 @@ alloy:
   securityContext: {}
 
   # -- Resource requests and limits to apply to the Grafana Alloy container.
-  resources: {}
+  # resources: {}
 
   # -- Set lifecycle hooks for the Grafana Alloy container.
   lifecycle:

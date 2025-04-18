@@ -80,10 +80,10 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
         select(AutoTradeSubscription).where(AutoTradeSubscription.active == True)
     )
     subs = result.scalars().all()
-    now = datetime.now(timezone.utc)
+    SAFE_MIN = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
     for sub in subs:
-        last_run = sub.last_run_at or datetime.min.replace(tzinfo=timezone.utc)
+        last_run = sub.last_run_at or SAFE_MIN
         last_run_eastern = last_run.astimezone(eastern)
 
         should_run = False
