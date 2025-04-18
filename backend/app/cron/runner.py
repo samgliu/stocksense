@@ -2,6 +2,7 @@ from app.kafka.producer import send_autotrade_job
 from sqlalchemy.future import select
 from app.models.auto_trade_subscription import AutoTradeSubscription
 from datetime import datetime, timezone, timedelta
+from pytz import timezone as pytz_timezone
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -65,7 +66,7 @@ def is_market_open(now_eastern):
 
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):
     print("🚀 Running AutoTrader Cron", flush=True)
-    eastern = timezone("US/Eastern")
+    eastern = pytz_timezone("US/Eastern")
     now_utc = datetime.now(timezone.utc)
     now_eastern = now_utc.astimezone(eastern)
     if not force and not is_market_open(now_eastern):
