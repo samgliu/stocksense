@@ -1,14 +1,21 @@
 import { SemanticSearchResult } from './SemanticSearchResult';
 import { useSemanticSearchQuery } from '../api';
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const PAGE_SIZES = [5, 10, 20];
 
 export const SemanticSearch = () => {
-  const [query, setQuery] = useState('');
-  const [submittedQuery, setSubmittedQuery] = useState('');
-  const [page, setPage] = useState(1);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialQuery: string = params.get('q') || '';
+  const pageParam = params.get('page');
+  const initialPage: number = pageParam && !isNaN(Number(pageParam)) ? parseInt(pageParam, 10) : 10;
+  const [query, setQuery] = useState(initialQuery);
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
+  const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(10);
+  const navigate = useNavigate();
 
   const { data: results = [], isFetching } = useSemanticSearchQuery(submittedQuery, {
     skip: submittedQuery.length < 3,
@@ -23,6 +30,7 @@ export const SemanticSearch = () => {
     if (query.trim().length >= 3 && !isFetching) {
       setSubmittedQuery(query.trim());
       setPage(1);
+      navigate(`/semantic-search?q=${encodeURIComponent(query.trim())}&page=1`);
     }
   };
 
