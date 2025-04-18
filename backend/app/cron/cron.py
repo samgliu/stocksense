@@ -8,21 +8,13 @@ scheduler = AsyncIOScheduler(timezone=eastern)
 
 
 async def run_cron_job_with_db():
-    db_gen = get_async_db()
-    db = await anext(db_gen)
-    try:
+    async with get_async_db() as db:
         await run_autotrade_cron(db)
-    finally:
-        await db_gen.aclose()
 
 
 async def run_snapshot_cron_with_db():
-    db_gen = get_async_db()
-    db = await anext(db_gen)
-    try:
+    async with get_async_db() as db:
         await run_snapshot_cron(db)
-    finally:
-        await db_gen.aclose()
 
 def start_autotrade_scheduler():
     # Run the job at 9:30, 10:30, ..., 15:30 ET (Mon-Fri)
