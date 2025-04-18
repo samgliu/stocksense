@@ -23,6 +23,7 @@ from app.middleware.ratelimit import add_rate_limit_middleware
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     traces_sample_rate=0.1,
+    sample_rate=0.1,
     environment=os.getenv("ENV", "production"),
     send_default_pii=True,
 )
