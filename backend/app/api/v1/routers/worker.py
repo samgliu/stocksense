@@ -6,15 +6,10 @@ from app.database import get_async_db
 from app.models import JobStatus
 from app.schemas.job_status import JobStatusResponse
 from sqlalchemy import select
+import json
+from app.models import AnalysisReport
 
 router = APIRouter()
-
-import json
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from fastapi import HTTPException
-
-from app.models import JobStatus, AnalysisReport
 
 
 async def persist_analysis_report(job: JobStatus, db: AsyncSession) -> None:
@@ -28,7 +23,6 @@ async def persist_analysis_report(job: JobStatus, db: AsyncSession) -> None:
 
     # Parse input (assume JSON) to extract current price
     input_data = json.loads(job.input) if job.input else {}
-    company = input_data.get("company")
     company_id = input_data.get("company_id")
     ticker = input_data.get("ticker")
     exchange = input_data.get("exchange")

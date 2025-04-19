@@ -10,7 +10,7 @@ from app.utils.trade_analysis_helper import (
 from app.utils.trade_analysis import call_gemini_trading_agent
 from app.utils.aws_lambda import invoke_gcs_lambda
 import asyncio
-from typing import TypedDict, Optional
+from typing import TypedDict
 
 
 class AutoTraderState(TypedDict, total=False):
@@ -51,7 +51,7 @@ async def fetch_gcs_news(state: AutoTraderState) -> dict:
     try:
         results = await asyncio.to_thread(invoke_gcs_lambda, query)
         return {"gcs_results": results or []}
-    except Exception as e:
+    except Exception:
         return {"gcs_results": []}
 
 

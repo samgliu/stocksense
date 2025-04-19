@@ -1,7 +1,7 @@
 from app.schemas.company_news import NewsBase
 import httpx
 from typing import List
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from uuid import UUID
 import os
 

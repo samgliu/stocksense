@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy import create_engine, MetaData, select
 
 UNENRICHED_PATH = Path("/opt/airflow/data/sp500/unenriched_companies.csv")

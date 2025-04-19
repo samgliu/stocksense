@@ -2,7 +2,6 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from uuid import UUID
 from enum import Enum
-from datetime import datetime
 
 
 class UserRole(str, Enum):

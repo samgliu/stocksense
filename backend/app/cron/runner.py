@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.mock_account import MockAccount
 from app.models.mock_account_snapshot import MockAccountSnapshot
 from app.models.mock_position import MockPosition
-from sqlalchemy.future import select
 from app.services.yf_data import fetch_current_price
 
 # Frequency mapping
@@ -77,7 +76,7 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
         return
 
     result = await db.execute(
-        select(AutoTradeSubscription).where(AutoTradeSubscription.active == True)
+        select(AutoTradeSubscription).where(AutoTradeSubscription.active)
     )
     subs = result.scalars().all()
     SAFE_MIN = datetime(2000, 1, 1, tzinfo=timezone.utc)

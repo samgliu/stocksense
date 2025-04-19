@@ -36,4 +36,4 @@ def import_insights_from_csv():
             conn.execute(stmt)
             print(f"✅ Updated: {row['ticker']}")
 
-    print(f"🎉 All insights imported successfully.")
+    print("🎉 All insights imported successfully.")

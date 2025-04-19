@@ -6,14 +6,13 @@ from app.models.mock_account import MockAccount
 from app.models.mock_transaction import MockTransaction
 from app.models.mock_position import MockPosition
 from app.services.yf_data import fetch_current_price
-from fastapi import APIRouter, Depends, Query, HTTPException, Request, status
-from app.dependencies.user_validation import get_current_user, verify_user_ownership
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from app.dependencies.user_validation import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_async_db
 from app.schemas.auto_trade import AutoTradeSubscriptionCreate, AutoTradeSubscriptionOut
 from app.models.auto_trade_subscription import AutoTradeSubscription
 from sqlalchemy.future import select
-from typing import List
 
 router = APIRouter()
 
@@ -60,7 +59,7 @@ async def subscribe_to_auto_trade(
     active_result = await db.execute(
         select(AutoTradeSubscription)
         .where(AutoTradeSubscription.user_id == subscription.user_id)
-        .where(AutoTradeSubscription.active == True)
+        .where(AutoTradeSubscription.active)
     )
     active_subs = active_result.scalars().all()
 

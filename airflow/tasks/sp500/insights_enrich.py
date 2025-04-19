@@ -1,9 +1,9 @@
 import csv
-import requests
-from pathlib import Path
-import pandas as pd
 import re
+from pathlib import Path
 
+import pandas as pd
+import requests
 
 # Configuration
 OLLAMA_URL = "http://192.168.7.225:11434/api/generate"
@@ -20,7 +20,7 @@ Country: {country}
 Description: {summary}
 
 Write a multi-paragraph insight suitable for machine understanding:
-"""
+"""  # noqa: E501
 
 
 def generate_insight(prompt: str, model: str = MODEL_NAME) -> str:

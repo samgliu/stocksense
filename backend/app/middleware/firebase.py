@@ -1,7 +1,9 @@
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi import Request, HTTPException
-from app.core.security import verify_firebase_token
 import ipaddress
+
+from app.core.security import verify_firebase_token
+from fastapi import HTTPException, Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -9,7 +11,7 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in public_paths:
             return await call_next(request)
         if request.url.path == "/metrics":
-            allowed_net = ipaddress.ip_network("10.0.0.0/8") # Kubernetes cluster
+            allowed_net = ipaddress.ip_network("10.0.0.0/8")  # Kubernetes cluster
             if ipaddress.ip_address(request.client.host) not in allowed_net:
                 raise HTTPException(
                     status_code=401,

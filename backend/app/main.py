@@ -1,26 +1,27 @@
 import os
+
+import app.services.firebase
 import sentry_sdk
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
 from app.api.v1.routers import (
-    health,
-    stock,
     auth,
-    dashboard,
-    search,
-    companies,
-    worker,
     auto_trade,
+    companies,
+    dashboard,
+    health,
     metrics,
+    search,
+    stock,
+    worker,
 )
-from app.middleware.cors import add_cors_middleware
+from app.api.v1.routers.metrics import api_exceptions_total
 from app.cron.cron import start_autotrade_scheduler
 from app.middleware.cors import add_cors_middleware
-from app.middleware.security import add_security_headers
-from app.middleware.gzip import add_gzip_middleware
 from app.middleware.firebase import add_firebase_auth_middleware
+from app.middleware.gzip import add_gzip_middleware
 from app.middleware.ratelimit import add_rate_limit_middleware
-from app.api.v1.routers.metrics import api_exceptions_total
+from app.middleware.security import add_security_headers
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),

@@ -1,19 +1,20 @@
+import os
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
-import uuid
+from uuid import UUID
+
+import httpx
+import pandas as pd
+import yfinance as yf
+from app.database import AsyncSessionLocal
 from app.models.auto_trade_subscription import AutoTradeSubscription
+from app.models.company import Company
 from app.models.mock_account import MockAccount
+from app.models.mock_position import MockPosition
 from app.models.mock_transaction import MockTransaction
 from app.models.trade_report import TradeDecision, TradeReport
-import yfinance as yf
-import pandas as pd
 from sqlalchemy.future import select
-from app.database import AsyncSessionLocal
-from app.models.mock_position import MockPosition
-from app.models.company import Company
-from uuid import UUID
-import httpx
-import os
 
 
 async def get_company_from_db(company_id: str) -> dict:
@@ -154,7 +155,6 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
         price = result.get("price")
 
     shares_to_trade = result.get("amount")
-    job_id = payload.get("job_id")
 
     if not all([user_id, ticker, decision, price]):
         print("❌ Missing required fields; skipping persistence.")
@@ -181,8 +181,12 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
         )
         position = position_result.scalar_one_or_none()
 
-        # Only persist transaction if it's buy/sell and amount > 0
         if decision in ("buy", "sell") and shares_to_trade and shares_to_trade > 0:
+            realized_gain = None
+            if decision == "sell" and position and position.shares >= shares_to_trade:
+                gain_per_share = price - position.average_cost
+                realized_gain = gain_per_share * shares_to_trade
+
             tx = MockTransaction(
                 id=uuid.uuid4(),
                 account_id=account_id,
@@ -190,6 +194,7 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
                 action=TradeDecision(decision),
                 amount=shares_to_trade,
                 price=price,
+                realized_gain=realized_gain,
             )
             db.add(tx)
 
