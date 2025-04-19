@@ -9,18 +9,14 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in public_paths:
             return await call_next(request)
         if request.url.path == "/metrics":
-            auth_header = request.headers.get("X-Internal-Api-Key")
-            try:
-                INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
-                if auth_header and auth_header == INTERNAL_API_KEY:
-                    return await call_next(request)
-            except Exception:
-                pass
-            raise HTTPException(
-                status_code=401,
-                detail="Unauthorized for /metrics",
-                headers={"WWW-Authenticate": "Basic"},
-            )
+            allowed_net = ipaddress.ip_network("10.0.0.0/8") # Kubernetes cluster
+            if ipaddress.ip_address(request.client.host) not in allowed_net:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Unauthorized for /metrics",
+                    headers={"WWW-Authenticate": "Basic"},
+                )
+            return await call_next(request)
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             try:

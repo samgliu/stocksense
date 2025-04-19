@@ -156,6 +156,8 @@ alloy:
             __address__ = "backend.default.svc.cluster.local:8000",
           },
         ]
+        scheme = "http"
+        metrics_path = "/metrics"
         forward_to = [prometheus.remote_write.default.receiver]
       }
 
