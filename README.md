@@ -102,7 +102,7 @@ Use Airflow DAGs or manual scripts to:
 StockSense is an ongoing project with several enhancements planned:
 
 - **SmartTrade Optimization**: Improve the AI trading agent with diversification rules, economic signals, and performance tracking (e.g. return, accuracy). Add email notifications for trade decisions and summaries.
-- **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest), and monitoring tools like Sentry or Prometheus.
+- **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest).
 - **Historical Data & ML**: Enable CSV uploads for historical stock data, integrate trend forecasting models, and build rich visualizations.
 - **Streaming LLM Responses**: Implement token-by-token streaming of AI outputs for real-time feedback.
 - **AI Agent**: Introduce a memory-aware, context-retaining agent to analyze and respond to complex user queries.
