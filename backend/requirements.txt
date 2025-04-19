@@ -9,6 +9,7 @@ apscheduler
 pydantic
 pydantic[email]
 accelerate
+prometheus_client
 
 # --- File upload & parsing ---
 python-multipart
