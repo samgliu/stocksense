@@ -8,6 +8,19 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
         public_paths = ["/health", "/docs", "/openapi.json"]
         if request.url.path in public_paths:
             return await call_next(request)
+        if request.url.path == "/metrics":
+            auth_header = request.headers.get("X-Internal-Api-Key")
+            try:
+                INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
+                if auth_header and auth_header == INTERNAL_API_KEY:
+                    return await call_next(request)
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=401,
+                detail="Unauthorized for /metrics",
+                headers={"WWW-Authenticate": "Basic"},
+            )
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             try:
@@ -18,7 +31,6 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
                 raise HTTPException(status_code=401, detail="Invalid or expired token")
         else:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
-
         return await call_next(request)
 
 

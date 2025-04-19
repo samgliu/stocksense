@@ -123,7 +123,8 @@ alloy:
       prometheus.scrape "node_exporter" {
         targets = [
           {
-            __address__ = "node-exporter.default.svc.cluster.local:9100",
+            __address__ = "localhost:9100",
+            job = "node",
           },
         ]
         forward_to = [prometheus.remote_write.default.receiver]
@@ -132,10 +133,12 @@ alloy:
       prometheus.scrape "redis" {
         targets = [
           {
-            __address__ = "redis.default.svc.cluster.local:9121",
+            __address__ = "redis-exporter-prometheus-redis-exporter:9121",
           },
         ]
-        forward_to = [prometheus.remote_write.default.receiver]
+        forward_to = [
+          prometheus.remote_write.default.receiver,
+        ]
       }
 
       prometheus.scrape "kafka" {
