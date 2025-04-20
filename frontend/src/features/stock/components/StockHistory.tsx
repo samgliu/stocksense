@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
-import { StockAccordion } from './StockAccordion';
 import { useGetHistoryQuery } from '../api';
+import { StockAccordion } from './StockAccordion';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -39,7 +39,9 @@ export const StockHistory = () => {
   return (
     <div className="mt-10 max-w-3xl space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">📜 Your Recent Analyses</h2>
+        <h1 className="text-2xl font-semibold tracking-tight text-blue-600">
+          Your Recent Analyses
+        </h1>
 
         <div className="text-sm text-gray-600">
           Show:{' '}
