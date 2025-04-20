@@ -9,7 +9,6 @@ apscheduler
 pydantic
 pydantic[email]
 accelerate
-prometheus_client
 
 # --- File upload & parsing ---
 python-multipart
@@ -35,6 +34,12 @@ sentence_transformers
 
 # --- Security ---
 slowapi
+prometheus_client
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-logging
+opentelemetry-exporter-otlp
 
 # --- Env vars ---
 python-dotenv
