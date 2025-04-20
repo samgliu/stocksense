@@ -1,11 +1,8 @@
 from app.models.company import Company
-from app.models.analysis_report import AnalysisReport
-from app.models.mock_position import MockPosition
 from app.models.mock_transaction import MockTransaction
-from app.models.trade_report import TradeDecision
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select, cast, Date
+from sqlalchemy import func, select
 from datetime import datetime, timedelta, timezone
 
 from app.database import get_async_db
@@ -13,6 +10,7 @@ from app.models.stock_entry import StockEntry
 from app.models.user import User
 from app.models.usage_log import UsageLog
 from app.models.mock_account_snapshot import MockAccountSnapshot
+from app.models.company_news import CompanyNews
 from app.dependencies.user_validation import get_current_user
 
 router = APIRouter()
@@ -75,14 +73,6 @@ async def get_monthly_summary(db: AsyncSession = Depends(get_async_db)):
     )
     start_of_last_month = (start_of_this_month - timedelta(days=1)).replace(day=1)
 
-    current_month_stmt = select(func.count()).where(
-        StockEntry.created_at >= start_of_this_month
-    )
-    last_month_stmt = select(func.count()).where(
-        StockEntry.created_at >= start_of_last_month,
-        StockEntry.created_at < start_of_this_month,
-    )
-
     stmt = select(
         func.count().filter(StockEntry.created_at >= start_of_this_month),
         func.count().filter(
@@ -134,9 +124,6 @@ async def get_top_companies(db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(stmt)
     rows = result.all()
     return [{"ticker": r.text_input, "count": r.count} for r in rows]
-
-
-from app.models.company_news import CompanyNews
 
 
 @router.get("/news-summary")

@@ -3,7 +3,6 @@ import time
 import os
 from sqlalchemy import create_engine, inspect
 from app.database import Base
-from app import models
 
 
 def wait_for_db(max_attempts=10, delay=3):
@@ -18,7 +17,7 @@ def wait_for_db(max_attempts=10, delay=3):
             with engine.connect():
                 print("✅ Database is ready.")
                 return engine
-        except Exception as e:
+        except Exception:
             print(f"⏳ Waiting for DB... ({attempt})")
             time.sleep(delay)
 

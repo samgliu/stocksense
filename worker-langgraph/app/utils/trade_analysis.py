@@ -1,7 +1,8 @@
 import asyncio
-import os
 import json
-from typing import Dict, Any
+import os
+from typing import Any, Dict
+
 from google import genai
 
 # Config
@@ -38,7 +39,7 @@ def build_trading_prompt(context: Dict[str, Any]) -> str:
     - If "weekly", optimize for trades that may play out over a week.
 - {('Do NOT sell at a loss if the wash sale rule is enabled.' if wash_sale else 'You may sell at a loss; ignore the wash sale rule.')}
 - Always explain your reasoning in the 'reason' field.
-""".strip()
+""".strip()  # noqa: E501
 
     return f"""
 You are a wise, thoughtful trading advisor AI. Your mission is to recommend a trade action (buy, sell, or hold) for the user, including the number of shares to trade, with a focus on long-term financial health, prudent risk management, and portfolio growth.
@@ -119,8 +120,7 @@ You are a wise, thoughtful trading advisor AI. Your mission is to recommend a tr
   "confidence": float from 0 to 1,
   "reason": string explanation
 }}
-""".strip()
-
+""".strip()  # noqa: E501
 
 
 # Agent Runner

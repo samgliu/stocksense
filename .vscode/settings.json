@@ -1,0 +1,12 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length", "120"],
+  "python.linting.enabled": true,
+  "python.linting.ruffEnabled": true,
+  "ruff.enable": true,
+  "ruff.configPath": "pyproject.toml"
+}

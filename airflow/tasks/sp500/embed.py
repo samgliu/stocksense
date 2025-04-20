@@ -1,5 +1,4 @@
 import pandas as pd
-import torch
 from sentence_transformers import SentenceTransformer
 import os
 from sqlalchemy import create_engine, text

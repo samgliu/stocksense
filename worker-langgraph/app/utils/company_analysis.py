@@ -1,6 +1,7 @@
 import asyncio
 import os
 from typing import Dict, List, Optional
+
 from google import genai
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -23,7 +24,7 @@ def build_analysis_prompt(
 
     \"\"\"
     {company['insights']}
-    \"\"\""""
+    \"\"\""""  # noqa: E501
 
     history_section = ""
     if history:
@@ -133,7 +134,7 @@ def build_analysis_prompt(
     {insight_section}
     
     {sentiment_analysis_section}
-    """
+    """  # noqa: E501
     return prompt.strip()
 
 

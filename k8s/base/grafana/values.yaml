@@ -123,8 +123,8 @@ alloy:
       prometheus.scrape "node_exporter" {
         targets = [
           {
-            __address__ = "localhost:9100",
-            job = "node",
+            __address__ = "node-exporter-prometheus-node-exporter.monitoring.svc.cluster.local:9100",
+            job         = "node",
           },
         ]
         forward_to = [prometheus.remote_write.default.receiver]
@@ -156,21 +156,20 @@ alloy:
             __address__ = "backend.default.svc.cluster.local:8000",
           },
         ]
-        scheme = "http"
         metrics_path = "/metrics"
+        scheme = "http"
         forward_to = [prometheus.remote_write.default.receiver]
       }
 
       prometheus.scrape "worker" {
         targets = [
           {
-            __address__ = "worker-langgraph.default.svc.cluster.local:8000",
+            __address__ = "worker-langgraph.default.svc.cluster.local:8001",
           },
         ]
         forward_to = [prometheus.remote_write.default.receiver]
       }
 
-      
   resources:
     requests:
       cpu: 25m
@@ -345,7 +344,7 @@ controller:
   minReadySeconds: 10
 
   # -- Configures Pods to use the host network. When set to true, the ports that will be used must be specified.
-  hostNetwork: true
+  hostNetwork: false
 
   # -- Configures Pods to use the host PID namespace.
   hostPID: false

@@ -1,4 +1,3 @@
-import os
 from unittest.mock import patch
 from dotenv import load_dotenv
 

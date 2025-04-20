@@ -8,7 +8,7 @@ from alembic import context
 import os
 import sys
 from app.database import Base
-from app.models import *
+from app.models import *  # noqa: F403
 from dotenv import load_dotenv
 from pathlib import Path
 

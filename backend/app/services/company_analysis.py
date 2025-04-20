@@ -1,7 +1,8 @@
 import asyncio
 from typing import Dict, List
-from google import genai
+
 from app.core.config import GEMINI_API_KEY
+from google import genai
 
 MODEL = "gemini-2.0-flash"
 client = genai.Client(api_key=GEMINI_API_KEY)
@@ -72,7 +73,7 @@ def build_analysis_prompt(company: Dict, history: List[Dict]) -> str:
 
     📈 Historical Stock Price (recent 30 days):
     {history_str}
-    """
+    """  # noqa: E501
     return prompt.strip()
 
 

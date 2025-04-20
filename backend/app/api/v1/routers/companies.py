@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timezone
 import json
 from typing import Optional, List
@@ -17,13 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_async_db
 from app.models import Company
-from app.models.stock_entry import StockEntry
 from app.models.usage_log import UsageLog
 from app.models.user import User, UserRole
 from app.models import JobStatus
 from app.services.fmp import fetch_company_profile_async
 from app.services.yf_data import fetch_historical_prices
-from app.services.company_analysis import analyze_company_payload
 from app.core.config import USER_DAILY_LIMIT
 from app.kafka.producer import send_analysis_job
 

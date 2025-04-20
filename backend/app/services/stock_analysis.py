@@ -36,5 +36,5 @@ async def analyze_stock(text: str) -> str:
 
     **💡 Analyst Insight (Optional):**  
     _Add a final comment or recommendation if relevant._
-    """
+    """  # noqa: E501
     return await generate_analysis(prompt)
