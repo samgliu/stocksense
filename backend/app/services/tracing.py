@@ -11,14 +11,14 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
 def setup_tracing(app):
-    provider = TracerProvider(resource=Resource.create({SERVICE_NAME: "backend"}))
-    trace.set_tracer_provider(provider)
-
     # HTTP Exporter to Grafana Alloy (Tempo)
     OTLP_ENDPOINT = os.getenv("OTLP_ENDPOINT")
     if not OTLP_ENDPOINT:
         print("Missing OTLP_ENDPOINT environment variable")
         return
+    provider = TracerProvider(resource=Resource.create({SERVICE_NAME: "backend"}))
+    trace.set_tracer_provider(provider)
+
     exporter = OTLPSpanExporter(endpoint=OTLP_ENDPOINT)
 
     span_processor = BatchSpanProcessor(exporter)

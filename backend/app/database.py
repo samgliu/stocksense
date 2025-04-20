@@ -1,6 +1,7 @@
 import os
 from typing import AsyncGenerator
 
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -25,7 +26,11 @@ engine = create_async_engine(
     pool_recycle=600,
     pool_pre_ping=True,
 )
-
+OTLP_ENDPOINT = os.getenv("OTLP_ENDPOINT")
+if OTLP_ENDPOINT:
+    SQLAlchemyInstrumentor().instrument(
+        engine=engine.sync_engine,
+    )
 AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False, autoflush=False, autocommit=False)
 
 Base = declarative_base()
