@@ -164,13 +164,12 @@ alloy:
       prometheus.scrape "worker" {
         targets = [
           {
-            __address__ = "worker-langgraph.default.svc.cluster.local:8000",
+            __address__ = "worker-langgraph.default.svc.cluster.local:8001",
           },
         ]
         forward_to = [prometheus.remote_write.default.receiver]
       }
 
-      
   resources:
     requests:
       cpu: 25m

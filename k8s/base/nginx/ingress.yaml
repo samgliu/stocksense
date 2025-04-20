@@ -14,6 +14,13 @@ spec:
     - host: api.samliu.site
       http:
         paths:
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: fake-blocked-service
+                port:
+                  number: 8000
           - path: /
             pathType: Prefix
             backend:
