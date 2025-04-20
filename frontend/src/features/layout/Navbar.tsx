@@ -1,8 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { getInitials } from './helpers';
 import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { getInitials } from './helpers';
 
 export const Navbar: React.FC = () => {
   const { isAuthenticated, name, email, loading } = useAppSelector(selectAuth);
@@ -15,9 +15,7 @@ export const Navbar: React.FC = () => {
       <Link
         to={to}
         aria-current={isActive ? 'page' : undefined}
-        className={`rounded px-3 py-2 text-sm font-medium transition-all select-none ${
-          isActive ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
-        }`}
+        className={`relative rounded-full px-4 py-2 text-base font-medium transition-all select-none ${isActive ? 'bg-white/15 text-white after:absolute after:right-4 after:-bottom-1 after:left-4 after:h-0.5 after:rounded-full after:bg-white' : 'text-white/80 hover:bg-white/10 hover:text-white'} `}
         onClick={onClick}
       >
         {label}
@@ -39,13 +37,13 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-blue-600 shadow-sm select-none">
+    <header className="sticky top-0 z-50 border-b border-blue-200/40 bg-blue-600/95 shadow-md backdrop-blur select-none">
       <div className="mx-auto flex max-w-screen-xl items-center px-4 py-3 sm:px-6">
         {/* Mobile: Logo left, Hamburger right */}
         <div className="flex flex-1 items-center md:block">
           <Link
             to="/"
-            className="text-xl font-bold tracking-tight text-white transition select-none hover:opacity-90"
+            className="px-2 text-2xl font-extrabold tracking-tight text-white transition select-none hover:opacity-90"
           >
             StockSense
           </Link>
@@ -84,7 +82,7 @@ export const Navbar: React.FC = () => {
 
         {/* Right: Nav + User (Desktop) */}
         <div className="ml-auto hidden items-center gap-4 md:flex">
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-2 md:gap-3">
             {navLinks.map((link) => (
               <NavItem key={link.to} to={link.to} label={link.label} />
             ))}
@@ -94,7 +92,7 @@ export const Navbar: React.FC = () => {
           ) : isAuthenticated ? (
             <Link
               to="/account"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-blue-700 shadow select-none hover:opacity-90"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-base font-bold text-blue-700 shadow ring-2 ring-white select-none hover:opacity-90"
               title={email ?? undefined}
             >
               {getInitials(name, email)}
