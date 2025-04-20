@@ -12,23 +12,23 @@ You can try the live demo of **StockSense** here:
 
 ## Features
 
-- **Semantic Search** for natural language stock queries (powered by Qdrant and SentenceTransformers)
-- **Company Summaries** integrated from SP500 datasets
-- **SP500 Enrichment** with sector, industry, and financials
-- **LLM-Generated Insights** enriched using a local Ollama-hosted model
-- **SmartTrade** Simulated auto-trading agent driven by LLMs
-- **Firebase-Authenticated API** with RTK Query support
-- **Frontend State Managed**o with Redux Toolkit
-- **Company Profile View** with LLM-generated insights and price forecast
-- **Forecast Chart** with 30-day prediction and confidence intervals
-- **Kafka-Based Job Queue on Kubernetes** for decoupled analysis processing
-- **LangGraph Worker** consuming from Kafka topics for AI-driven analysis
-- **Serverless Cloud Functions** for modular, scalable data enrichment (AWS Lambda for web scraping and sentiment analysis)
-- **Redis Caching** for job tracking and faster async UX
-- **Frontend Job Status Polling** with seamless experience
-- **Airflow DAGs** for automated ETL pipelines
-- **Testing Pipeline** with Pytest and Jest integrated into GitHub Actions
-- Fully containerized local development via Docker Compose
+- **Semantic Search**: Natural language stock search powered by SentenceTransformers and Qdrant vector search.
+- **Company Knowledge Base**: Enriched S&P 500 company profiles with industry, sector, and financial metadata.
+- **LLM-Powered Insights**: AI-generated company summaries, forecasts, and trading signals using local Ollama or LangGraph agents.
+- **SmartTrade Agent**: Simulated auto-trading system with AI-driven buy/sell decisions and job tracking.
+- **Company Forecast View**: 30-day price predictions with visualized confidence intervals and insight overlays.
+- **Authenticated API**: Firebase-secured backend supporting Google SSO and anonymous auth, integrated with RTK Query.
+- **Interactive Frontend**: React + Redux Toolkit with real-time job status polling, semantic search results, and rich visualizations.
+- **Kafka Job Queue**: Decoupled, event-driven architecture using Kafka on Kubernetes for background task processing.
+- **LangGraph Worker Service**: Kafka consumer running on K8s for AI workflow execution and automated analysis.
+- **Serverless Functions**: AWS Lambda functions for modular enrichment tasks like web scraping and sentiment analysis.
+- **Redis Caching**: Fast async UX with Redis-powered job status tracking and result caching.
+- **Airflow ETL Pipelines**: Automated enrichment and embedding workflows using Airflow DAGs (local dev setup).
+- **Testing & CI Pipeline**: GitHub Actions-based testing using Pytest (backend) and Jest (frontend).
+- **Dockerized Development**: Fully containerized setup with Docker Compose for local development and testing.
+- **Observability & Monitoring**:
+  - **Grafana Cloud**: Metrics collection and dashboards using Grafana Alloy and Prometheus Remote Write.
+  - **Sentry**: Real-time exception tracking for frontend, backend, and worker services.
 
 ## Tech Stack
 
@@ -101,13 +101,12 @@ Use Airflow DAGs or manual scripts to:
 
 StockSense is an ongoing project with several enhancements planned:
 
-- **SmartTrade Optimization**: Improve the AI trading agent with diversification rules, economic signals, and performance tracking (e.g. return, accuracy). Add email notifications for trade decisions and summaries.
-- **CI/CD & Observability**: Add automated GitHub Actions pipelines, unit/integration tests (Vitest, Pytest).
-- **Historical Data & ML**: Enable CSV uploads for historical stock data, integrate trend forecasting models, and build rich visualizations.
-- **Streaming LLM Responses**: Implement token-by-token streaming of AI outputs for real-time feedback.
-- **AI Agent**: Introduce a memory-aware, context-retaining agent to analyze and respond to complex user queries.
-- **Advanced Semantic Search**: Enhance vector-based search with real-time filters, rankings, and multilingual support.
-- **ETL & Data Pipelines**: Scale up enrichment pipelines with Airflow, and optionally integrate DBT for transformation layers.
-- **Cloud Infra-as-Code**: Improve production deployment with Terraform modules for full Oracle/GCP/AWS setup.
-- **Feature Flags & Analytics**: Add LaunchDarkly-style toggles and user behavior tracking with tools like PostHog or RudderStack.
-- **Multi-Tenant & Role-Based Access**: Add per-user data isolation and RBAC for enterprise readiness.
+- **SmartTrade Enhancements**: Improve agent logic with diversification, economic signals, and historical performance tracking. Add trade alerts via email or webhooks.
+- **Agent RAG Capabilities**: Integrate retrieval-augmented generation (RAG) from uploaded documents or financial filings for deeper, context-aware analysis.
+- **Real-Time AI Streaming**: Add token-level output streaming for more responsive LLM interactions in the frontend.
+- **Historical Data & Forecasting**: Enable CSV-based uploads and integrate ML models for long-term trend forecasting.
+- **Grafana Dashboards**: Expand visualizations with SmartTrade history, analysis latency, and real-time system metrics.
+- **Behavior Analytics**: Add lightweight user analytics with PostHog to understand interaction patterns.
+- **RBAC & Multi-Tenancy**: Introduce role-based access control and per-user data isolation for enterprise readiness.
+- **Infra-as-Code Expansion**: Extend Terraform coverage for full provisioning on Oracle, AWS, and GCP.
+- **Streaming Architecture**: Explore Redpanda or ClickHouse for high-throughput event ingestion and analytical querying.
