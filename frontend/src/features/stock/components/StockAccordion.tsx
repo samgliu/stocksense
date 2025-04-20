@@ -23,7 +23,7 @@ export const StockAccordion = ({ item }: { item: HistoryItem }) => {
   const prediction = parsedSummary?.prediction;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-md transition hover:border-blue-100 hover:shadow-lg">
+    <div className="rounded-2xl border border-gray-100 bg-white/95 p-5 shadow-sm transition hover:border-blue-200">
       <button
         onClick={() => setOpen((prev) => !prev)}
         className="flex w-full items-center justify-between bg-transparent p-0 text-left focus:outline-none"

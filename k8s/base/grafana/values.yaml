@@ -32,6 +32,15 @@ alloy:
   envFrom:
     - secretRef:
         name: grafana-cloud
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
   configMap:
     # -- Create a new ConfigMap for the config file.
     create: true
@@ -109,6 +118,31 @@ alloy:
             password = "<GRAFANA_PROM_PASSWORD>"
           }
         }
+      }
+
+      otelcol.receiver.otlp "otlp_receiver" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+
+        output {
+          traces = [otelcol.exporter.otlp.grafanacloud.input]
+        }
+      }
+
+      otelcol.exporter.otlp "grafanacloud" {
+        client {
+          endpoint = "tempo-prod-26-prod-us-east-2.grafana.net:443"
+          auth = otelcol.auth.basic.grafanacloud.handler
+        }
+      }
+
+      otelcol.auth.basic "grafanacloud" {
+        username = "<GRAFANA_TEMPO_USERNAME>"
+        password = "<GRAFANA_TEMPO_PASSWORD>"
       }
 
       prometheus.scrape "alloy_metrics" {
@@ -228,7 +262,7 @@ alloy:
   extraArgs: []
 
   # -- Extra ports to expose on the Alloy container.
-  extraPorts: []
+  # extraPorts: []
   # - name: "faro"
   #   port: 12347
   #   targetPort: 12347
