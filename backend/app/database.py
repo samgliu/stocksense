@@ -1,9 +1,10 @@
 import os
 from typing import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    async_sessionmaker,
     AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
 )
 from sqlalchemy.orm import declarative_base
 
@@ -18,16 +19,14 @@ engine = create_async_engine(
     DATABASE_URL,
     future=True,
     echo=False,
-    pool_size=20,
-    max_overflow=40,
+    pool_size=10,
+    max_overflow=5,
     pool_timeout=60,
     pool_recycle=600,
     pool_pre_ping=True,
 )
 
-AsyncSessionLocal = async_sessionmaker(
-    bind=engine, expire_on_commit=False, autoflush=False, autocommit=False
-)
+AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False, autoflush=False, autocommit=False)
 
 Base = declarative_base()
 
