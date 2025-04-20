@@ -15,7 +15,7 @@ export const Navbar: React.FC = () => {
       <Link
         to={to}
         aria-current={isActive ? 'page' : undefined}
-        className={`relative rounded-full px-4 py-2 text-base font-medium transition-all select-none ${isActive ? 'bg-white/15 text-white after:absolute after:right-4 after:-bottom-1 after:left-4 after:h-0.5 after:rounded-full after:bg-white' : 'text-white/80 hover:bg-white/10 hover:text-white'} `}
+        className={`relative rounded-full px-4 py-2 text-base font-medium transition-all select-none ${isActive ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'} `}
         onClick={onClick}
       >
         {label}

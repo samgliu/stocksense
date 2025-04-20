@@ -1,7 +1,7 @@
-import { SemanticSearchResult } from './SemanticSearchResult';
-import { useSemanticSearchQuery } from '../api';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSemanticSearchQuery } from '../api';
+import { SemanticSearchResult } from './SemanticSearchResult';
 
 const PAGE_SIZES = [5, 10, 20];
 
@@ -40,95 +40,93 @@ export const SemanticSearch = () => {
 
   return (
     <div className="mx-auto max-w-3xl p-6">
-      <h2 className="mb-2 text-xl font-semibold text-gray-800">🔍 Semantic Company Search</h2>
+      <div className="rounded-2xl bg-white/90 p-10 shadow-xl shadow-blue-100/60">
+        <h1 className="mb-4 flex items-center gap-2 text-2xl font-semibold tracking-tight text-blue-600">
+          Semantic Company Search
+        </h1>
 
-      <form onSubmit={handleSubmit} className="mb-6 flex flex-col gap-2 sm:flex-row">
-        <input
-          className="flex-1 rounded border border-gray-300 p-3 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
-          placeholder="e.g. Cloud security companies with high growth potential"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button
-          type="submit"
-          className={`rounded px-5 py-2 text-sm font-medium text-white ${
-            isFetching
-              ? 'cursor-not-allowed bg-gray-400'
-              : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
-          }`}
-          disabled={isFetching || query.trim().length < 3}
-        >
-          {isFetching ? 'Searching...' : 'Search'}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="mb-8 flex flex-col items-center gap-3 sm:flex-row">
+          <input
+            className="flex-1 rounded-full border border-gray-300 p-4 text-base shadow transition focus:border-blue-500 focus:outline-none"
+            placeholder="e.g. Cloud security companies with high growth potential"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button
+            type="submit"
+            className={`rounded-full px-7 py-3 text-base font-semibold shadow transition ${
+              isFetching
+                ? 'cursor-not-allowed bg-gray-300 text-gray-500'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            } `}
+            disabled={isFetching || query.trim().length < 3}
+          >
+            {isFetching ? 'Searching...' : 'Search'}
+          </button>
+        </form>
 
-      {results.length > 0 && (
-        <div className="mb-4 flex flex-col items-start justify-between gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
-          <div>
-            Showing {pagedResults.length} of {totalResults} results
+        {results.length > 0 && (
+          <div className="mb-4 flex flex-col justify-between gap-3 rounded-lg bg-blue-50/60 p-3 text-sm text-gray-700 shadow sm:flex-row sm:items-center">
+            <div>
+              Showing {pagedResults.length} of {totalResults} results
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="pageSize" className="text-sm">
+                Results per page:
+              </label>
+              <select
+                id="pageSize"
+                className="rounded border border-gray-300 p-1 text-sm"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                {PAGE_SIZES.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="pageSize" className="text-sm">
-              Results per page:
-            </label>
-            <select
-              id="pageSize"
-              className="rounded border border-gray-300 p-1 text-sm"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
+        )}
+
+        {!isFetching && submittedQuery && pagedResults.length === 0 && (
+          <div className="text-sm text-gray-500">No matching companies found.</div>
+        )}
+
+        <div className="space-y-4">
+          {pagedResults.map((r) => (
+            <SemanticSearchResult key={r.id} result={r} />
+          ))}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-between text-base">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className={`rounded-full px-5 py-2 font-medium shadow transition ${page === 1 ? 'cursor-not-allowed bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'} `}
             >
-              {PAGE_SIZES.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
+              ← Previous
+            </button>
+
+            <span className="font-semibold text-blue-700">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              className={`rounded-full px-5 py-2 font-medium shadow transition ${page === totalPages ? 'cursor-not-allowed bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'} `}
+            >
+              Next →
+            </button>
           </div>
-        </div>
-      )}
-
-      {!isFetching && submittedQuery && pagedResults.length === 0 && (
-        <div className="text-sm text-gray-500">No matching companies found.</div>
-      )}
-
-      <div className="space-y-4">
-        {pagedResults.map((r) => (
-          <SemanticSearchResult key={r.id} result={r} />
-        ))}
+        )}
       </div>
-
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-          <button
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-            className={`rounded px-3 py-1 ${
-              page === 1 ? 'cursor-not-allowed bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'
-            }`}
-          >
-            ← Previous
-          </button>
-
-          <span>
-            Page {page} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-            className={`rounded px-3 py-1 ${
-              page === totalPages
-                ? 'cursor-not-allowed bg-gray-200'
-                : 'bg-blue-100 hover:bg-blue-200'
-            }`}
-          >
-            Next →
-          </button>
-        </div>
-      )}
     </div>
   );
 };

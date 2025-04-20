@@ -5,10 +5,10 @@ import {
   useGetUserAutoTradeSubscriptionsQuery,
 } from '../api';
 
-import { AutoTraderCard } from './AutoTraderCard';
 import { ConfirmationDialog } from '@/features/shared/ConfirmationDialog';
-import { toast } from 'react-toastify';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { toast } from 'react-toastify';
+import { AutoTraderCard } from './AutoTraderCard';
 
 export const AutoTraderDashboard = () => {
   const { id: user_id, role } = useAppSelector((state) => state.auth);
@@ -52,7 +52,7 @@ export const AutoTraderDashboard = () => {
     <div className="mx-auto max-w-3xl px-4 py-8">
       {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">📈 SmartTrade</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-blue-600">SmartTrade</h1>
 
         <div className="mt-3 flex gap-2 sm:mt-0">
           <button

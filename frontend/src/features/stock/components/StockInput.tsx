@@ -47,7 +47,7 @@ export const StockInput = () => {
   return (
     <div className="w-full space-y-4">
       <label className="block text-sm font-medium text-gray-700">
-        Enter stock notes or upload a file:
+        Enter stock notes or upload a file to get instant AI-powered analysis
       </label>
 
       <textarea
