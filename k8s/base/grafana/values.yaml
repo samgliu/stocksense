@@ -141,11 +141,11 @@ alloy:
         ]
       }
 
-      prometheus.scrape "kafka" {
+      prometheus.scrape "kafka_exporter" {
         targets = [
-          { __address__ = "kafka-controller-0.kafka-headless.default.svc.cluster.local:5556" },
-          { __address__ = "kafka-controller-1.kafka-headless.default.svc.cluster.local:5556" },
-          { __address__ = "kafka-controller-2.kafka-headless.default.svc.cluster.local:5556" },
+          {
+            __address__ = "kafka-exporter-prometheus-kafka-exporter.monitoring.svc.cluster.local:9308",
+          },
         ]
         forward_to = [prometheus.remote_write.default.receiver]
       }
