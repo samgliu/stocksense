@@ -1,15 +1,16 @@
-from app.kafka.producer import send_autotrade_job
-from sqlalchemy.future import select
-from app.models.auto_trade_subscription import AutoTradeSubscription
-from datetime import datetime, timezone, timedelta
-from pytz import timezone as pytz_timezone
+import logging
 import uuid
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timedelta, timezone
 
+from app.kafka.producer import send_autotrade_job
+from app.models.auto_trade_subscription import AutoTradeSubscription
 from app.models.mock_account import MockAccount
 from app.models.mock_account_snapshot import MockAccountSnapshot
 from app.models.mock_position import MockPosition
 from app.services.yf_data import fetch_current_price
+from pytz import timezone as pytz_timezone
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 # Frequency mapping
 FREQUENCY_INTERVALS = {
@@ -19,21 +20,22 @@ FREQUENCY_INTERVALS = {
 }
 
 
+logger = logging.getLogger("stocksense")
+
+
 async def run_snapshot_cron(db):
-    print("📸 Running Account Snapshot Cron", flush=True)
+    logger.info("📸 Running Account Snapshot Cron", flush=True)
     accounts = await db.execute(select(MockAccount))
     accounts = accounts.scalars().all()
     for account in accounts:
-        positions = await db.execute(
-            select(MockPosition).where(MockPosition.account_id == account.id)
-        )
+        positions = await db.execute(select(MockPosition).where(MockPosition.account_id == account.id))
         positions = positions.scalars().all()
         portfolio_value = 0.0
         for pos in positions:
             try:
                 price = await fetch_current_price(pos.ticker)
             except Exception as e:
-                print(f"⚠️ Could not fetch price for {pos.ticker}: {e}", flush=True)
+                logger.info(f"⚠️ Could not fetch price for {pos.ticker}: {e}", flush=True)
                 price = 0.0
             portfolio_value += price * (pos.shares or 0)
         balance = account.balance or 0.0
@@ -51,7 +53,7 @@ async def run_snapshot_cron(db):
         )
         db.add(snapshot)
     await db.commit()
-    print("✅ Snapshots taken for all accounts.", flush=True)
+    logger.info("✅ Snapshots taken for all accounts.", flush=True)
 
 
 def is_market_open(now_eastern):
@@ -64,20 +66,18 @@ def is_market_open(now_eastern):
 
 
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):
-    print("🚀 Running AutoTrader Cron", flush=True)
+    logger.info("🚀 Running AutoTrader Cron", flush=True)
     eastern = pytz_timezone("US/Eastern")
     now_utc = datetime.now(timezone.utc)
     now_eastern = now_utc.astimezone(eastern)
     if not force and not is_market_open(now_eastern):
-        print(
+        logger.info(
             f"⏰ Market is closed at {now_eastern.strftime('%Y-%m-%d %H:%M:%S %Z')} — Skipping all jobs",
             flush=True,
         )
         return
 
-    result = await db.execute(
-        select(AutoTradeSubscription).where(AutoTradeSubscription.active)
-    )
+    result = await db.execute(select(AutoTradeSubscription).where(AutoTradeSubscription.active))
     subs = result.scalars().all()
     SAFE_MIN = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
@@ -98,14 +98,14 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
                 and last_run_eastern.year == now_eastern.year
             )
         else:
-            print(
+            logger.info(
                 f"⚠️ Unknown frequency: {sub.frequency} — Skipping {sub.ticker}",
                 flush=True,
             )
             continue
 
         if not force and not should_run:
-            print(
+            logger.info(
                 f"⏳ Skipping {sub.ticker} — Not time to run yet (frequency: {sub.frequency})",
                 flush=True,
             )
@@ -124,7 +124,7 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
         }
 
         await send_autotrade_job(payload)
-        print(f"✅ Queued {sub.ticker} ({job_id})", flush=True)
+        logger.info(f"✅ Queued {sub.ticker} ({job_id})", flush=True)
 
     await db.commit()
-    print("✅ AutoTrader cron completed", flush=True)
+    logger.info("✅ AutoTrader cron completed", flush=True)
