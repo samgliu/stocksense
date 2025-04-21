@@ -4,7 +4,6 @@ import os
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -28,7 +27,7 @@ handler.setFormatter(
 
 logging.getLogger().handlers.clear()
 logging.getLogger().addHandler(handler)
-logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().setLevel(logging.ERROR)
 logger = logging.getLogger("tracing_test")
 
 
@@ -47,5 +46,4 @@ def setup_tracing(app):
 
     # Automatically instrument FastAPI routes
     FastAPIInstrumentor.instrument_app(app, tracer_provider=provider)
-    LoggingInstrumentor().instrument(set_logging_format=True)
     logger.info("✅ Tracing and logging initialized successfully")

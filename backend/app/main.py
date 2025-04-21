@@ -17,12 +17,10 @@ from app.middleware.gzip import add_gzip_middleware
 from app.middleware.ratelimit import add_rate_limit_middleware
 from app.middleware.security import add_security_headers
 from app.services.sentry import setup_sentry
-from app.services.tracing import setup_tracing
 from fastapi import FastAPI
 
 app = FastAPI()
 setup_sentry(app)
-setup_tracing(app)
 
 
 # Scheduler
