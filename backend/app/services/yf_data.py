@@ -1,5 +1,8 @@
 import pandas as pd
 import yfinance as yf
+import logging
+
+logger = logging.getLogger("stocksense")
 from datetime import datetime, timedelta
 from typing import List, Dict
 
@@ -7,7 +10,7 @@ from typing import List, Dict
 async def fetch_historical_prices(ticker: str, days: int = 60) -> List[Dict]:
     end_date = datetime.today()
     start_date = end_date - timedelta(days=days)
-    print(f"Fetching historical prices for {ticker} from {start_date} to {end_date}")
+    logger.info(f"Fetching historical prices for {ticker} from {start_date} to {end_date}")
 
     # auto_adjust is now True by default, just being explicit
     data = yf.download(

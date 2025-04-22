@@ -1,7 +1,10 @@
 import ipaddress
+import logging
 from wsgiref.simple_server import WSGIRequestHandler, make_server
 
 from prometheus_client import REGISTRY, generate_latest
+
+logger = logging.getLogger("stocksense")
 
 ALLOWED_NET_V4 = ipaddress.ip_network("10.0.0.0/8")
 ALLOWED_LOCAL_V4 = ipaddress.ip_network("127.0.0.0/8")
@@ -12,11 +15,7 @@ def metrics_app(environ, start_response):
     client_ip_raw = environ.get("REMOTE_ADDR", "")
     client_ip = ipaddress.ip_address(client_ip_raw)
 
-    if (
-        client_ip not in ALLOWED_NET_V4
-        and client_ip not in ALLOWED_LOCAL_V4
-        and client_ip not in ALLOWED_LOCAL_V6
-    ):
+    if client_ip not in ALLOWED_NET_V4 and client_ip not in ALLOWED_LOCAL_V4 and client_ip not in ALLOWED_LOCAL_V6:
         start_response("403 Forbidden", [("Content-Type", "text/plain")])
         return [b"Forbidden"]
 
@@ -34,6 +33,6 @@ def start_metrics_server(port=8001):
         def log_message(self, *args, **kwargs):
             pass
 
-    print(f"✅ Serving Prometheus metrics on http://0.0.0.0:{port}/metrics")
+    logger.info(f"✅ Serving Prometheus metrics on http://0.0.0.0:{port}/metrics")
     httpd = make_server("0.0.0.0", port, metrics_app, handler_class=QuietHandler)
     httpd.serve_forever()

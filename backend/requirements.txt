@@ -1,7 +1,7 @@
 # --- Core server ---
 fastapi
 uvicorn[standard]
-confluent-kafka
+aiokafka
 redis[async]
 apscheduler
 

@@ -1,23 +1,23 @@
 import json
+from asyncio import sleep
 from datetime import datetime, timezone
+from logging import getLogger
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.agents.analyzer_agent import run_analysis_graph
 from app.database import AsyncSessionLocal
 from app.models import JobStatus, StockEntry
 from app.schemas.company import AnalyzeRequest
-from app.agents.analyzer_agent import run_analysis_graph
-from app.utils.redis import redis_client
-from app.utils.message_queue import commit_kafka
 from app.utils.aws_lambda import invoke_gcs_lambda, invoke_scraper_lambda
+from app.utils.message_queue import commit_kafka
+from app.utils.redis import redis_client
 from app.utils.sentiment_analysis import analyze_sentiment_with_cf
-from asyncio import sleep
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = getLogger("stocksense")
 
 
-async def wait_for_job(
-    db: AsyncSession, job_id: str, retries: int = 5, delay: float = 0.3
-):
+async def wait_for_job(db: AsyncSession, job_id: str, retries: int = 5, delay: float = 0.3):
     for _ in range(retries):
         result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
         job = result.scalar_one_or_none()
@@ -32,10 +32,10 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
         try:
             job_id = data["job_id"]
             user_id = data["user_id"]
-            print(f"⚙️  Processing job {job_id} for user {data['email']}...")
+            logger.info(f"⚙️  Processing job {job_id} for user {data['email']}...")
             job = await wait_for_job(db, job_id)
             if not job:
-                print(f"❌ Job {job_id} not found after retries")
+                logger.error(f"❌ Job {job_id} not found after retries")
                 return
 
             job.status = "processing"
@@ -47,7 +47,7 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
                 try:
                     raw_input = json.loads(raw_input)
                 except json.JSONDecodeError as e:
-                    print(f"❌ Failed to decode job input: {e}")
+                    logger.error(f"❌ Failed to decode job input: {e}")
                     return
 
             payload = AnalyzeRequest(**raw_input)
@@ -56,34 +56,24 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
             scraped_text = ""
             if domain:
                 try:
-                    cleaned_domain = (
-                        domain.replace("https://", "")
-                        .replace("http://", "")
-                        .split("/")[0]
-                    )
+                    cleaned_domain = domain.replace("https://", "").replace("http://", "").split("/")[0]
                     scraped_text = invoke_scraper_lambda(cleaned_domain)
                 except Exception as e:
-                    print(f"⚠️ Failed to scrape website {domain}: {e}")
+                    logger.warning(f"⚠️ Failed to scrape website {domain}: {e}")
             # Get GCS data
             gcs_snippets = []
             try:
                 gcs_snippets = invoke_gcs_lambda(payload.company.name)
-                print(
-                    f"✅ GCS results for {payload.company.name}: {len(gcs_snippets)} items"
-                )
+                logger.info(f"✅ GCS results for {payload.company.name}: {len(gcs_snippets)} items")
             except Exception as e:
-                print(
-                    f"⚠️ Failed to retrieve GCS sentiment for {payload.company.name}: {e}"
-                )
+                logger.warning(f"⚠️ Failed to retrieve GCS sentiment for {payload.company.name}: {e}")
             sentiment_analysis = None
             if gcs_snippets:
                 try:
                     sentiment_analysis = await analyze_sentiment_with_cf(gcs_snippets)
-                    print(
-                        f"✅ sentiment analysis generated (length: {len(sentiment_analysis)} chars)"
-                    )
+                    logger.info(f"✅ sentiment analysis generated (length: {len(sentiment_analysis)} chars)")
                 except Exception as e:
-                    print(f"⚠️ Failed to generate sentiment analysis: {e}")
+                    logger.warning(f"⚠️ Failed to generate sentiment analysis: {e}")
             result = await run_analysis_graph(
                 {
                     **payload.model_dump(),
@@ -103,9 +93,7 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
                 "status": job.status,
                 "result": job.result,
                 "updated_at": job.updated_at.isoformat(),
-                "analysis_report_id": (
-                    str(job.analysis_report_id) if job.analysis_report_id else None
-                ),
+                "analysis_report_id": (str(job.analysis_report_id) if job.analysis_report_id else None),
             }
 
             db.add(
@@ -119,14 +107,12 @@ async def handle_analysis_job(data: dict, msg, consumer=None):
             )
             await db.commit()
 
-            await redis_client.set(
-                f"job:{job_id}:status", json.dumps(job_status_data), ex=3600
-            )
-            print(f"✅ Job {job_id} done and committed")
+            await redis_client.set(f"job:{job_id}:status", json.dumps(job_status_data), ex=3600)
+            logger.info(f"✅ Job {job_id} done and committed")
 
         except Exception as e:
             await db.rollback()
-            print(f"❌ Error processing job {data.get('job_id')}: {e}")
+            logger.error(f"❌ Error processing job {data.get('job_id')}: {e}")
         finally:
             if consumer and msg:
-                commit_kafka(consumer, msg)
+                await commit_kafka(consumer, msg)

@@ -3,6 +3,9 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from sqlalchemy import create_engine, MetaData, select
+import logging
+
+logger = logging.getLogger("stocksense")
 
 UNENRICHED_PATH = Path("/opt/airflow/data/sp500/unenriched_companies.csv")
 DAYS_VALID = 7
@@ -13,12 +16,13 @@ def pull_unenriched_companies():
         last_modified = datetime.fromtimestamp(UNENRICHED_PATH.stat().st_mtime)
         age_days = (datetime.now() - last_modified).days
         if age_days < DAYS_VALID:
-            print(
+            logger.info(
                 f"⏩ Skipped pulling — CSV already exists and is {age_days} day(s) old (valid for {DAYS_VALID} days)"
             )
             return
 
     db_url = os.environ["DATABASE_URL"]
+
 
     engine = create_engine(
         db_url,
@@ -61,4 +65,4 @@ def pull_unenriched_companies():
 
     UNENRICHED_PATH.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(records).to_csv(UNENRICHED_PATH, index=False)
-    print(f"📥 Pulled {len(records)} rows to {UNENRICHED_PATH}")
+    logger.info(f"📥 Pulled {len(records)} rows to {UNENRICHED_PATH}")

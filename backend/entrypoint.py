@@ -1,8 +1,12 @@
+import logging
+import os
 import subprocess
 import time
-import os
-from sqlalchemy import create_engine, inspect
+
 from app.database import Base
+from sqlalchemy import create_engine, inspect
+
+logger = logging.getLogger("stocksense")
 
 
 def wait_for_db(max_attempts=10, delay=3):
@@ -15,10 +19,10 @@ def wait_for_db(max_attempts=10, delay=3):
     for attempt in range(1, max_attempts + 1):
         try:
             with engine.connect():
-                print("✅ Database is ready.")
+                logger.info("✅ Database is ready.")
                 return engine
         except Exception:
-            print(f"⏳ Waiting for DB... ({attempt})")
+            logger.info(f"⏳ Waiting for DB... ({attempt})")
             time.sleep(delay)
 
     raise RuntimeError("❌ Database not ready after several attempts.")
@@ -29,26 +33,29 @@ def db_needs_migration(engine):
     return "alembic_version" not in inspector.get_table_names()
 
 
+import logging
+
+logger = logging.getLogger("stocksense")
+
+
 def main():
-    print("🔍 Checking database status...")
+    logger.info("🔍 Checking database status...")
     try:
         engine = wait_for_db()
 
         if db_needs_migration(engine):
-            print(
-                "⚠️ No alembic_version table found. Creating tables from SQLAlchemy models..."
-            )
+            logger.info("⚠️ No alembic_version table found. Creating tables from SQLAlchemy models...")
             Base.metadata.create_all(bind=engine)
-            print("✅ Tables created.")
+            logger.info("✅ Tables created.")
         else:
-            print("⚙️ Running Alembic migrations...")
+            logger.info("⚙️ Running Alembic migrations...")
             subprocess.run(["alembic", "upgrade", "head"], check=True)
-            print("✅ Alembic migration complete.")
+            logger.info("✅ Alembic migration complete.")
     except Exception as e:
-        print(f"❌ Migration or DB check failed: {e}")
+        logger.error(f"❌ Migration or DB check failed: {e}")
         return
 
-    print("🚀 Starting FastAPI server...")
+    logger.info("🚀 Starting FastAPI server...")
     port = os.environ.get("PORT", "8000")
     reload_flag = os.getenv("ENV", "production") == "local"
 

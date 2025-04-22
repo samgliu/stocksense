@@ -1,6 +1,9 @@
 import os
 import json
 import requests
+import logging
+
+logger = logging.getLogger("stocksense")
 
 
 def upload_to_qdrant():
@@ -13,20 +16,20 @@ def upload_to_qdrant():
         "api-key": api_key,
     }
 
-    print("🔍 Loading embedded company records...")
+    logger.info("🔍 Loading embedded company records...")
     with open("/opt/airflow/data/sp500/embedded_companies.json") as f:
         records = json.load(f)
 
     if not records:
-        print("❌ No records found in embedded_companies.json")
+        logger.error("❌ No records found in embedded_companies.json")
         return
 
-    print(f"📦 Preparing {len(records)} records for Qdrant...")
+    logger.info(f"📦 Preparing {len(records)} records for Qdrant...")
 
     points = []
     for rec in records:
         if "embedding" not in rec or "id" not in rec:
-            print(f"⚠️ Skipping invalid record: {rec}")
+            logger.info(f"⚠️ Skipping invalid record: {rec}")
             continue
 
         payload = {
@@ -44,16 +47,16 @@ def upload_to_qdrant():
         )
 
     # Check if collection exists
-    print(f"🔎 Checking if collection `{collection_name}` exists...")
+    logger.info(f"🔎 Checking if collection `{collection_name}` exists...")
     exists_response = requests.get(
         f"{qdrant_url}/collections/{collection_name}",
         headers=headers,
     )
 
     if exists_response.status_code == 200:
-        print(f"✅ Collection `{collection_name}` already exists, skipping creation.")
+        logger.info(f"✅ Collection `{collection_name}` already exists, skipping creation.")
     else:
-        print(f"🛠 Creating collection `{collection_name}` in Qdrant...")
+        logger.info(f"🛠 Creating collection `{collection_name}` in Qdrant...")
         vector_size = len(points[0]["vector"])
         collection_config = {
             "vectors": {"size": vector_size, "distance": "Cosine"},
@@ -64,20 +67,20 @@ def upload_to_qdrant():
             headers=headers,
         )
         if not create_response.ok:
-            print(f"❌ Failed to create collection: {create_response.text}")
+            logger.info(f"❌ Failed to create collection: {create_response.text}")
             return
 
     # Upsert points (update or insert)
-    print(f"🚀 Uploading {len(points)} points to Qdrant via UPSERT...")
+    logger.info(f"🚀 Uploading {len(points)} points to Qdrant via UPSERT...")
     upsert_response = requests.put(
         f"{qdrant_url}/collections/{collection_name}/points?wait=true",
         json={"points": points},
         headers=headers,
     )
     if not upsert_response.ok:
-        print(f"❌ Failed to upload points: {upsert_response.text}")
+        logger.info(f"❌ Failed to upload points: {upsert_response.text}")
         return
 
-    print(
+    logger.info(
         f"✅ Uploaded {len(points)} companies to Qdrant Cloud collection: {collection_name}"
     )

@@ -1,28 +1,29 @@
-from datetime import datetime, timezone
 import json
-from typing import Optional, List
+import logging
+from datetime import datetime, timezone
+from typing import List, Optional
 from uuid import UUID, uuid4
 
-from app.models.analysis_report import AnalysisReport
-from app.schemas.analysis_report import AnalysisReportResponse
-from app.schemas.company_news import NewsResponse
-from app.models.company_news import CompanyNews
-from app.services.news import fetch_company_news
-from app.services.redis import redis_client
-from fastapi import APIRouter, HTTPException, Depends, Request
-from pydantic import BaseModel
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.config import USER_DAILY_LIMIT
 from app.database import get_async_db
-from app.models import Company
+from app.kafka.producer import send_analysis_job
+from app.models import Company, JobStatus
+from app.models.analysis_report import AnalysisReport
+from app.models.company_news import CompanyNews
 from app.models.usage_log import UsageLog
 from app.models.user import User, UserRole
-from app.models import JobStatus
+from app.schemas.analysis_report import AnalysisReportResponse
+from app.schemas.company_news import NewsResponse
 from app.services.fmp import fetch_company_profile_async
+from app.services.news import fetch_company_news
+from app.services.redis import redis_client
 from app.services.yf_data import fetch_historical_prices
-from app.core.config import USER_DAILY_LIMIT
-from app.kafka.producer import send_analysis_job
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger("stocksense")
 
 router = APIRouter()
 
@@ -45,9 +46,7 @@ class CompanyProfileOut(BaseModel):
 
 
 @router.get("/profile/{uuid}/{ticker}")
-async def get_company_profile(
-    request: Request, uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)
-):
+async def get_company_profile(request: Request, uuid: str, ticker: str, db: AsyncSession = Depends(get_async_db)):
     cache_key = f"company:profile:{uuid}:{ticker}"
 
     # Try Redis cache first
@@ -56,7 +55,7 @@ async def get_company_profile(
         try:
             return json.loads(cached)
         except Exception as e:
-            print(f"Failed to parse Redis cache for {cache_key}: {e}")
+            logger.error(f"Failed to parse Redis cache for {cache_key}: {e}")
 
     # Try fetching from external FMP API
     profile = await fetch_company_profile_async(ticker)
@@ -72,7 +71,7 @@ async def get_company_profile(
                 profile["insights"] = company.insights
 
         except Exception as e:
-            print(f"Failed to fetch insights for {uuid}: {e}")
+            logger.error(f"Failed to fetch insights for {uuid}: {e}")
 
         # Cache the combined profile
         await redis_client.set(cache_key, json.dumps(profile), ex=60 * 60 * 6)
@@ -92,7 +91,7 @@ async def get_company_profile(
             await redis_client.set(cache_key, json.dumps(company_dict), ex=60 * 60 * 6)
             return company_dict
     except Exception as e:
-        print(f"DB fallback failed for {ticker}: {e}")
+        logger.error(f"DB fallback failed for {ticker}: {e}")
 
     raise HTTPException(status_code=404, detail="Company not found")
 
@@ -108,16 +107,14 @@ async def get_historical_prices(request: Request, exchange: str, ticker: str):
         try:
             return json.loads(cached)
         except Exception as e:
-            print(f"⚠️ Redis parse failed for {cache_key}: {e}")
+            logger.error(f"⚠️ Redis parse failed for {cache_key}: {e}")
 
     # Fetch from external source
     prices = await fetch_historical_prices(full_ticker)
     if not prices:
         raise HTTPException(status_code=404, detail="No historical data found")
 
-    await redis_client.set(
-        cache_key, json.dumps(prices), ex=60 * 60 * 6
-    )  # 6 hours TTL
+    await redis_client.set(cache_key, json.dumps(prices), ex=60 * 60 * 6)  # 6 hours TTL
     return prices
 
 
@@ -184,15 +181,11 @@ async def analyze_company(
     db: AsyncSession = Depends(get_async_db),
 ):
     user_data = request.state.user
-    user_result = await db.execute(
-        select(User).where(User.firebase_uid == user_data["uid"])
-    )
+    user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
     user = user_result.scalar_one()
 
     if user.role != UserRole.ADMIN:
-        start_of_day = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         usage_result = await db.execute(
             select(func.count())
             .select_from(UsageLog)
@@ -242,25 +235,17 @@ async def analyze_company(
     "/analysis-reports/{company_id}",
     response_model=List[AnalysisReportResponse],
 )
-async def get_reports_for_company(
-    company_id: UUID, db: AsyncSession = Depends(get_async_db)
-):
+async def get_reports_for_company(company_id: UUID, db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(
-        select(AnalysisReport)
-        .where(AnalysisReport.company_id == company_id)
-        .order_by(AnalysisReport.created_at.asc())
+        select(AnalysisReport).where(AnalysisReport.company_id == company_id).order_by(AnalysisReport.created_at.asc())
     )
     reports = result.scalars().all()
     return reports
 
 
 @router.get("/news/{company_id}", response_model=List[NewsResponse])
-async def get_company_news(
-    company_id: UUID, company_name: str, db: AsyncSession = Depends(get_async_db)
-):
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+async def get_company_news(company_id: UUID, company_name: str, db: AsyncSession = Depends(get_async_db)):
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
     # 1. Check DB for today’s news
     db_result = await db.execute(

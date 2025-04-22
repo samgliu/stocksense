@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 from typing import Any, Dict
 
@@ -10,6 +11,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL = "gemini-2.0-flash"
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+logger = logging.getLogger("stocksense")
 
 # Prompt Builder
 def build_trading_prompt(context: Dict[str, Any]) -> str:
@@ -137,12 +139,12 @@ async def call_gemini_trading_agent(context: Dict[str, Any]) -> Dict[str, Any]:
         )
 
         raw_text = response.text.strip()
-        print("📤 Gemini raw response:", raw_text)
+        logger.info(f"📤 Gemini raw response: {raw_text}")
 
         try:
             return json.loads(raw_text)
         except json.JSONDecodeError as e:
-            print(f"⚠️ Failed to parse Gemini response: {e}")
+            logger.error(f"⚠️ Failed to parse Gemini response: {e}")
             return {
                 "decision": "hold",
                 "amount": 0,
@@ -152,7 +154,7 @@ async def call_gemini_trading_agent(context: Dict[str, Any]) -> Dict[str, Any]:
             }
 
     except Exception as e:
-        print(f"❌ Gemini trading agent request failed: {e}")
+        logger.error(f"❌ Gemini trading agent request failed: {e}")
         return {
             "decision": "hold",
             "amount": 0,

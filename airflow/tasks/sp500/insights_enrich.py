@@ -1,9 +1,12 @@
 import csv
 import re
 from pathlib import Path
-
+import logging
+import os
 import pandas as pd
 import requests
+
+logger = logging.getLogger("stocksense")
 
 # Configuration
 OLLAMA_URL = "http://192.168.7.225:11434/api/generate"
@@ -51,7 +54,7 @@ def enrich_companies_from_csv(ti=None):
     )
     remaining = df_unenriched[~df_unenriched["id"].astype(str).isin(already_done)]
 
-    print(f"🔁 {len(remaining)} companies to enrich (skipping {len(already_done)})")
+    logger.info(f"🔁 {len(remaining)} companies to enrich (skipping {len(already_done)})")
 
     enriched_this_run = []
 
@@ -81,12 +84,12 @@ def enrich_companies_from_csv(ti=None):
                 writer.writerow(record)
                 enriched_this_run.append(record)
 
-                print(f"✅ Enriched: {row['ticker']}")
+                logger.info(f"✅ Enriched: {row['ticker']}")
 
             except Exception as e:
-                print(f"❌ {row['ticker']}: {e}")
+                logger.info(f"❌ {row['ticker']}: {e}")
 
-    print(f"💾 Wrote {len(enriched_this_run)} enriched records to {ENRICHED_PATH}")
+    logger.info(f" Wrote {len(enriched_this_run)} enriched records to {ENRICHED_PATH}")
 
     if ti:
         ti.xcom_push(key="enriched_companies", value=enriched_this_run)
@@ -94,4 +97,5 @@ def enrich_companies_from_csv(ti=None):
 
 # Optional CLI entrypoint
 if __name__ == "__main__":
+    logger.info("Running enrich_companies_from_csv")
     enrich_companies_from_csv()

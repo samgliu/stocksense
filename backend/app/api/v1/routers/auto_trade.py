@@ -1,18 +1,22 @@
+import logging
 from uuid import UUID
-from app.models.company import Company
+
 from app.cron.runner import run_autotrade_cron
-from app.models.user import User, UserRole
+from app.database import get_async_db
+from app.dependencies.user_validation import get_current_user
+from app.models.auto_trade_subscription import AutoTradeSubscription
+from app.models.company import Company
 from app.models.mock_account import MockAccount
-from app.models.mock_transaction import MockTransaction
 from app.models.mock_position import MockPosition
+from app.models.mock_transaction import MockTransaction
+from app.models.user import User, UserRole
+from app.schemas.auto_trade import AutoTradeSubscriptionCreate, AutoTradeSubscriptionOut
 from app.services.yf_data import fetch_current_price
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from app.dependencies.user_validation import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_async_db
-from app.schemas.auto_trade import AutoTradeSubscriptionCreate, AutoTradeSubscriptionOut
-from app.models.auto_trade_subscription import AutoTradeSubscription
 from sqlalchemy.future import select
+
+logger = logging.getLogger("stocksense")
 
 router = APIRouter()
 
@@ -37,9 +41,7 @@ async def subscribe_to_auto_trade(
     existing = result.scalars().first()
 
     # Fetch company name now (used for response either way)
-    company_result = await db.execute(
-        select(Company.name).where(Company.id == subscription.company_id)
-    )
+    company_result = await db.execute(select(Company.name).where(Company.id == subscription.company_id))
     company_name = company_result.scalar()
 
     if existing:
@@ -134,9 +136,7 @@ async def get_user_subscriptions(
     )
     rows = result.all()
 
-    account_result = await db.execute(
-        select(MockAccount).where(MockAccount.user_id == user_id)
-    )
+    account_result = await db.execute(select(MockAccount).where(MockAccount.user_id == user_id))
     account = account_result.scalar_one_or_none()
     balance = float(account.balance) if account else 0
 
@@ -148,7 +148,7 @@ async def get_user_subscriptions(
         try:
             current_price_float = await fetch_current_price(ticker)
         except Exception as e:
-            print(f"⚠️ Failed to fetch price for {ticker}: {e}")
+            logger.warning(f"⚠️ Failed to fetch price for {ticker}: {e}")
             current_price_float = 0
 
         tx_result = await db.execute(
@@ -174,9 +174,7 @@ async def get_user_subscriptions(
             avg_cost = float(position.average_cost)
             market_value = shares * current_price_float
             unrealized_gain = (current_price_float - avg_cost) * shares
-            gain_pct = (
-                (unrealized_gain / (avg_cost * shares)) * 100 if avg_cost > 0 else 0
-            )
+            gain_pct = (unrealized_gain / (avg_cost * shares)) * 100 if avg_cost > 0 else 0
 
             total_invested += market_value
             total_unrealized_gain += unrealized_gain
@@ -217,9 +215,7 @@ async def reset_balance(
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_user),
 ):
-    account_result = await db.execute(
-        select(MockAccount).where(MockAccount.user_id == str(current_user.id))
-    )
+    account_result = await db.execute(select(MockAccount).where(MockAccount.user_id == str(current_user.id)))
     account = account_result.scalar_one_or_none()
 
     if not account:
@@ -233,13 +229,9 @@ async def reset_balance(
 
 
 @router.post("/force-run")
-async def force_run_autotrade_cron(
-    request: Request, db: AsyncSession = Depends(get_async_db)
-):
+async def force_run_autotrade_cron(request: Request, db: AsyncSession = Depends(get_async_db)):
     user_data = request.state.user
-    user_result = await db.execute(
-        select(User).where(User.firebase_uid == user_data["uid"])
-    )
+    user_result = await db.execute(select(User).where(User.firebase_uid == user_data["uid"]))
     user = user_result.scalar_one_or_none()
 
     if not user or user.role != UserRole.ADMIN:

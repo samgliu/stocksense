@@ -24,7 +24,7 @@ logger = logging.getLogger("stocksense")
 
 
 async def run_snapshot_cron(db):
-    logger.info("📸 Running Account Snapshot Cron", flush=True)
+    logger.info("📸 Running Account Snapshot Cron")
     accounts = await db.execute(select(MockAccount))
     accounts = accounts.scalars().all()
     for account in accounts:
@@ -35,7 +35,7 @@ async def run_snapshot_cron(db):
             try:
                 price = await fetch_current_price(pos.ticker)
             except Exception as e:
-                logger.info(f"⚠️ Could not fetch price for {pos.ticker}: {e}", flush=True)
+                logger.info(f"⚠️ Could not fetch price for {pos.ticker}: {e}")
                 price = 0.0
             portfolio_value += price * (pos.shares or 0)
         balance = account.balance or 0.0
@@ -53,7 +53,7 @@ async def run_snapshot_cron(db):
         )
         db.add(snapshot)
     await db.commit()
-    logger.info("✅ Snapshots taken for all accounts.", flush=True)
+    logger.info("✅ Snapshots taken for all accounts.")
 
 
 def is_market_open(now_eastern):
@@ -66,15 +66,12 @@ def is_market_open(now_eastern):
 
 
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):
-    logger.info("🚀 Running AutoTrader Cron", flush=True)
+    logger.info("🚀 Running AutoTrader Cron")
     eastern = pytz_timezone("US/Eastern")
     now_utc = datetime.now(timezone.utc)
     now_eastern = now_utc.astimezone(eastern)
     if not force and not is_market_open(now_eastern):
-        logger.info(
-            f"⏰ Market is closed at {now_eastern.strftime('%Y-%m-%d %H:%M:%S %Z')} — Skipping all jobs",
-            flush=True,
-        )
+        logger.info(f"⏰ Market is closed at {now_eastern.strftime('%Y-%m-%d %H:%M:%S %Z')} — Skipping all jobs")
         return
 
     result = await db.execute(select(AutoTradeSubscription).where(AutoTradeSubscription.active))
@@ -98,17 +95,11 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
                 and last_run_eastern.year == now_eastern.year
             )
         else:
-            logger.info(
-                f"⚠️ Unknown frequency: {sub.frequency} — Skipping {sub.ticker}",
-                flush=True,
-            )
+            logger.info(f"⚠️ Unknown frequency: {sub.frequency} — Skipping {sub.ticker}")
             continue
 
         if not force and not should_run:
-            logger.info(
-                f"⏳ Skipping {sub.ticker} — Not time to run yet (frequency: {sub.frequency})",
-                flush=True,
-            )
+            logger.info(f"⏳ Skipping {sub.ticker} — Not time to run yet (frequency: {sub.frequency})")
             continue
 
         job_id = str(uuid.uuid4())
@@ -124,7 +115,7 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
         }
 
         await send_autotrade_job(payload)
-        logger.info(f"✅ Queued {sub.ticker} ({job_id})", flush=True)
+        logger.info(f"✅ Queued {sub.ticker} ({job_id})")
 
     await db.commit()
-    logger.info("✅ AutoTrader cron completed", flush=True)
+    logger.info("✅ AutoTrader cron completed")

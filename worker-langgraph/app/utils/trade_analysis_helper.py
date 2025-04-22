@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -5,6 +6,7 @@ from typing import Dict, List, Optional
 from uuid import UUID
 
 import httpx
+import numpy as np
 import pandas as pd
 import yfinance as yf
 from app.database import AsyncSessionLocal
@@ -15,6 +17,8 @@ from app.models.mock_position import MockPosition
 from app.models.mock_transaction import MockTransaction
 from app.models.trade_report import TradeDecision, TradeReport
 from sqlalchemy.future import select
+
+logger = logging.getLogger("stocksense")
 
 
 async def get_company_from_db(company_id: str) -> dict:
@@ -37,48 +41,36 @@ async def get_company_from_db(company_id: str) -> dict:
             "summary": company.summary,
             "insights": company.insights,
             "website": company.website,
-            "current_price": (
-                float(company.current_price) if company.current_price else None
-            ),
+            "current_price": (float(company.current_price) if company.current_price else None),
             "market_cap": float(company.market_cap) if company.market_cap else None,
             "ebitda": float(company.ebitda) if company.ebitda else None,
             "revenue_growth": company.revenue_growth,
-            "fulltime_employees": (
-                int(company.fulltime_employees) if company.fulltime_employees else None
-            ),
+            "fulltime_employees": (int(company.fulltime_employees) if company.fulltime_employees else None),
         }
 
 
 async def fetch_user_holdings_from_db(user_id: str, ticker: str) -> Optional[dict]:
     async with AsyncSessionLocal() as db:
         result = await db.execute(
-            select(MockPosition).where(
-                MockPosition.account_id == user_id, MockPosition.ticker == ticker
-            )
+            select(MockPosition).where(MockPosition.account_id == user_id, MockPosition.ticker == ticker)
         )
         position = result.scalar_one_or_none()
 
         if not position:
             # Still return balance if account exists
-            account_result = await db.execute(
-                select(MockAccount).where(MockAccount.user_id == user_id)
-            )
+            account_result = await db.execute(select(MockAccount).where(MockAccount.user_id == user_id))
             account = account_result.scalar_one_or_none()
             return {"balance": float(account.balance) if account else 0}
 
         # Fetch associated account balance
-        account_result = await db.execute(
-            select(MockAccount).where(MockAccount.id == position.account_id)
-        )
+        account_result = await db.execute(select(MockAccount).where(MockAccount.id == position.account_id))
         account = account_result.scalar_one_or_none()
 
         return {
             "ticker": position.ticker,
             "shares": position.shares,
             "average_cost": position.average_cost,
-            "last_updated": (
-                position.updated_at.isoformat() if position.updated_at else None
-            ),
+            "last_updated": (position.updated_at.isoformat() if position.updated_at else None),
             "balance": float(account.balance) if account else 0,
         }
 
@@ -86,7 +78,7 @@ async def fetch_user_holdings_from_db(user_id: str, ticker: str) -> Optional[dic
 async def fetch_historical_prices(ticker: str, days: int = 90) -> List[Dict]:
     end_date = datetime.today()
     start_date = end_date - timedelta(days=days)
-    print(f"Fetching historical prices for {ticker} from {start_date} to {end_date}")
+    logger.info(f"Fetching historical prices for {ticker} from {start_date} to {end_date}")
 
     data = yf.download(
         ticker,
@@ -103,10 +95,7 @@ async def fetch_historical_prices(ticker: str, days: int = 90) -> List[Dict]:
     else:
         close_series = data["Close"]
 
-    result = [
-        {"date": date.strftime("%Y-%m-%d"), "close": round(close, 2)}
-        for date, close in close_series.items()
-    ]
+    result = [{"date": date.strftime("%Y-%m-%d"), "close": round(close, 2)} for date, close in close_series.items()]
 
     return result
 
@@ -132,11 +121,11 @@ async def fetch_fundamentals_fmp(ticker: str) -> Optional[dict]:
             response.raise_for_status()
             data = response.json()
         except Exception as e:
-            print(f"❌ Error fetching FMP fundamentals for {ticker}: {e}")
+            logger.error(f"❌ Error fetching FMP fundamentals for {ticker}: {e}")
             return None
 
     if not data or not isinstance(data, list) or len(data) == 0:
-        print(f"⚠️ No TTM ratios found for {ticker}")
+        logger.warning(f"⚠️ No TTM ratios found for {ticker}")
         return None
 
     return data[0]
@@ -157,17 +146,15 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
     shares_to_trade = result.get("amount")
 
     if not all([user_id, ticker, decision, price]):
-        print("❌ Missing required fields; skipping persistence.")
+        logger.error("❌ Missing required fields; skipping persistence.")
         return
 
     async with AsyncSessionLocal() as db:
         # Fetch account
-        account_result = await db.execute(
-            select(MockAccount).where(MockAccount.user_id == user_id)
-        )
+        account_result = await db.execute(select(MockAccount).where(MockAccount.user_id == user_id))
         account = account_result.scalar_one_or_none()
         if not account:
-            print(f"❌ No mock account found for user {user_id}")
+            logger.error(f"❌ No mock account found for user {user_id}")
             return
 
         account_id = account.id
@@ -201,14 +188,12 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
             if decision == "buy":
                 cost = shares_to_trade * price
                 if account.balance < cost:
-                    print(f"⚠️ Insufficient balance: ${account.balance} < ${cost}")
+                    logger.warning(f"⚠️ Insufficient balance: ${account.balance} < ${cost}")
                     return
 
                 if position:
                     total_shares = position.shares + shares_to_trade
-                    new_avg_cost = (
-                        position.shares * position.average_cost + cost
-                    ) / total_shares
+                    new_avg_cost = (position.shares * position.average_cost + cost) / total_shares
                     position.shares = total_shares
                     position.average_cost = new_avg_cost
                 else:
@@ -225,9 +210,7 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
 
             elif decision == "sell":
                 if not position or position.shares < shares_to_trade:
-                    print(
-                        f"⚠️ Not enough shares to sell: {position.shares if position else 0}"
-                    )
+                    logger.warning(f"⚠️ Not enough shares to sell: {position.shares if position else 0}")
                     return
 
                 position.shares -= shares_to_trade
@@ -238,11 +221,9 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
                 if position.shares == 0:
                     position.average_cost = 0
 
-            print(
-                f"✅ Trade persisted: {decision.upper()} {shares_to_trade} {ticker} @ ${price:.2f}"
-            )
+            logger.info(f"✅ Trade persisted: {decision.upper()} {shares_to_trade} {ticker} @ ${price:.2f}")
         else:
-            print(f"ℹ️ Decision is '{decision_raw}', skipping transaction.")
+            logger.info(f"ℹ️ Decision is '{decision_raw}', skipping transaction.")
 
         # Always record a TradeReport, regardless of action
         trade_report = TradeReport(
@@ -257,11 +238,7 @@ async def persist_result_to_db(payload: dict, result: dict, current_price: float
         )
         db.add(trade_report)
 
-        sub_result = await db.execute(
-            select(AutoTradeSubscription).where(
-                AutoTradeSubscription.id == subscription_id
-            )
-        )
+        sub_result = await db.execute(select(AutoTradeSubscription).where(AutoTradeSubscription.id == subscription_id))
         sub = sub_result.scalar_one_or_none()
         if sub:
             sub.last_run_at = datetime.now(timezone.utc)
