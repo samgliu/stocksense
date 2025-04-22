@@ -17,7 +17,7 @@ async def create_kafka_consumer(topic: str, group_id: str):
         topic,
         bootstrap_servers=KAFKA_BROKER,
         group_id=group_id,
-        auto_offset_reset="earliest",
+        auto_offset_reset="latest",
         enable_auto_commit=False,
     )
     await consumer.start()
@@ -33,6 +33,7 @@ async def poll_kafka_msg(consumer):
     except Exception as e:
         logger.error(f"Kafka message poll error: {e}")
     return None, None
+
 
 async def stop_kafka_consumer(consumer):
     if consumer:
