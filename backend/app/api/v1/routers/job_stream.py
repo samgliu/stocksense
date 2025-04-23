@@ -97,7 +97,6 @@ async def job_progress_ws(websocket: WebSocket, job_id: str, db: AsyncSession = 
             if msg.value:
                 data = json.loads(msg.value)
                 await websocket.send_text(json.dumps(data))
-                # If this is a final eve# add_rate_limit_middleware(app)nt, update JobStatus and Redis
                 if data.get("is_final"):
                     try:
                         result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
@@ -126,9 +125,6 @@ async def job_progress_ws(websocket: WebSocket, job_id: str, db: AsyncSession = 
         pass
     except Exception as e:
         logger.error(f"WebSocket consumer error: {e}")
-        import traceback
-
-        logger.error("❌ Exception in job_progress_ws: {e}\n{traceback.format_exc()}")
     finally:
         await websocket.close()
 

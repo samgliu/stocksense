@@ -33,11 +33,6 @@ def db_needs_migration(engine):
     return "alembic_version" not in inspector.get_table_names()
 
 
-import logging
-
-logger = logging.getLogger("stocksense")
-
-
 def main():
     logger.info("🔍 Checking database status...")
     try:
