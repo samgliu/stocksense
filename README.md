@@ -107,8 +107,6 @@ StockSense is an ongoing project with several enhancements planned:
 - **Agent RAG Capabilities**: Integrate retrieval-augmented generation (RAG) from uploaded documents or financial filings for deeper, context-aware analysis.
 - **Real-Time AI Streaming**: Add token-level output streaming for more responsive LLM interactions in the frontend.
 - **Historical Data & Forecasting**: Enable CSV-based uploads and integrate ML models for long-term trend forecasting.
-- **Grafana Dashboards**: Expand visualizations with SmartTrade history, analysis latency, and real-time system metrics.
 - **Behavior Analytics**: Add lightweight user analytics with PostHog to understand interaction patterns.
 - **RBAC & Multi-Tenancy**: Introduce role-based access control and per-user data isolation for enterprise readiness.
-- **Infra-as-Code Expansion**: Extend Terraform coverage for full provisioning on Oracle, AWS, and GCP.
 - **Streaming Architecture**: Explore Redpanda or ClickHouse for high-throughput event ingestion and analytical querying.
