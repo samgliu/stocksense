@@ -19,26 +19,18 @@ logger = logging.getLogger("stocksense")
 async def persist_analysis_report(job: JobStatus, db: AsyncSession) -> None:
     if job.status != "done" or not job.result:
         return
-
     try:
         parsed_result = json.loads(job.result)
-
-        # 🛠️ Fix 1: Parse insights & prediction from nested JSON string
         result_str = parsed_result.get("result", "{}")
         result = json.loads(result_str)
-
         prediction = result.get("prediction", {})
         insights = result.get("insights")
-
-        # 🛠️ Fix 2: Extract company metadata from payload
-        company_info = parsed_result.get("payload", {}).get("company", {})
-        company_id = parsed_result.get("payload", {}).get("company_id")
+        payload = parsed_result.get("payload", {})
+        company_info = payload.get("company", {})
+        company_id = payload.get("company_id")
         ticker = company_info.get("ticker")
         exchange = company_info.get("exchange")
         current_price = company_info.get("current_price")
-
-        # Logging for verification
-
         report = AnalysisReport(
             company_id=company_id,
             ticker=ticker,
@@ -52,12 +44,9 @@ async def persist_analysis_report(job: JobStatus, db: AsyncSession) -> None:
             prediction_json=prediction,
             insights=insights,
         )
-
         db.add(report)
         await db.flush()
         job.analysis_report_id = report.id
-        await db.commit()
-
     except Exception as e:
         await db.rollback()
         logger.exception(f"❌ Failed to persist report: {e}")
@@ -90,7 +79,6 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
             job.status = "processing"
             await db.commit()
 
-            # Collect the final step's output
             final_output = None
             async for step in run_analysis_graph_stream(data):
                 if isinstance(step, dict) and len(step) == 1:
@@ -107,41 +95,23 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
             job.updated_at = datetime.now(timezone.utc)
             await db.flush()
             await persist_analysis_report(job, db)
-            db.add(job)
-            await db.flush()
-            await db.refresh(job)  # Ensure attributes are loaded
-
+            await db.refresh(job)
             updated_at = job.updated_at
             analysis_report_id = job.analysis_report_id
-
             await db.commit()
 
             job_status_data = {
                 "job_id": job_id,
                 "status": job.status,
-                "result": job.result,
-                "updated_at": updated_at.isoformat(),
+                "updated_at": updated_at.isoformat() if updated_at else None,
                 "analysis_report_id": str(analysis_report_id) if analysis_report_id else None,
             }
-
-            company_info = final_output.get("payload", {}).get("company", {})
-            ticker = company_info.get("ticker") or "unknown"
-
-            db.add(
-                StockEntry(
-                    user_id=user_id,
-                    text_input=ticker,
-                    summary=job.result,
-                    source_type="company",
-                    model_used="gemini",
-                )
-            )
-            await db.commit()
-
             await redis_client.set(f"job:{job_id}:status", json.dumps(job_status_data), ex=3600)
 
             if consumer and msg:
                 await commit_kafka(consumer, msg)
+
+            logger.info(f"✅ Job {job_id} processed and committed.")
 
         except Exception as e:
             await db.rollback()
