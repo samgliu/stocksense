@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import requests
 
 GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
@@ -28,6 +29,8 @@ def lambda_handler(event, context):
             "cx": GOOGLE_CX_ID,
             "q": query,
             "num": 10,
+            "dateRestrict": "d7",
+            "sort": "date",
         }
 
         res = requests.get(url, params=params)
