@@ -1,6 +1,7 @@
 import { AreaChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-interface ForecastProps {
+interface ForecastProps
+  extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   prediction: {
     min: number;
     max: number;
@@ -12,7 +13,7 @@ interface ForecastProps {
   };
 }
 
-export const ForecastChart = ({ prediction }: ForecastProps) => {
+export const ForecastChart = ({ prediction, ...props }: ForecastProps) => {
   const { min, max, average, confidence } = prediction;
 
   const dummyData = [
@@ -33,7 +34,10 @@ export const ForecastChart = ({ prediction }: ForecastProps) => {
   const labelMap = new Map<number, string>(ticks.map((value) => [value, `$${value.toFixed(2)}`]));
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-2 shadow-md sm:p-4 md:p-6">
+    <div
+      className="rounded-2xl border border-gray-200 bg-white p-2 shadow-md sm:p-4 md:p-6"
+      {...props}
+    >
       <h3 className="mb-4 text-lg font-semibold text-gray-800">📈 30-Day Price Forecast</h3>
       {/* Band Legends */}
       <div className="mt-2 mr-4 flex justify-center gap-4 text-sm text-gray-500">
