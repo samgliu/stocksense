@@ -17,6 +17,8 @@ You can try the live demo of **StockSense** here:
 - **LLM-Powered Insights**: AI-generated company summaries, forecasts, and trading signals using local Ollama or LangGraph agents.
 - **SmartTrade Agent**: Simulated auto-trading system with AI-driven buy/sell decisions and job tracking.
 - **Company Forecast View**: 30-day price predictions with visualized confidence intervals and insight overlays.
+- **Real-Time Streaming Analysis**: Streamed AI analysis output with WebSocket-based job progress updates via Kafka and LangGraph.
+- **Streaming UI Rendering**: Frontend supports dynamic, step-by-step rendering of LangGraph node outputs (scraped text, sentiment, insights).
 - **Authenticated API**: Firebase-secured backend supporting Google SSO and anonymous auth, integrated with RTK Query.
 - **Interactive Frontend**: React + Redux Toolkit with real-time job status polling, semantic search results, and rich visualizations.
 - **Kafka Job Queue**: Decoupled, event-driven architecture using Kafka on Kubernetes for background task processing.

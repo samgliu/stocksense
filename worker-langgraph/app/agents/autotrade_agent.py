@@ -1,16 +1,20 @@
-from langgraph.graph import StateGraph, END
+import asyncio
+import logging
+from typing import TypedDict
+
+from app.utils.aws_lambda import invoke_gcs_lambda
+from app.utils.trade_analysis import call_gemini_trading_agent
 from app.utils.trade_analysis_helper import (
-    fetch_fundamentals_fmp,
-    get_company_from_db,
-    fetch_historical_prices,
     fetch_current_price,
+    fetch_fundamentals_fmp,
+    fetch_historical_prices,
     fetch_user_holdings_from_db,
+    get_company_from_db,
     persist_result_to_db,
 )
-from app.utils.trade_analysis import call_gemini_trading_agent
-from app.utils.aws_lambda import invoke_gcs_lambda
-import asyncio
-from typing import TypedDict
+from langgraph.graph import END, StateGraph
+
+logger = logging.getLogger("stocksense")
 
 
 class AutoTraderState(TypedDict, total=False):
@@ -37,6 +41,7 @@ async def fetch_price_history(state: AutoTraderState) -> dict:
     history = await fetch_historical_prices(ticker)
     return {"price_history": history}
 
+
 # Node: Fetch current price
 async def fetch_price(state: AutoTraderState) -> dict:
     ticker = state["payload"]["ticker"]
@@ -62,7 +67,7 @@ async def fetch_additional_metrics(state: AutoTraderState) -> dict:
         fundamentals = await fetch_fundamentals_fmp(ticker)
         return {"fundamentals": fundamentals}
     except Exception as e:
-        print(f"⚠️ Failed to fetch fundamentals for {ticker}: {e}")
+        logger.warning(f"⚠️ Failed to fetch fundamentals for {ticker}: {e}")
         return {"fundamentals": {}}
 
 

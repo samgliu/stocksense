@@ -6,7 +6,9 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 from decimal import Decimal, InvalidOperation
+import logging
 
+logger = logging.getLogger("stocksense")
 
 def load_companies_into_postgres():
     # Load CSV
@@ -116,4 +118,4 @@ def load_companies_into_postgres():
             session.execute(stmt)
         session.commit()
 
-    print(f"✅ Upserted {len(df)} companies into Postgres without duplication.")
+    logger.info(f"✅ Upserted {len(df)} companies into Postgres without duplication.")

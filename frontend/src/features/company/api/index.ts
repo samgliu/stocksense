@@ -1,3 +1,5 @@
+import { baseQueryWithErrorHandling } from '@/features/helpers';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import {
   AnalysisReport,
   CompanyData,
@@ -5,8 +7,6 @@ import {
   CompanyNews,
   JobResult,
 } from './types';
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQueryWithErrorHandling } from '@/features/helpers';
 
 export const companyApi = createApi({
   reducerPath: 'companyApi',
@@ -36,6 +36,21 @@ export const companyApi = createApi({
         body: { company_id, company, history, news },
       }),
     }),
+    analyzeCompanyStream: builder.mutation<
+      JobResult,
+      {
+        company_id: string;
+        company: CompanyData;
+        history?: CompanyHistoricalPrice;
+        news?: CompanyNews[];
+      }
+    >({
+      query: ({ company_id, company, history, news }) => ({
+        url: `/ws/analyze`,
+        method: 'POST',
+        body: { company_id, company, history, news },
+      }),
+    }),
     getJobStatus: builder.query<{ job_id?: string; status: string; result?: string }, string>({
       query: (jobId) => `/worker/job-status/${jobId}`,
     }),
@@ -52,6 +67,7 @@ export const companyApi = createApi({
 export const {
   useGetCompanyByIdQuery,
   useAnalyzeCompanyMutation,
+  useAnalyzeCompanyStreamMutation,
   useGetCompanyHistoricalPriceQuery,
   useGetJobStatusQuery,
   useGetCompanyAnalysisReportsQuery,

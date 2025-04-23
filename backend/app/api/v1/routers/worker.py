@@ -1,19 +1,22 @@
-from datetime import datetime
-from app.services.redis import redis_client
-from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_async_db
-from app.models import JobStatus
-from app.schemas.job_status import JobStatusResponse
-from sqlalchemy import select
 import json
-from app.models import AnalysisReport
+import logging
+from datetime import datetime
+
+from app.database import get_async_db
+from app.models import AnalysisReport, JobStatus
+from app.schemas.job_status import JobStatusResponse
+from app.services.redis import redis_client
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger("stocksense")
 
 router = APIRouter()
 
 
 async def persist_analysis_report(job: JobStatus, db: AsyncSession) -> None:
-    if job.status != "done" or job.analysis_report_id or not job.result:
+    if job.status != "done" or not job.result:
         return
 
     # Parse result from LLM
@@ -66,9 +69,7 @@ async def get_job_status(job_id: str, db: AsyncSession = Depends(get_async_db)):
             job_status = JobStatusResponse(**data)
 
             if job_status.status == "done":
-                result = await db.execute(
-                    select(JobStatus).where(JobStatus.job_id == job_id)
-                )
+                result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
                 job = result.scalar_one_or_none()
                 if job:
                     await persist_analysis_report(job, db)
@@ -77,7 +78,7 @@ async def get_job_status(job_id: str, db: AsyncSession = Depends(get_async_db)):
             return job_status
 
         except (ValueError, TypeError, json.JSONDecodeError) as e:
-            print(f"⚠️ Redis cache parse failed for key {cache_key}: {e}")
+            logger.error(f"⚠️ Redis cache parse failed for key {cache_key}: {e}")
 
     result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
     job = result.scalar_one_or_none()

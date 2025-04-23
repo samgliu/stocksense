@@ -2,10 +2,12 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import os
 from sqlalchemy import create_engine, text
+import logging
 
+logger = logging.getLogger("stocksense")
 
 def generate_embeddings():
-    print("Loading companies from Postgres...")
+    logger.info("Loading companies from Postgres...")
     db_url = os.environ["DATABASE_URL"]
     engine = create_engine(db_url)
 
@@ -22,7 +24,7 @@ def generate_embeddings():
         rows = result.fetchall()
         columns = result.keys()
 
-    print(f"Fetched {len(rows)} companies")
+    logger.info(f"Fetched {len(rows)} companies")
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -55,8 +57,8 @@ def generate_embeddings():
 
         records.append({"id": id, "embedding": embedding, **payload})
 
-    print("Saving enriched embeddings to JSON...")
+    logger.info("Saving enriched embeddings to JSON...")
     os.makedirs("/opt/airflow/data/sp500", exist_ok=True)
     df = pd.DataFrame(records)
     df.to_json("/opt/airflow/data/sp500/embedded_companies.json", orient="records")
-    print("✅ Embeddings generated and saved.")
+    logger.info("✅ Embeddings generated and saved.")

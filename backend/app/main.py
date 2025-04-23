@@ -1,3 +1,5 @@
+import logging
+
 import app.services.firebase
 from app.api.v1.routers import (
     auth,
@@ -5,6 +7,7 @@ from app.api.v1.routers import (
     companies,
     dashboard,
     health,
+    job_stream,
     metrics,
     search,
     stock,
@@ -18,6 +21,8 @@ from app.middleware.ratelimit import add_rate_limit_middleware
 from app.middleware.security import add_security_headers
 from app.services.sentry import setup_sentry
 from fastapi import FastAPI
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 
 app = FastAPI()
 setup_sentry(app)
@@ -46,3 +51,6 @@ app.include_router(companies.router, prefix="/api/v1/companies", tags=["Companie
 app.include_router(worker.router, prefix="/api/v1/worker", tags=["Worker"])
 app.include_router(auto_trade.router, prefix="/api/v1/auto-trade", tags=["Auto Trade"])
 app.include_router(metrics.router)
+
+# Websockets
+app.include_router(job_stream.router, prefix="/api/v1", tags=["Job Stream"])

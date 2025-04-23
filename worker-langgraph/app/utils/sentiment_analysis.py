@@ -1,7 +1,11 @@
-import os
 import json
-import httpx
+import logging
+import os
 import re
+
+import httpx
+
+logger = logging.getLogger("stocksense")
 
 CF_API_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/"
 CF_API_KEY = os.getenv("CLOUDFLARE_WORKERS_API_KEY")
@@ -40,11 +44,7 @@ Format your response as JSON like:
 
     async with httpx.AsyncClient() as client:
         url = CF_API_BASE_URL.format(account_id=CF_ACCOUNT_ID) + LLM_MODEL
-        response = await client.post(
-            url, headers=HEADERS, json={"messages": messages}, timeout=30
-        )
-
-        print("Cloudflare AI raw response:", response.text, flush=True)
+        response = await client.post(url, headers=HEADERS, json={"messages": messages}, timeout=30)
 
         try:
             result = response.json()

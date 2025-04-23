@@ -1,40 +1,40 @@
 import asyncio
-import os
 import json
-from sqlalchemy import text
+import logging
+import os
+
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from app.database import AsyncSessionLocal
-from confluent_kafka import Consumer as KafkaConsumer
+from sqlalchemy import text
+
+logger = logging.getLogger("stocksense")
 
 USE_KAFKA = os.getenv("KAFKA_ENABLED", "").lower() == "true"
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "")
 DB_POLL_INTERVAL_SECONDS = 5
 
 
-def create_kafka_consumer(topic: str, group_id: str):
+async def create_kafka_consumer(topic: str, group_id: str):
     if not (USE_KAFKA and KAFKA_BROKER):
         return None
-
-    consumer = KafkaConsumer(
-        {
-            "bootstrap.servers": KAFKA_BROKER,
-            "group.id": group_id,
-            "auto.offset.reset": "earliest",
-            "enable.auto.commit": False,
-        }
+    consumer = AIOKafkaConsumer(
+        topic,
+        bootstrap_servers=KAFKA_BROKER,
+        group_id=group_id,
+        auto_offset_reset="earliest",
+        enable_auto_commit=False,
     )
-    consumer.subscribe([topic])
+    await consumer.start()
     return consumer
 
 
 async def poll_kafka_msg(consumer):
     try:
-        msg = consumer.poll(5.0)
-        if msg and not msg.error():
-            return json.loads(msg.value()), msg
-        elif msg and msg.error():
-            print(f"❌ Kafka poll error: {msg.error()}")
+        async for msg in consumer:
+            if msg.value:
+                return json.loads(msg.value), msg
     except Exception as e:
-        print(f"❌ Kafka poll exception: {e}")
+        logger.error(f"❌ Kafka poll exception: {e}")
     return None, None
 
 
@@ -77,10 +77,10 @@ async def poll_analysis_job_from_db():
                 "body": row.input,
             }, None
     except Exception as e:
-        print(f"❌ DB poll failed: {e}")
+        logger.error(f"❌ DB poll failed: {e}")
         return None, None
 
 
-def commit_kafka(consumer, msg):
+async def commit_kafka(consumer, msg):
     if consumer and msg:
-        consumer.commit(msg)
+        await consumer.commit()

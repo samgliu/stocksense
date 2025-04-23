@@ -2,6 +2,9 @@ import os
 import uuid
 from typing import Optional
 import httpx
+import logging
+
+logger = logging.getLogger("stocksense")
 
 FMP_API_KEY = os.getenv("FMP_API_KEY")
 FMP_PROFILE_URL = os.getenv("FMP_PROFILE_URL")
@@ -25,11 +28,11 @@ async def fetch_company_profile_async(ticker: str) -> Optional[dict]:
             response.raise_for_status()
             data = response.json()
         except Exception as e:
-            print(f"❌ Error fetching FMP profile for {ticker}: {e}")
+            logger.error(f"❌ Error fetching FMP profile for {ticker}: {e}")
             return None
 
     if not data or not isinstance(data, list) or len(data) == 0:
-        print(f"⚠️ No profile found in FMP for {ticker}")
+        logger.warning(f"⚠️ No profile found in FMP for {ticker}")
         return None
 
     p = data[0]

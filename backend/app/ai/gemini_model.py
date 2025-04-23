@@ -1,5 +1,8 @@
 import asyncio
 from google import genai
+import logging
+
+logger = logging.getLogger("stocksense")
 from app.core.config import GEMINI_API_KEY
 
 MODEL = "gemini-2.0-flash"
@@ -15,5 +18,5 @@ async def generate_analysis(prompt: str) -> str:
         )
         return response.text.strip()
     except Exception as e:
-        print("[Gemini Error]", e)
+        logger.error(f"[Gemini Error] {e}")
         return "⚠️ Error analyzing content with Gemini."
