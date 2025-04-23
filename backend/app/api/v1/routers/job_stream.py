@@ -11,14 +11,13 @@ from app.kafka.consumer import create_kafka_consumer
 from app.kafka.producer import send_analysis_job
 from app.models import JobStatus, UsageLog, User
 from app.models.user import UserRole
-from app.schemas.company import AnalyzeRequest
 from app.services.redis import redis_client
 from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from .worker import persist_analysis_report
+from .companies import AnalyzeRequest
 
 logger = logging.getLogger("stocksense")
 
@@ -64,6 +63,7 @@ async def analyze_ws(
     await send_analysis_job(
         {
             "job_id": job_id,
+            "company_id": body.company_id,
             "user_id": str(user.id),
             "email": user.email,
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -107,11 +107,6 @@ async def job_progress_ws(websocket: WebSocket, job_id: str, db: AsyncSession = 
                             job.result = json.dumps(data.get("output"))
                             job.updated_at = datetime.now(timezone.utc)
                             db.add(job)
-                            await db.flush()
-                            try:
-                                await persist_analysis_report(job, db)
-                            except Exception as e:
-                                logger.error(f"Error in persist_analysis_report: {e}")
                             await db.commit()
                     except Exception as e:
                         logger.error(f"Failed to update job status for {job_id}: {e}")

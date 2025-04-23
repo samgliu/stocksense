@@ -3,8 +3,8 @@ import json
 import logging
 import os
 
-from app.database import AsyncSessionLocal
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from app.database import AsyncSessionLocal
 from sqlalchemy import text
 
 logger = logging.getLogger("stocksense")
