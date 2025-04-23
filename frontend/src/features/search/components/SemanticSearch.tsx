@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+import { useState } from 'react';
 import { useSemanticSearchQuery } from '../api';
 import { SemanticSearchResult } from './SemanticSearchResult';
 
@@ -42,7 +43,7 @@ export const SemanticSearch = () => {
     <div className="mx-auto max-w-3xl p-6">
       <div className="rounded-2xl border border-gray-100 bg-white/95 p-10 shadow-md">
         <h1 className="mb-4 flex items-center gap-2 text-2xl font-semibold tracking-tight text-blue-600">
-          Semantic Company Search
+          Semantic Search
         </h1>
 
         <form onSubmit={handleSubmit} className="mb-8 flex flex-col items-center gap-3 sm:flex-row">
