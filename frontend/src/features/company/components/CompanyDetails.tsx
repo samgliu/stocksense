@@ -122,7 +122,7 @@ export const CompanyDetails = ({
       <CompanyHeader company={company} />
       <CompanyOverview company={company} />
       {news && <CompanyNewsComponent news={news} isLoading={isNewsLoading} />}
-      {reports && <CompanyCharts reports={reports} analysis={analysis} />}
+      {reports && <CompanyCharts reports={reports} analysis={{ result: analysis?.result ?? '' }} />}
       <CompanyActionsPanel
         onAnalyze={handleAnalyze}
         onAnalyzeStream={handleAnalyzeAndStream}
@@ -135,7 +135,9 @@ export const CompanyDetails = ({
       />
       {analysis?.result && (
         <div ref={resultRef}>
-          <CompanyAnalysisSummary analysis={{ result: analysis.result ?? '' }} />
+          <CompanyAnalysisSummary
+            analysis={{ job_id: jobId, status: analysis.status, result: analysis.result ?? '' }}
+          />
         </div>
       )}
       {dedupedProgressEvents.length > 0 && (

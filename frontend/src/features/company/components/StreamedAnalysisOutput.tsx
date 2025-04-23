@@ -65,7 +65,7 @@ export const StreamedAnalysisOutput = ({ events }: StreamedAnalysisOutputProps) 
                 </div>
               )}
               {output.result.insights && (
-                <div className="m-3 rounded-2xl border border-gray-200 bg-white p-2 shadow-md sm:p-4 md:p-6">
+                <div className="m-3 rounded-2xl border border-gray-200 bg-white p-2 text-sm text-gray-800 shadow-md sm:p-4 md:p-6">
                   <Markdown result={output.result.insights} />
                 </div>
               )}

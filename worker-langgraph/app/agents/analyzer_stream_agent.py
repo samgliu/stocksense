@@ -34,6 +34,7 @@ DEFAULT_STATE = {
 
 def normalize_analysis_input(payload: dict | AnalyzeRequest) -> AnalysisState:
     job_id = payload.get("job_id") if isinstance(payload, dict) else None
+    company_id = payload.get("company_id") if isinstance(payload, dict) else None
     if isinstance(payload, AnalyzeRequest):
         parsed = payload
     elif isinstance(payload, dict) and "body" in payload:
@@ -41,7 +42,7 @@ def normalize_analysis_input(payload: dict | AnalyzeRequest) -> AnalysisState:
     elif isinstance(payload, dict):
         parsed = AnalyzeRequest(**payload)
     return {
-        "payload": parsed.model_dump() | {"job_id": job_id},
+        "payload": parsed.model_dump() | {"job_id": job_id, "company_id": company_id},
         **DEFAULT_STATE,
     }
 
