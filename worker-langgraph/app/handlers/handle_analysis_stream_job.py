@@ -7,6 +7,7 @@ from app.agents.analyzer_stream_agent import run_analysis_graph_stream
 from app.database import AsyncSessionLocal
 from app.models.analysis_report import AnalysisReport
 from app.models.job_status import JobStatus
+from app.models.stock_entry import StockEntry
 from app.utils.message_queue import commit_kafka
 from app.utils.redis import redis_client
 from sqlalchemy import select
@@ -94,6 +95,28 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
             await db.flush()
             await persist_analysis_report(job, db)
             await db.refresh(job)
+
+            payload = json.loads(job.result).get("payload", {}) if job.result else {}
+            company_info = payload.get("company", {})
+            ticker = company_info.get("ticker")
+            company_id = payload.get("company_id")
+            result_str = job.result
+            try:
+                result = json.loads(result_str)
+                summary = result.get("result", {})
+            except Exception:
+                return
+            db.add(
+                StockEntry(
+                    user_id=job.user_id,
+                    company_id=company_id,
+                    text_input=ticker,
+                    summary=summary,
+                    source_type="company",
+                    model_used="gemini",
+                )
+            )
+
             updated_at = job.updated_at
             analysis_report_id = job.analysis_report_id
             await db.commit()
