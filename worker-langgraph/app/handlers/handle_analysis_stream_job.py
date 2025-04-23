@@ -48,10 +48,9 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
             if result is None:
                 logger.error(f"❌ No result from run_analysis_graph_stream for job {job_id}")
                 return
-            logger.info(f"✅ Result from run_analysis_graph_stream for job {job_id}: {result}")
             summary = result["analyze"]
             job.status = "done"
-            job.result = summary
+            job.result = json.dumps(summary)
             job.updated_at = datetime.now(timezone.utc)
             await db.flush()
 
@@ -67,7 +66,7 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
                 StockEntry(
                     user_id=user_id,
                     text_input=result["analyze"]["payload"]["company"]["ticker"],
-                    summary=summary,
+                    summary=json.dumps(summary),
                     source_type="company",
                     model_used="gemini",
                 )
