@@ -1,10 +1,9 @@
-import os
 import json
+import os
+
 import boto3
 
-lambda_client = boto3.client(
-    "lambda", region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1")
-)
+lambda_client = boto3.client("lambda", region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
 
 
 def invoke_scraper_lambda(domain: str) -> str:
@@ -15,7 +14,12 @@ def invoke_scraper_lambda(domain: str) -> str:
         Payload=json.dumps(payload),
     )
     result = json.loads(response["Payload"].read().decode("utf-8"))
-    return result.get("text", "")
+    body = result.get("body", {})
+    try:
+        text = json.loads(body).get("text", "")
+    except Exception:
+        text = body
+    return text
 
 
 def invoke_gcs_lambda(query: str) -> list[str]:
