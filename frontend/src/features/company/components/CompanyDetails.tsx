@@ -58,11 +58,7 @@ export const CompanyDetails = ({
 
   const { data: reports } = useGetCompanyAnalysisReportsQuery(company_id);
 
-  const {
-    data: analysis,
-    isLoading,
-    refetch,
-  } = useGetJobStatusQuery(jobId!, {
+  const { data: analysis, isLoading } = useGetJobStatusQuery(jobId!, {
     skip: !jobId || showStreamModal,
     pollingInterval: 3000,
   });

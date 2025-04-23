@@ -10,7 +10,7 @@ interface StreamedAnalysisOutputProps {
 export const StreamedAnalysisOutput = ({ events }: StreamedAnalysisOutputProps) => {
   return (
     <div>
-      {events.map((e, idx) => {
+      {events.map((e) => {
         const output = e.filteredOutput;
 
         if (output.scraped_text) {
