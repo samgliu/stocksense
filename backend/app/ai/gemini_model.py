@@ -1,9 +1,10 @@
 import asyncio
-from google import genai
 import logging
 
-logger = logging.getLogger("stocksense")
 from app.core.config import GEMINI_API_KEY
+from google import genai
+
+logger = logging.getLogger("stocksense")
 
 MODEL = "gemini-2.0-flash"
 client = genai.Client(api_key=GEMINI_API_KEY)

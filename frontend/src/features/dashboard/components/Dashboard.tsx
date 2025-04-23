@@ -19,15 +19,15 @@ import {
   useGetHistorySummaryQuery,
   useGetMonthlySummaryQuery,
   useGetNewsSummaryQuery,
+  useGetSnapshotsDailyQuery,
   useGetTopCompaniesQuery,
   useGetTopIndustriesQuery,
   useGetUsageCountQuery,
-  useGetSnapshotsDailyQuery,
 } from '../api';
 
-import { CustomTooltip } from './CustomTooltip';
 import { Spinner } from '@/features/shared/Spinner';
 import { formatCurrencyCompact } from '@/utils/formatters';
+import { CustomTooltip } from './CustomTooltip';
 
 const SnapshotLineChart = () => {
   const { data: snapshotData, isLoading } = useGetSnapshotsDailyQuery({});
@@ -72,15 +72,22 @@ export const Dashboard = () => {
   const COLORS = ['#60a5fa', '#818cf8', '#34d399', '#fbbf24', '#f87171'];
 
   interface CustomizedLabelProps {
-  cx: number;
-  cy: number;
-  midAngle: number;
-  outerRadius: number;
-  percent: number;
-  sector: string;
-}
+    cx: number;
+    cy: number;
+    midAngle: number;
+    outerRadius: number;
+    percent: number;
+    sector: string;
+  }
 
-const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, sector }: CustomizedLabelProps) => {
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    outerRadius,
+    percent,
+    sector,
+  }: CustomizedLabelProps) => {
     const RADIAN = Math.PI / 180;
     const radius = outerRadius + 20;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);

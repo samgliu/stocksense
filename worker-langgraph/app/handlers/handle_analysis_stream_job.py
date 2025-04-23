@@ -7,7 +7,6 @@ from app.agents.analyzer_stream_agent import run_analysis_graph_stream
 from app.database import AsyncSessionLocal
 from app.models.analysis_report import AnalysisReport
 from app.models.job_status import JobStatus
-from app.models.stock_entry import StockEntry
 from app.utils.message_queue import commit_kafka
 from app.utils.redis import redis_client
 from sqlalchemy import select
@@ -69,7 +68,6 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
     async with AsyncSessionLocal() as db:
         try:
             job_id = data["job_id"]
-            user_id = data["user_id"]
 
             job = await wait_for_job(db, job_id)
             if not job:

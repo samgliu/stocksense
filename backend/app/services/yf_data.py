@@ -1,10 +1,11 @@
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, List
+
 import pandas as pd
 import yfinance as yf
-import logging
 
 logger = logging.getLogger("stocksense")
-from datetime import datetime, timedelta
-from typing import List, Dict
 
 
 async def fetch_historical_prices(ticker: str, days: int = 60) -> List[Dict]:
@@ -29,10 +30,7 @@ async def fetch_historical_prices(ticker: str, days: int = 60) -> List[Dict]:
     else:
         close_series = data["Close"]
 
-    result = [
-        {"date": date.strftime("%Y-%m-%d"), "close": round(close, 2)}
-        for date, close in close_series.items()
-    ]
+    result = [{"date": date.strftime("%Y-%m-%d"), "close": round(close, 2)} for date, close in close_series.items()]
 
     return result
 
