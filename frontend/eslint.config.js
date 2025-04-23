@@ -1,10 +1,10 @@
 import js from '@eslint/js';
-import path from 'node:path';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 import prettier from 'eslint-plugin-prettier';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
-import tsParser from '@typescript-eslint/parser';
-import tseslint from '@typescript-eslint/eslint-plugin';
+import path from 'node:path';
 
 export default [
   {
@@ -33,6 +33,8 @@ export default [
         console: true,
         setInterval: true,
         clearInterval: true,
+        setTimeout: true,
+        clearTimeout: true,
         document: true,
         process: true,
         React: true,
