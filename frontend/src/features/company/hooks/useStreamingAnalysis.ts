@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useJobProgressWebSocket } from './useJobProgressWebSocket';
 
+import type { JobProgressEvent } from './useJobProgressWebSocket';
+
 export function useStreamingAnalysis(streamJobId?: string, showStreamModal?: boolean) {
-  const [progressEvents, setProgressEvents] = useState<any[]>([]);
+  const [progressEvents, setProgressEvents] = useState<JobProgressEvent[]>([]);
 
   const rawEvents = useJobProgressWebSocket(
     showStreamModal && streamJobId ? streamJobId : undefined,
@@ -34,14 +36,14 @@ export function useStreamingAnalysis(streamJobId?: string, showStreamModal?: boo
   );
 
   const dedupedProgressEvents = useMemo(() => {
-    const map = new Map<string, any>();
+    const map = new Map<string, JobProgressEvent & { filteredOutput: any }>();
     for (const event of filteredProgressEvents) {
       map.set(event.node, event);
     }
     return Array.from(map.values());
   }, [filteredProgressEvents]);
 
-  const isFinal = dedupedProgressEvents.some((e: any) => e.is_final);
+  const isFinal = dedupedProgressEvents.some((e) => e.is_final);
 
   return { dedupedProgressEvents, isFinal };
 }

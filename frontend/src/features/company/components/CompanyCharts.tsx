@@ -2,7 +2,14 @@ import { useMemo } from 'react';
 import { CompanyPredictionHistoryChart } from './CompanyPredictionHistoryChart';
 import { ForecastChart } from './ForecastChart';
 
-export const CompanyCharts = ({ reports, analysis }: { reports: any[]; analysis: any }) => {
+import type { AnalysisReport } from '../api/types';
+
+interface CompanyChartsProps {
+  reports: AnalysisReport[];
+  analysis: { result: string };
+}
+
+export const CompanyCharts = ({ reports, analysis }: CompanyChartsProps) => {
   const prediction = useMemo(() => {
     try {
       const parsed = JSON.parse(analysis.result);

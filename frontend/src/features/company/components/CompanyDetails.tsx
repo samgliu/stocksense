@@ -135,12 +135,12 @@ export const CompanyDetails = ({
       />
       {analysis?.result && (
         <div ref={resultRef}>
-          <CompanyAnalysisSummary analysis={analysis} />
+          <CompanyAnalysisSummary analysis={{ result: analysis.result ?? '' }} />
         </div>
       )}
       {dedupedProgressEvents.length > 0 && (
         <div ref={streamRef}>
-          <StreamedAnalysisOutput events={dedupedProgressEvents} />
+          <StreamedAnalysisOutput events={dedupedProgressEvents as any} />
         </div>
       )}
       {showAutoTradeModal && userId && (

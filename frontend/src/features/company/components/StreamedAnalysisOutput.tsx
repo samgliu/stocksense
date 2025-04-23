@@ -1,8 +1,10 @@
 import { Markdown } from '@/features/shared/Markdown';
 import { ForecastChart } from './ForecastChart';
 
+import type { JobProgressEvent } from '../hooks/useJobProgressWebSocket';
+
 interface StreamedAnalysisOutputProps {
-  events: any[];
+  events: (JobProgressEvent & { filteredOutput: any })[];
 }
 
 export const StreamedAnalysisOutput = ({ events }: StreamedAnalysisOutputProps) => {

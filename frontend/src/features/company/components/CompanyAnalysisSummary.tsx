@@ -1,7 +1,11 @@
 import { Markdown } from '@/features/shared/Markdown';
 import { useMemo } from 'react';
 
-export const CompanyAnalysisSummary = ({ analysis }: { analysis: any }) => {
+interface AnalysisSummaryProps {
+  analysis: { job_id?: string | undefined; status: string; result?: string | undefined };
+}
+
+export const CompanyAnalysisSummary = ({ analysis }: AnalysisSummaryProps) => {
   if (!analysis?.result) return null;
   const insights = useMemo(() => {
     if (!analysis?.result) return null;
