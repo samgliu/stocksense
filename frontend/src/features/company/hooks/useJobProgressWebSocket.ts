@@ -10,11 +10,14 @@ export interface JobProgressEvent {
 }
 
 export function useJobProgressWebSocket(jobId: string | undefined) {
-  const [progress, setProgress] = useState<JobProgressEvent[]>([]);
+  const [events, setEvents] = useState<JobProgressEvent[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!jobId) return;
+
+    setEvents([]); // Reset state when jobId changes
+
     const ws = new WebSocket(
       `${import.meta.env.VITE_BACKEND_WS_URL}/api/v1/ws/job-progress/${jobId}`,
     );
@@ -23,19 +26,23 @@ export function useJobProgressWebSocket(jobId: string | undefined) {
     ws.onmessage = (event) => {
       try {
         const data: JobProgressEvent = JSON.parse(event.data);
-        if (data.job_id !== jobId) return;
-        setProgress((prev) => [...prev, data]);
+        if (data.job_id === jobId) {
+          setEvents((prev) => [...prev, data]);
+        }
       } catch (e) {
-        console.error('Failed to parse WebSocket message', e);
+        console.error('WebSocket parse error', e);
       }
     };
-    ws.onclose = () => {
-      wsRef.current = null;
-    };
+
+    ws.onerror = (e) => console.error('WebSocket error', e);
+
     return () => {
-      ws.close();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
     };
   }, [jobId]);
 
-  return progress;
+  return events;
 }
