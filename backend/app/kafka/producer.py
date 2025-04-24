@@ -11,6 +11,7 @@ KAFKA_BROKER = os.getenv("KAFKA_BROKER", "invalid-broker-url")
 
 producer = None
 
+
 async def get_producer():
     global producer
     if producer is None and KAFKA_ENABLED and KAFKA_BROKER:
@@ -45,3 +46,10 @@ async def send_analysis_job(data: dict, stream: str = "analysis-queue"):
 
 async def send_autotrade_job(data: dict):
     await send_analysis_job(data, stream="autotrade.jobs")
+
+
+async def stop_producer():
+    global producer
+    if producer:
+        await producer.stop()
+        producer = None

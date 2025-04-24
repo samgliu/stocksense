@@ -1,8 +1,9 @@
+import asyncio
 import json
 import logging
 import os
 
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer, TopicPartition
 
 logger = logging.getLogger("stocksense")
 
@@ -35,6 +36,8 @@ async def poll_kafka_msg(consumer):
     return None, None
 
 
-async def stop_kafka_consumer(consumer):
-    if consumer:
-        await consumer.stop()
+async def commit_kafka(consumer, msg):
+    if consumer and msg:
+        tp = TopicPartition(msg.topic, msg.partition)
+        await consumer.commit({tp: msg.offset + 1})
+        await asyncio.sleep(0.5)

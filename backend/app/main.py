@@ -14,6 +14,7 @@ from app.api.v1.routers import (
     worker,
 )
 from app.cron.cron import start_autotrade_scheduler
+from app.kafka.producer import stop_producer
 from app.middleware.cors import add_cors_middleware
 from app.middleware.firebase import add_firebase_auth_middleware
 from app.middleware.gzip import add_gzip_middleware
@@ -32,6 +33,12 @@ setup_sentry(app)
 @app.on_event("startup")
 async def startup_event():
     start_autotrade_scheduler()
+
+
+# Cleanup
+@app.on_event("shutdown")
+async def shutdown_kafka():
+    await stop_producer()
 
 
 # Middleware

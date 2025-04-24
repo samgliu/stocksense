@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from app.core.config import USER_DAILY_LIMIT
 from app.database import get_async_db
-from app.kafka.consumer import create_kafka_consumer
+from app.kafka.consumer import commit_kafka, create_kafka_consumer
 from app.kafka.producer import send_analysis_job
 from app.models import JobStatus, UsageLog, User
 from app.models.user import UserRole
@@ -97,7 +97,9 @@ async def job_progress_ws(websocket: WebSocket, job_id: str, db: AsyncSession = 
             if msg.value:
                 data = json.loads(msg.value)
                 await websocket.send_text(json.dumps(data))
+
                 if data.get("is_final"):
+                    # Update DB
                     try:
                         result = await db.execute(select(JobStatus).where(JobStatus.job_id == job_id))
                         job = result.scalar_one_or_none()
@@ -109,6 +111,8 @@ async def job_progress_ws(websocket: WebSocket, job_id: str, db: AsyncSession = 
                             await db.commit()
                     except Exception as e:
                         logger.error(f"Failed to update job status for {job_id}: {e}")
+
+                    # Update Redis
                     await redis_client.set(
                         f"job:{job_id}:status",
                         json.dumps(
@@ -121,11 +125,17 @@ async def job_progress_ws(websocket: WebSocket, job_id: str, db: AsyncSession = 
                         ),
                         ex=600,
                     )
+
+                    break
     except WebSocketDisconnect:
         pass
     except Exception as e:
         logger.error(f"WebSocket consumer error: {e}")
     finally:
+        if consumer:
+            if "msg" in locals() and msg:
+                await commit_kafka(consumer, msg)
+            await consumer.stop()
         await websocket.close()
 
 

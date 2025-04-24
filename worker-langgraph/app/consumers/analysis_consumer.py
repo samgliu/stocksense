@@ -1,7 +1,7 @@
 import asyncio
+import json
 import logging
 import time
-import json
 
 import sentry_sdk
 from app.handlers.handle_analysis_job import handle_analysis_job
@@ -14,7 +14,7 @@ from app.utils.message_queue import (
 logger = logging.getLogger("stocksense")
 
 
-async def run_analysis_consumer():
+async def run_analysis_consumer(shutdown_event):
     logger.info("🚀 Starting analysis consumer")
 
     consumer = await create_kafka_consumer("analysis-queue", "langgraph-consumer")
@@ -25,6 +25,8 @@ async def run_analysis_consumer():
         SENTRY_THROTTLE_SECONDS = 300
         try:
             async for msg in consumer:
+                if shutdown_event.is_set():
+                    break
                 try:
                     if msg.value:
                         data = json.loads(msg.value)
@@ -50,7 +52,7 @@ async def run_analysis_consumer():
             await consumer.stop()
     else:
         logger.warning("⚠️ Kafka disabled or failed to initialize — falling back to DB polling")
-        while True:
+        while not shutdown_event.is_set():
             data = await poll_analysis_job_from_db()
             if data:
                 await handle_analysis_job(data, None, None)
