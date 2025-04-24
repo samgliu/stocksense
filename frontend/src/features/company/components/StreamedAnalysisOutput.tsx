@@ -60,12 +60,18 @@ export const StreamedAnalysisOutput = ({ events }: StreamedAnalysisOutputProps) 
           return (
             <Section key="analyze" title="Streamed LLM Output">
               {output.result.prediction && (
-                <div className="p-3 text-sm text-gray-800">
-                  <ForecastChart prediction={output.result.prediction} />
+                <div className="px-2 pt-2 pb-1 text-sm text-gray-800">
+                  <ForecastChart
+                    prediction={output.result.prediction}
+                    className="bg-white p-2 sm:p-3 md:p-4"
+                  />
                 </div>
               )}
+              {output.result.prediction && output.result.insights && (
+                <hr className="my-2 border-gray-100" />
+              )}
               {output.result.insights && (
-                <div className="m-3 rounded-2xl border border-gray-200 bg-white p-2 text-sm text-gray-800 shadow-md sm:p-4 md:p-6">
+                <div className="mx-2 mb-2 rounded-xl bg-white p-2 text-sm text-gray-800 sm:p-3 md:p-4">
                   <Markdown result={output.result.insights} />
                 </div>
               )}
