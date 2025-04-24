@@ -1,7 +1,7 @@
 import asyncio
+import json
 import logging
 import time
-import json
 
 import sentry_sdk
 from app.handlers.handle_autotrade_job import handle_autotrade_job
@@ -10,7 +10,7 @@ from app.utils.message_queue import commit_kafka, create_kafka_consumer
 logger = logging.getLogger("stocksense")
 
 
-async def run_autotrade_consumer():
+async def run_autotrade_consumer(shutdown_event):
     logger.info("🚀 Starting AutoTrader consumer")
 
     consumer = await create_kafka_consumer("autotrade.jobs", "autotrade-consumer")
@@ -21,6 +21,8 @@ async def run_autotrade_consumer():
         SENTRY_THROTTLE_SECONDS = 300
         try:
             async for msg in consumer:
+                if shutdown_event.is_set():
+                    break
                 try:
                     if msg.value:
                         data = json.loads(msg.value)

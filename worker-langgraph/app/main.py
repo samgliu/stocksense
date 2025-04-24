@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import signal
 import threading
 
 import sentry_sdk
@@ -12,13 +13,11 @@ from app.consumers.autotrade_consumer import run_autotrade_consumer
 from app.utils.metrics_server import start_metrics_server
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
-
 logger = logging.getLogger("stocksense")
 
 # Prometheus metrics
 WORKER_TASKS_TOTAL = Counter("worker_tasks_total", "Total tasks processed by the worker")
 WORKER_ERRORS_TOTAL = Counter("worker_errors_total", "Total errors in worker tasks")
-
 
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
@@ -39,29 +38,39 @@ def log_task_exception(task):
         pass
 
 
-async def main():
-    logger.info("🚀 Worker starting up")
-
-    threading.Thread(target=start_metrics_server, daemon=True).start()
-
-    tasks = [
-        asyncio.create_task(run_analysis_consumer()),
-        asyncio.create_task(run_autotrade_consumer()),
-        asyncio.create_task(run_analysis_consumer_stream()),
-    ]
-    for t in tasks:
-        t.add_done_callback(log_task_exception)
-
-    # Keep main alive forever
-    await asyncio.Event().wait()
-
-
 def handle_uncaught(loop, context):
     msg = context.get("exception", context["message"])
     logger.error(f"Caught global exception: {msg}")
 
 
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
+async def main():
+    logger.info("🚀 Worker starting up")
+    shutdown_event = asyncio.Event()
+
+    threading.Thread(target=start_metrics_server, daemon=True).start()
+
+    loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_uncaught)
-    loop.run_until_complete(main())
+    loop.add_signal_handler(signal.SIGINT, shutdown_event.set)
+    loop.add_signal_handler(signal.SIGTERM, shutdown_event.set)
+
+    tasks = [
+        asyncio.create_task(run_analysis_consumer(shutdown_event)),
+        asyncio.create_task(run_autotrade_consumer(shutdown_event)),
+        asyncio.create_task(run_analysis_consumer_stream(shutdown_event)),
+    ]
+    for t in tasks:
+        t.add_done_callback(log_task_exception)
+
+    await shutdown_event.wait()
+    logger.info("📦 Shutting down consumers...")
+
+    for task in tasks:
+        task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+    logger.info("👋 Shutdown complete.")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

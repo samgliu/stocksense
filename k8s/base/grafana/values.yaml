@@ -136,6 +136,9 @@ alloy:
       otelcol.exporter.otlp "grafanacloud" {
         client {
           endpoint = "tempo-prod-26-prod-us-east-2.grafana.net:443"
+          tls {
+            insecure_skip_verify = false
+          }
           auth = otelcol.auth.basic.grafanacloud.handler
         }
       }

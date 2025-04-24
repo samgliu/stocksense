@@ -85,6 +85,7 @@ async def fetch_historical_prices(ticker: str, days: int = 90) -> List[Dict]:
         start=start_date.strftime("%Y-%m-%d"),
         end=end_date.strftime("%Y-%m-%d"),
         auto_adjust=True,
+        progress=False,
     )
 
     if data.empty:

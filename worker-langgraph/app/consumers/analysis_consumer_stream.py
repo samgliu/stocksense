@@ -2,12 +2,12 @@ import asyncio
 import logging
 
 from app.handlers.handle_analysis_stream_job import handle_analysis_stream_job
-from app.utils.message_queue import commit_kafka, create_kafka_consumer, poll_kafka_msg
+from app.utils.message_queue import commit_kafka, create_kafka_consumer
 
 logger = logging.getLogger("stocksense")
 
 
-async def run_analysis_consumer_stream():
+async def run_analysis_consumer_stream(shutdown_event):
     logger.info("🚀 Starting streaming analysis consumer")
     consumer = await create_kafka_consumer("analysis-stream-queue", "analysis-consumer-group")
 
@@ -19,9 +19,12 @@ async def run_analysis_consumer_stream():
 
     try:
         async for msg in consumer:
+            if shutdown_event.is_set():
+                break
             try:
                 if msg.value:
                     import json
+
                     data = json.loads(msg.value)
                     logger.info(f"📥 Stream job received: {data.get('job_id')}")
                     await handle_analysis_stream_job(data, msg, consumer)
@@ -29,6 +32,7 @@ async def run_analysis_consumer_stream():
                     await commit_kafka(consumer, msg)
             except Exception as e:
                 import traceback
+
                 logger.info(f"❌ Exception in streaming analysis consumer: {e}\n{traceback.format_exc()}")
                 await asyncio.sleep(1)
     finally:

@@ -1,8 +1,8 @@
 import json
+import logging
 import os
 
 from aiokafka import AIOKafkaProducer
-import logging
 
 logger = logging.getLogger("stocksense")
 
@@ -11,6 +11,7 @@ KAFKA_BROKER = os.getenv("KAFKA_BROKER", "")
 DB_POLL_INTERVAL_SECONDS = 5
 
 producer = None
+
 
 async def get_producer():
     global producer
@@ -33,3 +34,10 @@ async def send_kafka_msg(topic: str, event: dict, key: str = None):
         await prod.send_and_wait(topic, json.dumps(event).encode("utf-8"), key=key.encode("utf-8") if key else None)
     except Exception as e:
         logger.error(f"❌ Failed to send Kafka message: {e}")
+
+
+async def stop_producer():
+    global producer
+    if producer:
+        await producer.stop()
+        producer = None

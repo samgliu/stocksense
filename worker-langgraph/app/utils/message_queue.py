@@ -85,3 +85,4 @@ async def commit_kafka(consumer, msg):
     if consumer and msg:
         tp = TopicPartition(msg.topic, msg.partition)
         await consumer.commit({tp: msg.offset + 1})
+        await asyncio.sleep(0.5)
