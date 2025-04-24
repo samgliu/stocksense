@@ -100,12 +100,12 @@ async def handle_analysis_stream_job(data: dict, msg, consumer=None):
             company_info = payload.get("company", {})
             ticker = company_info.get("ticker")
             company_id = payload.get("company_id")
-            result_str = job.result
             try:
-                result = json.loads(result_str)
+                result = json.loads(job.result)
                 summary = result.get("result", {})
             except Exception:
                 return
+
             db.add(
                 StockEntry(
                     user_id=job.user_id,
