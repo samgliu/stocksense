@@ -3,7 +3,7 @@ import json
 import logging
 import os
 
-from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from aiokafka import AIOKafkaConsumer, TopicPartition
 from app.database import AsyncSessionLocal
 from sqlalchemy import text
 
@@ -83,4 +83,5 @@ async def poll_analysis_job_from_db():
 
 async def commit_kafka(consumer, msg):
     if consumer and msg:
-        await consumer.commit()
+        tp = TopicPartition(msg.topic, msg.partition)
+        await consumer.commit({tp: msg.offset + 1})
