@@ -1,6 +1,4 @@
-import { Navigate, isRouteErrorResponse, useRouteError } from 'react-router-dom';
-
-import React from 'react';
+import { Navigate, isRouteErrorResponse, useRouteError } from 'react-router';
 
 export const ErrorElement = () => {
   const error = useRouteError();

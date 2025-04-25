@@ -1,13 +1,13 @@
 import { clearAuth, setAuth } from './features/auth/store/slice';
 
-import { RouterProvider } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { auth } from './features/auth/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { routers } from './routes/routers';
-import { useAppDispatch } from './hooks/useAppDispatch';
 import { useEffect } from 'react';
+import { RouterProvider } from 'react-router';
+import { ToastContainer } from 'react-toastify';
 import { useLazyVerifyTokenQuery } from './features/auth/api';
+import { auth } from './features/auth/firebase';
+import { useAppDispatch } from './hooks/useAppDispatch';
+import { routers } from './routes/routers';
 
 export default function App() {
   const dispatch = useAppDispatch();

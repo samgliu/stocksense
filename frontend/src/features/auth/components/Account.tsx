@@ -2,11 +2,11 @@ import { clearAuth, setAuth } from '@/features/auth/store/slice';
 
 import { auth } from '@/features/auth/firebase';
 import { selectAuth } from '@/features/auth/store/selectors';
-import { signOut } from 'firebase/auth';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { signOut } from 'firebase/auth';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useVerifyTokenQuery } from '../api';
 
 export const Account = () => {

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { SemanticResult } from '../api';
 
 export const SemanticSearchResult = ({ result }: { result: SemanticResult }) => {
