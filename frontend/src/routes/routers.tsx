@@ -1,4 +1,4 @@
-import { Navigate, createHashRouter } from 'react-router-dom';
+import { Navigate, createHashRouter } from 'react-router';
 
 import { CompanyProfile } from '@/features/company/components/CompanyProfile';
 import { Layout } from '@/features/layout/Layout';

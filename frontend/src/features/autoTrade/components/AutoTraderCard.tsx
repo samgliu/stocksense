@@ -1,9 +1,9 @@
-import { AutoTradeSubscription } from '../api/types';
-import { Link } from 'react-router-dom';
-import { titleCase } from './helpers';
-import { useDeleteAutoTradeSubscriptionMutation } from '../api';
-import { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { useDeleteAutoTradeSubscriptionMutation } from '../api';
+import { AutoTradeSubscription } from '../api/types';
+import { titleCase } from './helpers';
 
 export const AutoTraderCard = ({
   subscription,

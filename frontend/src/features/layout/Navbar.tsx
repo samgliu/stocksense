@@ -1,7 +1,7 @@
 import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { getInitials } from './helpers';
 
 export const Navbar: React.FC = () => {

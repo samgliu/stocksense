@@ -1,6 +1,6 @@
-import { CompanyDetails } from './CompanyDetails';
+import { useParams } from 'react-router';
 import { useGetCompanyByIdQuery } from '../api';
-import { useParams } from 'react-router-dom';
+import { CompanyDetails } from './CompanyDetails';
 
 export const CompanyProfile = () => {
   const { id, ticker } = useParams<{ id: string; ticker: string }>();

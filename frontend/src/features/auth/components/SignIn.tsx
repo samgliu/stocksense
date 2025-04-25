@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
 import { auth, provider } from '@/features/auth/firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import React, { useState } from 'react';
 
+import { useLazyVerifyTokenQuery } from '@/features/auth/api';
 import { setAuth } from '@/features/auth/store/slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useLazyVerifyTokenQuery } from '@/features/auth/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export const SignIn: React.FC = () => {
   const [loading, setLoading] = useState(false);

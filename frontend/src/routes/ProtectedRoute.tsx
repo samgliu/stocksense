@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router';
 
 import { selectAuth } from '@/features/auth/store/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
