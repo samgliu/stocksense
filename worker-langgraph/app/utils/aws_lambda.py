@@ -15,10 +15,13 @@ def invoke_scraper_lambda(domain: str) -> str:
     )
     result = json.loads(response["Payload"].read().decode("utf-8"))
     body = result.get("body", {})
+
     try:
-        text = json.loads(body).get("text", "")
+        parsed = json.loads(body) if isinstance(body, str) else body
+        text = parsed.get("text", "")
     except Exception:
-        text = body
+        text = "" if not isinstance(body, str) else body
+
     return text
 
 
