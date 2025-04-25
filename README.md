@@ -39,7 +39,7 @@ You can try the live demo of **StockSense** here:
 - **Backend**: FastAPI (Python), deployed on Oracle Cloud Kubernetes
 - **Worker**: LangGraph consumer service on Kubernetes, utilizing Kafka, Redis, and LangGraph
 - **Serverless Functions**: AWS Lambda
-- **Sentiment Analysis via Lambda Cloud Functions**: Uses GCS & Llama-powered Cloudflare function
+- **Sentiment Analysis via Lambda Cloud Functions**: Uses Google CSE & Llama-powered Cloudflare function
 - **Vector Search**: SentenceTransformers + Qdrant Cloud
 - **Authentication**: Firebase (Google SSO, Anonymous)
 - **Database**: PostgreSQL (Supabase)
