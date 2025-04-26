@@ -86,7 +86,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
   terraform-infra:
-    name: Terraform Apply (Cloudflare + AWS)
+    name: Terraform Apply
     needs: prepare
     runs-on: ubuntu-latest
     defaults:
@@ -102,6 +102,11 @@ jobs:
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Terraform Credentials
+        run: |
+          mkdir -p ~/.terraform.d
+          echo "{\"credentials\": {\"app.terraform.io\": {\"token\": \"${TF_API_TOKEN}\"}}}" > ~/.terraform.d/credentials.tfrc.json
 
       - name: Terraform Init
         run: terraform init
