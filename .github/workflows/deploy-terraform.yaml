@@ -123,6 +123,9 @@ jobs:
           key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
           restore-keys: terraform-${{ runner.os }}-
 
+      - name: Prepare Terraform Plugin Cache Directory
+        run: mkdir -p ~/.terraform.d/plugin-cache
+
       - name: Terraform Init
         run: terraform init -plugin-dir=~/.terraform.d/plugin-cache
 
