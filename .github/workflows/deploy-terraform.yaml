@@ -63,8 +63,6 @@ jobs:
     name: Prepare Lambda Artifacts
     needs: build
     runs-on: ubuntu-latest
-    env:
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
     steps:
       - name: Checkout
@@ -81,9 +79,6 @@ jobs:
         with:
           name: gcs-zip
           path: terraform/lambda/gcs/dist
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
 
   terraform-infra:
     name: Terraform Apply
@@ -107,6 +102,18 @@ jobs:
         run: |
           mkdir -p ~/.terraform.d
           echo "{\"credentials\": {\"app.terraform.io\": {\"token\": \"${TF_API_TOKEN}\"}}}" > ~/.terraform.d/credentials.tfrc.json
+
+      - name: Download scraper artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: scraper-zip
+          path: terraform/lambda/scraper/dist
+
+      - name: Download gcs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gcs-zip
+          path: terraform/lambda/gcs/dist
 
       - name: Terraform Init
         run: terraform init
