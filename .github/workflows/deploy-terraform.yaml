@@ -1,4 +1,4 @@
-name: Deploy Lambda Functions
+name: Deploy Terraform
 
 on:
   workflow_dispatch:
@@ -8,6 +8,8 @@ on:
     paths:
       - 'terraform/lambda/**'
       - 'terraform/*.tf'
+      - 'terraform/**'
+      - '.github/workflows/deploy-terraform.yaml'
 
 jobs:
   build:
@@ -83,24 +85,30 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Configure Terraform credentials
-        run: |
-          mkdir -p ~/.terraform.d
-          echo '{"credentials": {"app.terraform.io": {"token": "${{ secrets.TF_API_TOKEN }}"}}}' > ~/.terraform.d/credentials.tfrc.json
 
-      - name: Set Terraform Variables
-        working-directory: terraform
-        run: |
-          echo 'google_api_key = "${{ secrets.GOOGLE_API_KEY }}"' > lambda.auto.tfvars
-          echo 'google_cx_id = "${{ secrets.GOOGLE_CX_ID }}"' >> lambda.auto.tfvars
+  terraform-infra:
+    name: Terraform Apply (Cloudflare + AWS)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    env:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        working-directory: terraform
         run: terraform init
 
       - name: Terraform Plan
-        working-directory: terraform
         run: terraform plan
 
       - name: Terraform Apply
-        working-directory: terraform
+        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
