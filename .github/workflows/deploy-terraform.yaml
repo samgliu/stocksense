@@ -59,7 +59,8 @@ jobs:
           name: ${{ matrix.function.name }}-zip
           path: terraform/lambda/${{ matrix.function.name }}/dist/index.zip
 
-  deploy:
+  prepare:
+    name: Prepare Lambda Artifacts
     needs: build
     runs-on: ubuntu-latest
     env:
@@ -86,6 +87,7 @@ jobs:
 
   terraform-infra:
     name: Terraform Apply (Cloudflare + AWS)
+    needs: prepare
     runs-on: ubuntu-latest
     defaults:
       run:
