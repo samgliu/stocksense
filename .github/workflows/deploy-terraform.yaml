@@ -84,8 +84,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Configure Terraform credentials
-
   terraform-infra:
     name: Terraform Apply (Cloudflare + AWS)
     runs-on: ubuntu-latest
