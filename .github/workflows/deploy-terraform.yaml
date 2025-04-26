@@ -121,8 +121,8 @@ jobs:
           path: |
             .terraform
             .terraform.lock.hcl
-        key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
-        restore-keys: terraform-${{ runner.os }}-
+          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
+          restore-keys: terraform-${{ runner.os }}-
 
       - name: Terraform Init
         run: terraform init -plugin-dir=~/.terraform.d/plugin-cache
