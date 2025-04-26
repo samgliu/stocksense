@@ -115,16 +115,17 @@ jobs:
           name: gcs-zip
           path: terraform/lambda/gcs/dist
 
-      - name: Cache Terraform providers and modules
+      - name: Cache Terraform working directory
         uses: actions/cache@v4
         with:
           path: |
-            ~/.terraform.d/plugin-cache
-          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
-          restore-keys: terraform-${{ runner.os }}-
+            .terraform
+            .terraform.lock.hcl
+        key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
+        restore-keys: terraform-${{ runner.os }}-
 
-      - name: Prepare Terraform Plugin Cache Directory
-        run: mkdir -p ~/.terraform.d/plugin-cache
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Init
         run: terraform init -plugin-dir=~/.terraform.d/plugin-cache
