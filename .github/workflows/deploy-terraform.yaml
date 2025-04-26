@@ -125,9 +125,6 @@ jobs:
         restore-keys: terraform-${{ runner.os }}-
 
       - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Init
         run: terraform init -plugin-dir=~/.terraform.d/plugin-cache
 
       - name: Terraform Plan
