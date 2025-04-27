@@ -23,5 +23,11 @@ resources:
     cpu: 500m
     memory: 1.5Gi
 
+extraEnvVars:
+  - name: KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS
+    value: "5000"
+  - name: KAFKA_CONTROLLER_SESSION_TIMEOUT_MS
+    value: "15000"
+
 service:
   type: LoadBalancer
