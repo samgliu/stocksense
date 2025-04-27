@@ -2,7 +2,7 @@ kraft:
   enabled: true
   clusterId: 'VcZLyB1mTSu2QaOJrcSPtA=='
 
-replicaCount: 1
+replicaCount: 3
 
 listeners:
   client:
@@ -12,15 +12,22 @@ auth:
   enabled: false
 
 persistence:
-  enabled: false
+  enabled: true
+  size: 5Gi
 
 resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
   requests:
     cpu: 250m
-    memory: 256Mi
+    memory: 1Gi
+  limits:
+    cpu: 500m
+    memory: 1.5Gi
+
+extraEnvVars:
+  - name: KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS
+    value: "5000"
+  - name: KAFKA_CONTROLLER_SESSION_TIMEOUT_MS
+    value: "15000"
 
 service:
   type: LoadBalancer

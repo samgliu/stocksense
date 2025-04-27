@@ -1,7 +1,7 @@
 import asyncio
-import json
 import logging
 import os
+import time
 
 from aiokafka import AIOKafkaConsumer, TopicPartition
 from aiokafka.errors import KafkaConnectionError, NodeNotReadyError
@@ -22,33 +22,36 @@ async def create_kafka_consumer(topic: str, group_id: str, max_retries: int = 5)
         group_id=group_id,
         auto_offset_reset="latest",
         enable_auto_commit=False,
+        retry_backoff_ms=1000,
+        request_timeout_ms=60000,
+        session_timeout_ms=45000,
     )
 
     retries = 0
-    while retries <= max_retries:
+    last_error_time = 0
+    error_cooldown_seconds = 300  # 5 minutes
+
+    while max_retries is None or retries <= max_retries:
         try:
             await consumer.start()
-            print(f"Kafka consumer for topic '{topic}' started successfully.")
+            logger.info(f"Kafka consumer for topic '{topic}' started successfully.")
             return consumer
         except (KafkaConnectionError, NodeNotReadyError) as e:
             retries += 1
-            if retries > max_retries:
-                print(f"Failed to start Kafka consumer after {max_retries} retries.")
+            now = time.time()
+
+            if now - last_error_time > error_cooldown_seconds:
+                last_error_time = now
+                logger.error(f"Kafka connection failed (attempt {retries}/{max_retries}): {e}")
+            else:
+                logger.debug(f"Suppressed Kafka connection error (attempt {retries}/{max_retries}): {e}")
+
+            if max_retries is not None and retries > max_retries:
+                logger.error(f"Failed to start Kafka consumer after {max_retries} retries.")
                 raise
-            wait_time = 2**retries  # exponential backoff: 2s, 4s, 8s, 16s, etc.
-            print(f"Kafka connection failed (attempt {retries}/{max_retries}): {e}. Retrying in {wait_time}s...")
+
+            wait_time = 2**retries  # 2s, 4s, 8s, etc.
             await asyncio.sleep(wait_time)
-
-
-async def poll_kafka_msg(consumer):
-    try:
-        async for msg in consumer:
-            if msg.value:
-                data = json.loads(msg.value)
-                return data, msg
-    except Exception as e:
-        logger.error(f"Kafka message poll error: {e}")
-    return None, None
 
 
 async def commit_kafka(consumer, msg):
