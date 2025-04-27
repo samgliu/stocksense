@@ -22,14 +22,15 @@ async def create_kafka_consumer(topic: str, group_id: str, max_retries: int = 5)
         group_id=group_id,
         auto_offset_reset="latest",
         enable_auto_commit=False,
-        retry_backoff_ms=1000,
+        retry_backoff_ms=3000,
+        metadata_max_age_ms=60000,
         request_timeout_ms=60000,
         session_timeout_ms=45000,
     )
 
     retries = 0
     last_error_time = 0
-    error_cooldown_seconds = 300  # 5 minutes
+    error_cooldown_seconds = 300
 
     while max_retries is None or retries <= max_retries:
         try:
@@ -48,9 +49,13 @@ async def create_kafka_consumer(topic: str, group_id: str, max_retries: int = 5)
 
             if max_retries is not None and retries > max_retries:
                 logger.error(f"Failed to start Kafka consumer after {max_retries} retries.")
+                try:
+                    await consumer.stop()
+                except Exception as close_err:
+                    logger.warning(f"Error stopping Kafka consumer: {close_err}")
                 raise
 
-            wait_time = 2**retries  # 2s, 4s, 8s, etc.
+            wait_time = min(30, 2**retries)
             await asyncio.sleep(wait_time)
 
 
