@@ -5,6 +5,7 @@ import signal
 import threading
 
 import sentry_sdk
+from aiokafka.errors import KafkaConnectionError, NodeNotReadyError
 from prometheus_client import Counter
 
 from app.consumers.analysis_consumer import run_analysis_consumer
@@ -19,12 +20,22 @@ logger = logging.getLogger("stocksense")
 WORKER_TASKS_TOTAL = Counter("worker_tasks_total", "Total tasks processed by the worker")
 WORKER_ERRORS_TOTAL = Counter("worker_errors_total", "Total errors in worker tasks")
 
+
+def before_send(event, hint):
+    if "exc_info" in hint:
+        exc_type, exc_value, _ = hint["exc_info"]
+        if isinstance(exc_value, (KafkaConnectionError, NodeNotReadyError)):
+            return None
+    return event
+
+
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     traces_sample_rate=0,
     sample_rate=0.1,
     environment=os.getenv("ENV", "production"),
     send_default_pii=True,
+    before_send=before_send,
 )
 
 

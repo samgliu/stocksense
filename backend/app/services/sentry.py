@@ -1,6 +1,7 @@
 import os
 
 import sentry_sdk
+from aiokafka.errors import KafkaConnectionError, NodeNotReadyError
 from app.api.v1.routers.metrics import api_exceptions_total
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -10,12 +11,21 @@ def setup_sentry(app: FastAPI):
     """
     Initialize Sentry and register global exception handlers for the FastAPI app.
     """
+
+    def before_send(event, hint):
+        if "exc_info" in hint:
+            exc_type, exc_value, _ = hint["exc_info"]
+            if isinstance(exc_value, (KafkaConnectionError, NodeNotReadyError)):
+                return None
+        return event
+
     sentry_sdk.init(
         dsn=os.getenv("SENTRY_DSN"),
         traces_sample_rate=0,
         sample_rate=0.1,
         environment=os.getenv("ENV", "production"),
         send_default_pii=True,
+        before_send=before_send,
     )
 
     @app.exception_handler(Exception)
