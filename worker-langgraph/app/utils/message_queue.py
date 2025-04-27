@@ -4,28 +4,43 @@ import logging
 import os
 
 from aiokafka import AIOKafkaConsumer, TopicPartition
+from aiokafka.errors import KafkaConnectionError, NodeNotReadyError
 from app.database import AsyncSessionLocal
 from sqlalchemy import text
 
 logger = logging.getLogger("stocksense")
 
-USE_KAFKA = os.getenv("KAFKA_ENABLED", "").lower() == "true"
+KAFKA_ENABLED = os.getenv("KAFKA_ENABLED", "").lower() == "true"
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "")
 DB_POLL_INTERVAL_SECONDS = 5
 
 
-async def create_kafka_consumer(topic: str, group_id: str):
-    if not (USE_KAFKA and KAFKA_BROKER):
+async def create_kafka_consumer(topic: str, group_id: str, max_retries: int = 5):
+    if not (KAFKA_ENABLED and KAFKA_BROKER):
         return None
+
     consumer = AIOKafkaConsumer(
         topic,
         bootstrap_servers=KAFKA_BROKER,
         group_id=group_id,
-        auto_offset_reset="earliest",
+        auto_offset_reset="latest",
         enable_auto_commit=False,
     )
-    await consumer.start()
-    return consumer
+
+    retries = 0
+    while retries <= max_retries:
+        try:
+            await consumer.start()
+            print(f"Kafka consumer for topic '{topic}' started successfully.")
+            return consumer
+        except (KafkaConnectionError, NodeNotReadyError) as e:
+            retries += 1
+            if retries > max_retries:
+                print(f"Failed to start Kafka consumer after {max_retries} retries.")
+                raise
+            wait_time = 2**retries  # exponential backoff: 2s, 4s, 8s, 16s, etc.
+            print(f"Kafka connection failed (attempt {retries}/{max_retries}): {e}. Retrying in {wait_time}s...")
+            await asyncio.sleep(wait_time)
 
 
 async def poll_kafka_msg(consumer):
