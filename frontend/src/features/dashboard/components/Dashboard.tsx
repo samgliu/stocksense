@@ -39,8 +39,22 @@ const SnapshotLineChart = () => {
         <ResponsiveContainer width="100%" height={320}>
           <LineChart data={snapshotData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis tickFormatter={(v) => formatCurrencyCompact(v)} />
+            <XAxis
+              dataKey="date"
+              tick={{
+                fill: '#4B5563',
+                fontSize: 11,
+                fontWeight: 500,
+              }}
+            />
+            <YAxis
+              tickFormatter={(v) => formatCurrencyCompact(v)}
+              tick={{
+                fill: '#4B5563',
+                fontSize: 11,
+                fontWeight: 500,
+              }}
+            />
             <Tooltip formatter={(v: number) => formatCurrencyCompact(v)} />
             <Legend />
             <Line
@@ -144,8 +158,22 @@ export const Dashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={buySellDaily}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis tickFormatter={(v) => formatCurrencyCompact(v)} />
+              <XAxis
+                dataKey="date"
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <YAxis
+                tickFormatter={(v) => formatCurrencyCompact(v)}
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
               <Tooltip formatter={(v: number) => formatCurrencyCompact(v)} />
               <Legend />
               <Line
@@ -179,8 +207,21 @@ export const Dashboard = () => {
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis />
+              <XAxis
+                dataKey="date"
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <YAxis
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
               <Tooltip />
               <Legend />
               <Line
