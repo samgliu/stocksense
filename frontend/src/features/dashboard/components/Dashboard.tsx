@@ -25,9 +25,9 @@ import {
   useGetUsageCountQuery,
 } from '../api';
 
+import { CustomTooltip } from './CustomTooltip';
 import { Spinner } from '@/features/shared/Spinner';
 import { formatCurrencyCompact } from '@/utils/formatters';
-import { CustomTooltip } from './CustomTooltip';
 
 const SnapshotLineChart = () => {
   const { data: snapshotData, isLoading } = useGetSnapshotsDailyQuery({});
@@ -213,10 +213,33 @@ export const Dashboard = () => {
         ) : (
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={topCompanies.slice(0, 10)}>
-              <XAxis dataKey="company_name" angle={-25} textAnchor="end" height={60} />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <XAxis
+                dataKey="ticker"
+                angle={-35}
+                textAnchor="end"
+                height={60}
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <YAxis
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+              <Bar
+                dataKey="count"
+                fill="#3b82f6"
+                radius={[4, 4, 0, 0]}
+                activeBar={{
+                  fill: 'rgba(59, 130, 246, 0.7)',
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -229,10 +252,33 @@ export const Dashboard = () => {
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={newsSummary.slice(0, 5)}>
-              <XAxis dataKey="company_name" angle={-25} textAnchor="end" height={60} />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+              <XAxis
+                dataKey="date"
+                angle={-35}
+                textAnchor="end"
+                height={60}
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <YAxis
+                tick={{
+                  fill: '#4B5563',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+              <Bar
+                dataKey="count"
+                fill="#60a5fa"
+                radius={[4, 4, 0, 0]}
+                activeBar={{
+                  fill: 'rgba(59, 130, 246, 0.7)',
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
