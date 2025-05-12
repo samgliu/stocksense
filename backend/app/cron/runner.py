@@ -25,23 +25,38 @@ logger = logging.getLogger("stocksense")
 
 async def run_snapshot_cron(db):
     logger.info("📸 Running Account Snapshot Cron")
-    accounts = await db.execute(select(MockAccount))
-    accounts = accounts.scalars().all()
+    accounts_result = await db.execute(select(MockAccount))
+    accounts = accounts_result.scalars().all()
+
+    skipped_accounts = 0
+    saved_snapshots = 0
+
     for account in accounts:
-        positions = await db.execute(select(MockPosition).where(MockPosition.account_id == account.id))
-        positions = positions.scalars().all()
+        logger.info(f"📊 Processing snapshot for account {account.id}")
+        positions_result = await db.execute(select(MockPosition).where(MockPosition.account_id == account.id))
+        positions = positions_result.scalars().all()
+
         portfolio_value = 0.0
+        snapshot_failed = False
+
         for pos in positions:
             try:
                 price = await fetch_current_price(pos.ticker)
+                portfolio_value += price * (pos.shares or 0)
             except Exception as e:
-                logger.info(f"⚠️ Could not fetch price for {pos.ticker}: {e}")
-                price = 0.0
-            portfolio_value += price * (pos.shares or 0)
+                logger.error(f"⚠️ Skipping account {account.id} due to price fetch failure for {pos.ticker}: {e}")
+                snapshot_failed = True
+                break
+
+        if snapshot_failed:
+            skipped_accounts += 1
+            continue
+
         balance = account.balance or 0.0
         total_value = portfolio_value + balance
-        initial_balance = 1000000.0
+        initial_balance = 1_000_000.0
         return_pct = (total_value / initial_balance) - 1
+
         snapshot = MockAccountSnapshot(
             account_id=account.id,
             user_id=account.user_id,
@@ -51,9 +66,14 @@ async def run_snapshot_cron(db):
             total_value=total_value,
             return_pct=return_pct,
         )
+
         db.add(snapshot)
+        saved_snapshots += 1
+
     await db.commit()
-    logger.info("✅ Snapshots taken for all accounts.")
+    logger.info(
+        f"✅ Snapshots completed: {saved_snapshots} accounts saved, {skipped_accounts} accounts skipped due to price fetch errors."
+    )
 
 
 def is_market_open(now_eastern):
