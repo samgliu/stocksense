@@ -9,6 +9,7 @@ import { ConfirmationDialog } from '@/features/shared/ConfirmationDialog';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { toast } from 'react-toastify';
 import { AutoTraderCard } from './AutoTraderCard';
+import { formatValue } from './helpers';
 
 export const AutoTraderDashboard = () => {
   const { id: user_id, role } = useAppSelector((state) => state.auth);
@@ -20,10 +21,10 @@ export const AutoTraderDashboard = () => {
   );
 
   const subscriptions = data?.subscriptions ?? [];
-  const balance = data?.balance ?? 0;
-  const portfolioValue = data?.portfolio_value ?? 0;
-  const totalValue = data?.total_value ?? 0;
-  const totalReturn = data?.total_return ?? 0;
+  const balance = formatValue(data?.balance);
+  const portfolioValue = formatValue(data?.portfolio_value);
+  const totalValue = formatValue(data?.total_value);
+  const totalReturn = formatValue(data?.total_return);
   const [confirmAction, setConfirmAction] = useState<null | (() => void)>(null);
   const [modalContent, setModalContent] = useState({ title: '', description: '' });
   const [forceRunAutoTradeJob, { isLoading: isRunningRun }] = useForceRunAutoTradeJobMutation();
@@ -34,8 +35,6 @@ export const AutoTraderDashboard = () => {
       refetch();
     }
   }, [user_id, refetch]);
-
-  const format = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
   const activeSubs = subscriptions.filter((s) => s.active);
   const inactiveSubs = subscriptions.filter((s) => !s.active);
@@ -111,28 +110,28 @@ export const AutoTraderDashboard = () => {
           <div className="grid grid-cols-2 gap-4 text-[15px] sm:grid-cols-4">
             <div>
               <p className="text-xs text-gray-400">Cash</p>
-              <p className="mt-1 font-semibold text-gray-900">{format(balance)}</p>
+              <p className="mt-1 font-semibold text-gray-900">{balance}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Invested</p>
-              <p className="mt-1 font-semibold text-gray-900">{format(portfolioValue)}</p>
+              <p className="mt-1 font-semibold text-gray-900">{portfolioValue}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Total Value</p>
-              <p className="mt-1 font-semibold text-gray-900">{format(totalValue)}</p>
+              <p className="mt-1 font-semibold text-gray-900">{totalValue}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Unrealized Gain</p>
               <p
                 className={`mt-1 font-semibold ${
-                  totalReturn > 0
+                  data?.total_return || 0 > 0
                     ? 'text-green-600'
-                    : totalReturn < 0
+                    : data?.total_return || 0 < 0
                       ? 'text-red-600'
                       : 'text-gray-800'
                 }`}
               >
-                {format(totalReturn)}
+                {totalReturn}
               </p>
             </div>
           </div>

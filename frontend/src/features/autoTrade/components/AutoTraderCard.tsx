@@ -1,9 +1,10 @@
+import { holdingSummaryFormatter, titleCase } from './helpers';
+
 import { useToast } from '@/hooks/useToast';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useDeleteAutoTradeSubscriptionMutation } from '../api';
 import { AutoTradeSubscription } from '../api/types';
-import { titleCase } from './helpers';
 
 export const AutoTraderCard = ({
   subscription,
@@ -27,11 +28,11 @@ export const AutoTraderCard = ({
     }
   };
 
-  const summary = subscription.holding_summary;
+  const summary = holdingSummaryFormatter(subscription.holding_summary);
   const gainColor =
-    (summary?.unrealized_gain ?? 0) > 0
+    (subscription.holding_summary?.unrealized_gain ?? 0) > 0
       ? 'text-green-600'
-      : (summary?.unrealized_gain ?? 0) < 0
+      : (subscription.holding_summary?.unrealized_gain ?? 0) < 0
         ? 'text-red-600'
         : 'text-gray-700';
 
@@ -98,20 +99,20 @@ export const AutoTraderCard = ({
               </div>
               <div>
                 <p className="text-[11px] text-gray-400">Avg Cost</p>
-                <p className="text-gray-800">${summary.average_cost.toFixed(2)}</p>
+                <p className="text-gray-800">{summary.average_cost}</p>
               </div>
               <div>
                 <p className="text-[11px] text-gray-400">Current Price</p>
-                <p className="text-gray-800">${summary.current_price.toFixed(2)}</p>
+                <p className="text-gray-800">{summary.current_price}</p>
               </div>
               <div>
                 <p className="text-[11px] text-gray-400">Market Value</p>
-                <p className="text-gray-800">${summary.market_value.toFixed(2)}</p>
+                <p className="text-gray-800">{summary.market_value}</p>
               </div>
               <div className="col-span-2">
                 <p className="text-[11px] text-gray-400">Unrealized Gain</p>
                 <p className={`font-medium ${gainColor}`}>
-                  ${summary.unrealized_gain.toFixed(2)} ({summary.gain_pct.toFixed(2)}%)
+                  {summary.unrealized_gain} {summary.gain_pct}
                 </p>
               </div>
             </div>

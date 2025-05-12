@@ -7,12 +7,29 @@ export interface AutoTradeTransaction {
 }
 
 export interface HoldingSummary {
-  shares: number;
-  average_cost: number;
-  current_price: number;
-  market_value: number;
-  unrealized_gain: number;
-  gain_pct: number;
+  shares: number | null;
+  average_cost: number | null;
+  current_price: number | null;
+  market_value: number | null;
+  unrealized_gain: number | null;
+  gain_pct: number | null;
+}
+
+export interface HoldingSummaryDisplay {
+  shares: string;
+  average_cost: string;
+  current_price: string;
+  market_value: string;
+  unrealized_gain: string;
+  gain_pct: string;
+}
+
+export interface UserAutoTradeSubscriptions {
+  balance: number | null;
+  portfolio_value: number | null;
+  total_value: number | null;
+  total_return: number | null;
+  subscriptions: AutoTradeSubscription[];
 }
 
 export interface AutoTradeSubscription {
