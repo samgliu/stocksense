@@ -128,6 +128,7 @@ async def get_user_subscriptions(
     current_user: User = Depends(get_current_user),
 ):
     user_id = str(current_user.id)
+
     result = await db.execute(
         select(AutoTradeSubscription, Company.name, Company.ticker)
         .join(Company, AutoTradeSubscription.company_id == Company.id)
@@ -149,7 +150,13 @@ async def get_user_subscriptions(
             current_price_float = await fetch_current_price(ticker)
         except Exception as e:
             logger.warning(f"⚠️ Failed to fetch price for {ticker}: {e}")
-            current_price_float = 0
+            current_price_float = None
+
+        shares = 0
+        avg_cost = 0
+        market_value = None
+        unrealized_gain = None
+        gain_pct = None
 
         tx_result = await db.execute(
             select(MockTransaction)
@@ -172,18 +179,14 @@ async def get_user_subscriptions(
         if position:
             shares = position.shares
             avg_cost = float(position.average_cost)
+
+        if position and current_price_float is not None:
             market_value = shares * current_price_float
             unrealized_gain = (current_price_float - avg_cost) * shares
             gain_pct = (unrealized_gain / (avg_cost * shares)) * 100 if avg_cost > 0 else 0
 
             total_invested += market_value
             total_unrealized_gain += unrealized_gain
-        else:
-            shares = 0
-            avg_cost = 0
-            market_value = 0
-            unrealized_gain = 0
-            gain_pct = 0
 
         subscriptions.append(
             {
@@ -192,20 +195,20 @@ async def get_user_subscriptions(
                 "transactions": transactions,
                 "holding_summary": {
                     "shares": shares,
-                    "average_cost": round(avg_cost, 2),
-                    "current_price": round(current_price_float, 2),
-                    "market_value": round(market_value, 2),
-                    "unrealized_gain": round(unrealized_gain, 2),
-                    "gain_pct": round(gain_pct, 2),
+                    "average_cost": round(avg_cost, 2) if avg_cost else None,
+                    "current_price": round(current_price_float, 2) if current_price_float is not None else None,
+                    "market_value": round(market_value, 2) if market_value is not None else None,
+                    "unrealized_gain": round(unrealized_gain, 2) if unrealized_gain is not None else None,
+                    "gain_pct": round(gain_pct, 2) if gain_pct is not None else None,
                 },
             }
         )
 
     return {
         "balance": round(balance, 2),
-        "portfolio_value": round(total_invested, 2),
-        "total_value": round(balance + total_invested, 2),
-        "total_return": round(total_unrealized_gain, 2),
+        "portfolio_value": round(total_invested, 2) if total_invested else None,
+        "total_value": round(balance + total_invested, 2) if total_invested else round(balance, 2),
+        "total_return": round(total_unrealized_gain, 2) if total_unrealized_gain else None,
         "subscriptions": subscriptions,
     }
 

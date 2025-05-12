@@ -1,7 +1,7 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQueryWithErrorHandling } from '@/features/helpers';
+import { AutoTradeSubscription, UserAutoTradeSubscriptions } from './types';
 
-import { AutoTradeSubscription } from './types';
+import { baseQueryWithErrorHandling } from '@/features/helpers';
+import { createApi } from '@reduxjs/toolkit/query/react';
 
 export const autoTradeApi = createApi({
   reducerPath: 'autoTradeApi',
@@ -33,16 +33,7 @@ export const autoTradeApi = createApi({
         method: 'DELETE',
       }),
     }),
-    getUserAutoTradeSubscriptions: builder.query<
-      {
-        balance: number;
-        portfolio_value: number;
-        total_value: number;
-        total_return: number;
-        subscriptions: AutoTradeSubscription[];
-      },
-      void
-    >({
+    getUserAutoTradeSubscriptions: builder.query<UserAutoTradeSubscriptions, void>({
       query: () => `/auto-trade/subscribe`,
     }),
     forceRunAutoTradeJob: builder.mutation<{ detail: string }, void>({
