@@ -72,7 +72,8 @@ async def run_snapshot_cron(db):
 
     await db.commit()
     logger.info(
-        f"✅ Snapshots completed: {saved_snapshots} accounts saved, {skipped_accounts} accounts skipped due to price fetch errors."
+        f"✅ Snapshots completed: {saved_snapshots} accounts saved, "
+        f"{skipped_accounts} accounts skipped due to price fetch errors."
     )
 
 
