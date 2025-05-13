@@ -15,7 +15,7 @@ resource "cloudflare_ruleset" "set_csp_header" {
         headers = {
           "Content-Security-Policy" = {
             operation = "set"
-            value     = "default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://browser.sentry-cdn.com; connect-src 'self' https://*.googleapis.com https://accounts.google.com https://api.samliu.site wss://api.samliu.site https://sentry.io https://*.sentry.io; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+            value     = "default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://browser.sentry-cdn.com; connect-src 'self' https://*.googleapis.com https://accounts.google.com https://api.samliu.site wss://api.samliu.site https://sentry.io https://*.sentry.io; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src https://accounts.google.com https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self';"
           }
         }
       }
