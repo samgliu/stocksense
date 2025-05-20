@@ -2,6 +2,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import httpx
 from app.kafka.producer import send_autotrade_job
 from app.models.auto_trade_subscription import AutoTradeSubscription
 from app.models.mock_account import MockAccount
@@ -18,6 +19,8 @@ FREQUENCY_INTERVALS = {
     "daily": timedelta(days=1),
     "weekly": timedelta(weeks=1),
 }
+QDRANT_URL = os.environ["QDRANT_CLOUD_URL"]
+QDRANT_API_KEY = os.environ["QDRANT_API_KEY"]
 
 
 logger = logging.getLogger("stocksense")
@@ -140,3 +143,18 @@ async def run_autotrade_cron(db: AsyncSession, force: bool = False):
 
     await db.commit()
     logger.info("✅ AutoTrader cron completed")
+
+
+async def run_trigger_qdrant_job():
+    vector = [0.0] * 384
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                f"{QDRANT_URL}/collections/sp500/points/search",
+                headers={"api-key": QDRANT_API_KEY, "Content-Type": "application/json"},
+                json={"vector": vector, "top": 1, "with_payload": False},
+            )
+            response.raise_for_status()
+            logger.info("✅ Qdrant warmup ping succeeded")
+    except Exception as e:
+        logger.warning(f"⚠️ Qdrant warmup ping failed: {e}")
