@@ -25,9 +25,9 @@ import {
   useGetUsageCountQuery,
 } from '../api';
 
-import { CustomTooltip } from './CustomTooltip';
 import { Spinner } from '@/features/shared/Spinner';
 import { formatCurrencyCompact } from '@/utils/formatters';
+import { CustomTooltip } from './CustomTooltip';
 
 const SnapshotLineChart = () => {
   const { data: snapshotData, isLoading } = useGetSnapshotsDailyQuery({});
@@ -151,7 +151,10 @@ export const Dashboard = () => {
       <SnapshotLineChart />
 
       {/* SmartTrade Buy/Sell */}
-      <SectionCard title="📊 SmartTrade Daily Buy vs Sell">
+      <SectionCard
+        title="📊 SmartTrade Daily Buy vs Sell"
+        isEmpty={!isBuySellDailyLoading && !buySellDaily.length}
+      >
         {isBuySellDailyLoading ? (
           <Spinner />
         ) : (
@@ -364,9 +367,20 @@ const KPI = ({ title, value, isLoading }: { title: string; value: number; isLoad
   </div>
 );
 
-const SectionCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-    <h3 className="mb-4 text-xl font-semibold text-gray-800">{title}</h3>
-    {children}
-  </div>
-);
+const SectionCard = ({
+  title,
+  isEmpty = false,
+  children,
+}: {
+  title: string;
+  isEmpty?: boolean;
+  children: React.ReactNode;
+}) => {
+  if (isEmpty) return <></>;
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h3 className="mb-4 text-xl font-semibold text-gray-800">{title}</h3>
+      {children}
+    </div>
+  );
+};
