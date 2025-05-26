@@ -1,17 +1,17 @@
-from app.models.company import Company
-from app.models.mock_transaction import MockTransaction
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select
 from datetime import datetime, timedelta, timezone
 
 from app.database import get_async_db
-from app.models.stock_entry import StockEntry
-from app.models.user import User
-from app.models.usage_log import UsageLog
-from app.models.mock_account_snapshot import MockAccountSnapshot
-from app.models.company_news import CompanyNews
 from app.dependencies.user_validation import get_current_user
+from app.models.company import Company
+from app.models.company_news import CompanyNews
+from app.models.mock_account_snapshot import MockAccountSnapshot
+from app.models.mock_transaction import MockTransaction
+from app.models.stock_entry import StockEntry
+from app.models.usage_log import UsageLog
+from app.models.user import User
+from fastapi import APIRouter, Depends
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
@@ -44,9 +44,7 @@ async def get_snapshots_daily(
 
 @router.get("/daily-analysis")
 async def get_daily_analysis(db: AsyncSession = Depends(get_async_db)):
-    today = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     start_date = today - timedelta(days=30)
 
     stmt = (
@@ -68,9 +66,7 @@ async def get_daily_analysis(db: AsyncSession = Depends(get_async_db)):
 @router.get("/monthly-summary")
 async def get_monthly_summary(db: AsyncSession = Depends(get_async_db)):
     today = datetime.now(timezone.utc)
-    start_of_this_month = today.replace(
-        day=1, hour=0, minute=0, second=0, microsecond=0
-    )
+    start_of_this_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     start_of_last_month = (start_of_this_month - timedelta(days=1)).replace(day=1)
 
     stmt = select(
@@ -158,15 +154,13 @@ async def get_top_sectors(db: AsyncSession = Depends(get_async_db)):
 @router.get("/buy-sell-daily")
 async def get_buy_sell_daily(db: AsyncSession = Depends(get_async_db)):
     today = datetime.now(timezone.utc)
-    start_date = today - timedelta(days=30)
+    start_date = today - timedelta(days=90)
 
     stmt = (
         select(
             func.date_trunc("day", MockTransaction.timestamp).label("date"),
             MockTransaction.action,
-            func.sum(MockTransaction.amount * MockTransaction.price).label(
-                "total_spent"
-            ),
+            func.sum(MockTransaction.amount * MockTransaction.price).label("total_spent"),
         )
         .where(MockTransaction.timestamp >= start_date)
         .group_by("date", MockTransaction.action)
