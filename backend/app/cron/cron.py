@@ -51,7 +51,7 @@ def start_autotrade_scheduler():
     scheduler.add_job(
         run_trigger_qdrant_job,
         "cron",
-        day_of_week="mon",
+        day_of_week="mon,thu",
         hour=9,
         minute=0,
     )
