@@ -40,7 +40,10 @@ export const CompanyOverview = ({ company }: { company: CompanyData }) => {
         <p>
           💰 Market Cap: {company.market_cap ? formatCurrencyCompact(company.market_cap) : 'N/A'}
         </p>
-        <p>📈 Current Price: ${company.current_price?.toFixed(2) || 'N/A'}</p>
+        <p>
+          📈 Current Price: $
+          {company.current_price ? Number(company.current_price).toFixed(2) : 'N/A'}
+        </p>
         <p>👥 Employees: {company.fulltime_employees?.toLocaleString() || 'N/A'}</p>
       </div>
       {company.summary && (
