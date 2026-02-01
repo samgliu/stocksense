@@ -8,7 +8,7 @@ from google import genai
 
 # Config
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash"
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 logger = logging.getLogger("stocksense")
