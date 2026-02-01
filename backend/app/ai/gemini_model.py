@@ -6,7 +6,7 @@ from google import genai
 
 logger = logging.getLogger("stocksense")
 
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash"
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 

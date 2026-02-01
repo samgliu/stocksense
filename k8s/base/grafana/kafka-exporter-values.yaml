@@ -29,7 +29,7 @@ global:
 replicaCount: 1
 
 kafkaServer:
-  - kafka.default.svc.cluster.local:9092
+  - kafka-kafka-bootstrap.default.svc.cluster.local:9092
 
 # Specifies broker version to use, leave empty for default
 kafkaBrokerVersion:
