@@ -4,7 +4,7 @@ from typing import Dict, List
 from app.core.config import GEMINI_API_KEY
 from google import genai
 
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash"
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
