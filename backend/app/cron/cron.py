@@ -3,7 +3,7 @@ from app.database import get_async_db
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
 
-eastern = timezone("US/Eastern")
+eastern = timezone("America/New_York")
 scheduler = AsyncIOScheduler(timezone=eastern)
 
 

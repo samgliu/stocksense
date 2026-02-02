@@ -92,7 +92,7 @@ def is_market_open(now_eastern):
 
 async def run_autotrade_cron(db: AsyncSession, force: bool = False):
     logger.info("🚀 Running AutoTrader Cron")
-    eastern = pytz_timezone("US/Eastern")
+    eastern = pytz_timezone("America/New_York")
     now_utc = datetime.now(timezone.utc)
     now_eastern = now_utc.astimezone(eastern)
     if not force and not is_market_open(now_eastern):

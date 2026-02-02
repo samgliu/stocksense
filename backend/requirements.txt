@@ -44,3 +44,6 @@ opentelemetry-instrumentation-sqlalchemy
 # --- Env vars ---
 python-dotenv
 sentry-sdk[fastapi]
+
+# --- Others ---
+tzdata
