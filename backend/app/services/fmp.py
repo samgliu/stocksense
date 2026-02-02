@@ -20,7 +20,7 @@ def generate_stable_uuid(ticker: str, exchange: str) -> str:
 
 
 async def fetch_company_profile_async(ticker: str) -> Optional[dict]:
-    url = f"{FMP_PROFILE_URL}/{ticker}?apikey={FMP_API_KEY}"
+    url = f"{FMP_PROFILE_URL}?symbol={ticker}&apikey={FMP_API_KEY}"
 
     async with httpx.AsyncClient(timeout=5) as client:
         try:

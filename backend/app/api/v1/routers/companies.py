@@ -98,7 +98,11 @@ async def get_company_profile(request: Request, uuid: str, ticker: str, db: Asyn
 
 @router.get("/historical/{exchange}/{ticker}")
 async def get_historical_prices(request: Request, exchange: str, ticker: str):
-    full_ticker = f"{ticker}.{exchange}" if exchange.upper() != "NASDAQ" else ticker
+    us_exchanges = {"NASDAQ", "NMS", "NAS", "NYSE", "NYS"}
+    if exchange.upper() in us_exchanges:
+        full_ticker = ticker
+    else:
+        full_ticker = f"{ticker}.{exchange}"
     cache_key = f"stock:historical:{full_ticker}"
 
     # Try Redis first
