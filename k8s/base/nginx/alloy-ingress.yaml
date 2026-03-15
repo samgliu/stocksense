@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: alloy.samliu.site
+    - host: alloy.samliu.website
       http:
         paths:
           - path: /
@@ -23,5 +23,5 @@ spec:
                   number: 12345
   tls:
     - hosts:
-        - alloy.samliu.site
+        - alloy.samliu.website
       secretName: cloudflare-ssl
