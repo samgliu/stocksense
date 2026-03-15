@@ -36,7 +36,7 @@ async def fetch_company_profile_async(ticker: str) -> Optional[dict]:
         return None
 
     p = data[0]
-    exchange = p.get("exchangeShortName") or "UNKNOWN"
+    exchange = p.get("exchange") or "UNKNOWN"
     generated_id = generate_stable_uuid(p["symbol"], exchange)
 
     return {
