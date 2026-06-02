@@ -51,27 +51,26 @@ async def get_company_from_db(company_id: str) -> dict:
 
 async def fetch_user_holdings_from_db(user_id: str, ticker: str) -> Optional[dict]:
     async with AsyncSessionLocal() as db:
+        account_result = await db.execute(select(MockAccount).where(MockAccount.user_id == user_id))
+        account = account_result.scalar_one_or_none()
+
+        if not account:
+            return {"balance": 0}
+
         result = await db.execute(
-            select(MockPosition).where(MockPosition.account_id == user_id, MockPosition.ticker == ticker)
+            select(MockPosition).where(MockPosition.account_id == account.id, MockPosition.ticker == ticker)
         )
         position = result.scalar_one_or_none()
 
         if not position:
-            # Still return balance if account exists
-            account_result = await db.execute(select(MockAccount).where(MockAccount.user_id == user_id))
-            account = account_result.scalar_one_or_none()
-            return {"balance": float(account.balance) if account else 0}
-
-        # Fetch associated account balance
-        account_result = await db.execute(select(MockAccount).where(MockAccount.id == position.account_id))
-        account = account_result.scalar_one_or_none()
+            return {"balance": float(account.balance)}
 
         return {
             "ticker": position.ticker,
             "shares": position.shares,
             "average_cost": position.average_cost,
             "last_updated": (position.updated_at.isoformat() if position.updated_at else None),
-            "balance": float(account.balance) if account else 0,
+            "balance": float(account.balance),
         }
 
 
