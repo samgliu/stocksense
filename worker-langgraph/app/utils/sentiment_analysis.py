@@ -10,7 +10,7 @@ logger = logging.getLogger("stocksense")
 CF_API_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/"
 CF_API_KEY = os.getenv("CLOUDFLARE_WORKERS_API_KEY")
 CF_ACCOUNT_ID = os.getenv("CLOUDFLARE_WORKERS_API_ID")
-LLM_MODEL = "@cf/meta/llama-3-8b-instruct"
+LLM_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 
 HEADERS = {
     "Authorization": f"Bearer {CF_API_KEY}",
@@ -48,24 +48,42 @@ Format your response as JSON like:
 
         try:
             result = response.json()
-            if "result" in result:
-                # Extract JSON using regex
-                raw_text = result["result"]["response"]
-                match = re.search(r"\{.*?\}", raw_text, re.DOTALL)
-                if match:
-                    return json.loads(match.group(0))
-                else:
-                    return {
-                        "score": 0.0,
-                        "sentiment": "unknown",
-                        "summary": raw_text.strip(),
-                    }
-            else:
+            if response.status_code >= 400 or not result.get("success", True):
+                logger.warning(
+                    "Cloudflare sentiment request failed: status=%s errors=%s messages=%s",
+                    response.status_code,
+                    result.get("errors"),
+                    result.get("messages"),
+                )
+                return {
+                    "score": 0.0,
+                    "sentiment": "error",
+                    "summary": "Cloudflare Workers AI request failed",
+                }
+
+            result_payload = result.get("result")
+            raw_text = result_payload.get("response") if isinstance(result_payload, dict) else None
+            if not isinstance(raw_text, str):
+                logger.warning(
+                    "Cloudflare sentiment response missing result.response: status=%s top_keys=%s result_keys=%s",
+                    response.status_code,
+                    list(result.keys()) if isinstance(result, dict) else type(result).__name__,
+                    list(result_payload.keys()) if isinstance(result_payload, dict) else type(result_payload).__name__,
+                )
                 return {
                     "score": 0.0,
                     "sentiment": "unknown",
-                    "summary": "Unable to parse response",
+                    "summary": "Cloudflare Workers AI response did not include result.response",
                 }
+
+            match = re.search(r"\{.*?\}", raw_text, re.DOTALL)
+            if match:
+                return json.loads(match.group(0))
+            return {
+                "score": 0.0,
+                "sentiment": "unknown",
+                "summary": raw_text.strip(),
+            }
         except Exception as e:
             return {
                 "score": 0.0,
