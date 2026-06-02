@@ -99,8 +99,8 @@ alloy:
         endpoint {
           url = "https://logs-prod-036.grafana.net/loki/api/v1/push"
           basic_auth {
-            username = "<GRAFANA_LOKI_USERNAME>"
-            password = "<GRAFANA_LOKI_PASSWORD>"
+            username = sys.env("GRAFANA_LOKI_USERNAME")
+            password = sys.env("GRAFANA_LOKI_PASSWORD")
           }
         }
         external_labels = {
@@ -114,8 +114,14 @@ alloy:
         endpoint {
           url = "https://prometheus-prod-56-prod-us-east-2.grafana.net/api/prom/push"
           basic_auth {
-            username = "<GRAFANA_PROM_USERNAME>"
-            password = "<GRAFANA_PROM_PASSWORD>"
+            username = sys.env("GRAFANA_PROM_USERNAME")
+            password = sys.env("GRAFANA_PROM_PASSWORD")
+          }
+          queue_config {
+            min_shards           = 1
+            max_shards           = 2
+            max_samples_per_send = 2000
+            batch_send_deadline  = "10s"
           }
         }
       }
@@ -144,8 +150,8 @@ alloy:
       }
 
       otelcol.auth.basic "grafanacloud" {
-        username = "<GRAFANA_TEMPO_USERNAME>"
-        password = "<GRAFANA_TEMPO_PASSWORD>"
+        username = sys.env("GRAFANA_TEMPO_USERNAME")
+        password = sys.env("GRAFANA_TEMPO_PASSWORD")
       }
 
       prometheus.scrape "alloy_metrics" {
