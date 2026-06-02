@@ -1,8 +1,15 @@
-import { CompanyData } from '../api/types';
+import { CompanyData, CompanyHistoricalPrice } from '../api/types';
+import { StockMiniChart } from './StockMiniChart';
 
-export const CompanyHeader = ({ company }: { company: CompanyData }) => {
+export const CompanyHeader = ({
+  company,
+  history,
+}: {
+  company: CompanyData;
+  history?: CompanyHistoricalPrice;
+}) => {
   return (
-    <div className="flex items-center justify-between space-x-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center space-x-4">
         <div className="flex h-16 w-16 items-center justify-center rounded border border-gray-200 bg-gray-700 shadow-sm">
           <img
@@ -19,6 +26,7 @@ export const CompanyHeader = ({ company }: { company: CompanyData }) => {
           {company.exchange && <p className="text-xs text-gray-400">{company.exchange}</p>}
         </div>
       </div>
+      {history && <StockMiniChart data={history} />}
     </div>
   );
 };

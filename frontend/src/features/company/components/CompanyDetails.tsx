@@ -115,7 +115,7 @@ export const CompanyDetails = ({
 
   return (
     <div className="max-w-3xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <CompanyHeader company={company} />
+      <CompanyHeader company={company} history={history} />
       <CompanyOverview company={company} />
       {news && <CompanyNewsComponent news={news} isLoading={isNewsLoading} />}
       {reports && <CompanyCharts reports={reports} analysis={{ result: analysis?.result ?? '' }} />}
